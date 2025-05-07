@@ -64,9 +64,10 @@ const SignIn: React.FC = () => {
     setIsDemoLoading(true);
 
     try {
-      const { error } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+      const { error, data } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
       
       if (error) {
+        console.error("Demo sign in error:", error);
         setError("Demo account access failed. Please try again or contact support.");
         return;
       }
