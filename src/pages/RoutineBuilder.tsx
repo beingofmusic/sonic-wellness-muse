@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +22,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { routineSchema, RoutineFormValues } from "@/schemas/routineSchema";
 import RoutineBlockForm from "@/components/practice/RoutineBlockForm";
-import { Plus, Save } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Save } from "lucide-react";
 
 const RoutineBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +42,23 @@ const RoutineBuilder: React.FC = () => {
       blocks: []
     },
   });
+
+  // Calculate total duration
+  const totalDuration = useMemo(() => {
+    const blocks = form.watch("blocks") || [];
+    return blocks.reduce((total, block) => total + (block.duration || 0), 0);
+  }, [form.watch("blocks")]);
+
+  // Format duration to hours and minutes
+  const formattedDuration = useMemo(() => {
+    const hours = Math.floor(totalDuration / 60);
+    const minutes = totalDuration % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  }, [totalDuration]);
 
   // Fetch routine and blocks if id is provided
   useEffect(() => {
@@ -220,62 +238,95 @@ const RoutineBuilder: React.FC = () => {
   return (
     <Layout>
       <div className="container max-w-3xl">
-        <h1 className="text-3xl font-bold mb-6">
-          {id ? "Edit Practice Routine" : "Create New Practice Routine"}
-        </h1>
+        <div className="mb-8 space-y-2">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">
+              {id ? "Edit Practice Routine" : "Create New Practice Routine"}
+            </h1>
+            {totalDuration > 0 && (
+              <div className="bg-music-primary/10 px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5">
+                <span>Total Duration:</span>
+                <span className="text-music-primary">{formattedDuration}</span>
+              </div>
+            )}
+          </div>
+          <p className="text-white/60">
+            Design your custom practice routine by adding blocks of different activities below
+          </p>
+        </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Routine Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter routine title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <Card className="bg-card/70 backdrop-blur-md border-white/10">
+          <CardContent className="p-6">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base">Routine Title</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter routine title" 
+                            className="text-lg bg-card/80 backdrop-blur-sm" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter routine description (optional)" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base">Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="What's this routine for? What will it help you achieve?" 
+                            className="min-h-[80px] bg-card/80 backdrop-blur-sm"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Routine Blocks</h2>
-              <RoutineBlockForm />
-            </div>
+                <div>
+                  <h2 className="text-xl font-semibold mb-4 flex items-center">
+                    <span className="mr-2">Routine Blocks</span>
+                    {form.watch("blocks").length > 0 && (
+                      <span className="text-white/60 text-sm font-normal">
+                        ({form.watch("blocks").length} {form.watch("blocks").length === 1 ? 'block' : 'blocks'})
+                      </span>
+                    )}
+                  </h2>
+                  <RoutineBlockForm />
+                </div>
 
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  {id ? "Update Routine" : "Save Routine"}
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading} 
+                  className="w-full bg-gradient-to-r from-music-primary to-music-secondary hover:opacity-90 transition-all"
+                >
+                  {isLoading ? (
+                    "Saving..."
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4 animate-pulse" />
+                      {id ? "Update Routine" : "Save Routine"}
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
