@@ -3,6 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Clock, Play, Edit } from "lucide-react";
 import { PracticeRoutine } from "@/types/practice";
+import { Link } from "react-router-dom";
 
 interface MyRoutineCardProps {
   routine: PracticeRoutine;
@@ -14,7 +15,7 @@ const MyRoutineCard: React.FC<MyRoutineCardProps> = ({ routine }) => {
       <div className="flex items-center mb-2">
         <Clock className="h-4 w-4 text-white/60 mr-2" />
         <span className="text-sm text-white/60">{routine.duration} min</span>
-        <span className="ml-auto text-xs text-white/50">{routine.lastUpdated} ago</span>
+        <span className="ml-auto text-xs text-white/50">{routine.lastUpdated}</span>
       </div>
       
       <h3 className="text-xl font-semibold mb-2">{routine.title}</h3>
@@ -23,13 +24,17 @@ const MyRoutineCard: React.FC<MyRoutineCardProps> = ({ routine }) => {
       <div className="flex gap-2 mt-4">
         <Button 
           className="flex-1 bg-music-primary hover:bg-music-secondary text-white"
+          as={Link}
+          to={`/practice/routine/${routine.id}`}
         >
           <Play className="mr-2 h-4 w-4" />
           Resume
         </Button>
         <Button 
-          variant="outline" 
+          variant="outline"
           className="border-white/10 hover:border-white/20 bg-transparent"
+          as={Link}
+          to={`/practice/builder/${routine.id}`}
         >
           <Edit className="mr-2 h-4 w-4" />
           Edit

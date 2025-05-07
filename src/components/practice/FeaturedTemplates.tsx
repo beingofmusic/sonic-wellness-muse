@@ -1,12 +1,39 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import PracticeTemplateCard from "./PracticeTemplateCard";
-import { featuredTemplates } from "@/data/practiceTemplates";
+import { fetchTemplates } from "@/services/practiceService";
+import { PracticeTemplate } from "@/types/practice";
+import { useToast } from "@/hooks/use-toast";
 
 const FeaturedTemplates: React.FC = () => {
+  const [templates, setTemplates] = useState<PracticeTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchTemplates(3);
+        setTemplates(data);
+      } catch (error) {
+        console.error("Failed to load templates:", error);
+        toast({
+          title: "Error loading templates",
+          description: "Please try again later",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTemplates();
+  }, [toast]);
+
   return (
     <section className="space-y-4">
       <div className="flex justify-between items-center">
@@ -17,28 +44,23 @@ const FeaturedTemplates: React.FC = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {featuredTemplates.map((template) => (
-          <PracticeTemplateCard key={template.id} template={template} />
-        ))}
-      </div>
-      
-      <div className="flex justify-center mt-4">
-        <Button 
-          onClick={() => {}} 
-          variant="outline" 
-          className="text-white/70 hover:text-white/90"
-        >
-          <ArrowRight className="mr-2 h-4 w-4" />
-          Previous
-        </Button>
-        <Button 
-          onClick={() => {}} 
-          variant="outline" 
-          className="ml-4 text-white/70 hover:text-white/90"
-        >
-          Next
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        {isLoading ? (
+          // Placeholder loading state
+          Array(3).fill(null).map((_, index) => (
+            <div 
+              key={`loading-${index}`} 
+              className="p-5 rounded-xl border border-white/10 bg-card/80 backdrop-blur-sm animate-pulse h-72"
+            />
+          ))
+        ) : templates.length > 0 ? (
+          templates.map((template) => (
+            <PracticeTemplateCard key={template.id} template={template} />
+          ))
+        ) : (
+          <div className="col-span-3 p-8 text-center text-white/70">
+            No practice templates available yet.
+          </div>
+        )}
       </div>
     </section>
   );

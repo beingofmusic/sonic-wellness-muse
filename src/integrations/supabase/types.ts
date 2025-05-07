@@ -63,6 +63,88 @@ export type Database = {
         }
         Relationships: []
       }
+      routine_blocks: {
+        Row: {
+          content: string | null
+          created_at: string
+          duration: number
+          id: string
+          order_index: number
+          routine_id: string
+          type: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          duration?: number
+          id?: string
+          order_index: number
+          routine_id: string
+          type: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          duration?: number
+          id?: string
+          order_index?: number
+          routine_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routine_blocks_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routines: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          duration: number
+          id: string
+          is_template: boolean
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration?: number
+          id?: string
+          is_template?: boolean
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration?: number
+          id?: string
+          is_template?: boolean
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routines_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

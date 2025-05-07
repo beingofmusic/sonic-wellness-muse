@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,11 @@ import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
 import Shop from "./pages/Shop";
 import Settings from "./pages/Settings";
+
+// Placeholder pages for practice routes - will be implemented later
+const RoutineBuilder = () => <div className="p-6"><h1>Routine Builder</h1><p>Coming soon</p></div>;
+const RoutinePlayer = () => <div className="p-6"><h1>Routine Player</h1><p>Coming soon</p></div>;
+const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
 
 const queryClient = new QueryClient();
 
@@ -47,6 +51,46 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Practice />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice/builder" 
+              element={
+                <ProtectedRoute>
+                  <RoutineBuilder />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice/builder/:id" 
+              element={
+                <ProtectedRoute>
+                  <RoutineBuilder />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice/routine/:id" 
+              element={
+                <ProtectedRoute>
+                  <RoutinePlayer />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice/template/:id" 
+              element={
+                <ProtectedRoute>
+                  <RoutinePlayer />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice/templates" 
+              element={
+                <ProtectedRoute>
+                  <TemplatesList />
                 </ProtectedRoute>
               } 
             />
