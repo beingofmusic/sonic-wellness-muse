@@ -16,9 +16,14 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
   const { toast } = useToast();
   const { signIn, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
+
+  // Demo account credentials
+  const DEMO_EMAIL = "demo@beingofmusic.com";
+  const DEMO_PASSWORD = "demo123456";
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
@@ -51,6 +56,32 @@ const SignIn: React.FC = () => {
       console.error("Sign in error:", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDemoSignIn = async () => {
+    setError(null);
+    setIsDemoLoading(true);
+
+    try {
+      const { error } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+      
+      if (error) {
+        setError("Demo account access failed. Please try again or contact support.");
+        return;
+      }
+      
+      toast({
+        title: "Demo Mode Active",
+        description: "You're now exploring Being of Music as a demo user.",
+      });
+      
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Failed to access demo account. Please try again later.");
+      console.error("Demo sign in error:", err);
+    } finally {
+      setIsDemoLoading(false);
     }
   };
 
@@ -121,6 +152,16 @@ const SignIn: React.FC = () => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full mt-4 bg-music-secondary/70 hover:bg-music-secondary text-white"
+            onClick={handleDemoSignIn}
+            disabled={isDemoLoading}
+          >
+            {isDemoLoading ? "Accessing Demo..." : "Try Demo Account"}
+          </Button>
           
           <div className="relative flex items-center mt-6">
             <div className="flex-grow border-t border-white/10"></div>
