@@ -6,12 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import PermissionRoute from "@/components/PermissionRoute";
 import RootRoute from "@/components/RootRoute";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import AdminPanel from "./pages/AdminPanel";
+import TeamDashboard from "./pages/TeamDashboard";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,26 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <PermissionRoute permission="manage_users">
+                    <AdminPanel />
+                  </PermissionRoute>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/team" 
+              element={
+                <ProtectedRoute>
+                  <PermissionRoute permission="contribute_content">
+                    <TeamDashboard />
+                  </PermissionRoute>
                 </ProtectedRoute>
               } 
             />

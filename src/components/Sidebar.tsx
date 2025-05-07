@@ -1,22 +1,41 @@
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Music, BookOpen, MessagesSquare, Heart, Calendar, ShoppingBag, Settings } from "lucide-react";
+import { 
+  Home, Music, BookOpen, MessagesSquare, Heart, Calendar, 
+  ShoppingBag, Settings, Users, Shield, FileEdit 
+} from "lucide-react";
 import MusicLogo from "./MusicLogo";
+import { useAuth } from "@/context/AuthContext";
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { hasPermission, profile } = useAuth();
   
-  const links = [
-    { name: "Dashboard", path: "/dashboard", icon: <Home className="h-5 w-5" /> },
-    { name: "Practice", path: "/practice", icon: <Music className="h-5 w-5" /> },
-    { name: "Courses", path: "/courses", icon: <BookOpen className="h-5 w-5" /> },
-    { name: "Community", path: "/community", icon: <MessagesSquare className="h-5 w-5" /> },
-    { name: "Wellness", path: "/wellness", icon: <Heart className="h-5 w-5" /> },
-    { name: "Calendar", path: "/calendar", icon: <Calendar className="h-5 w-5" /> },
-    { name: "Shop", path: "/shop", icon: <ShoppingBag className="h-5 w-5" /> },
-    { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" /> },
+  const commonLinks = [
+    { name: "Dashboard", path: "/dashboard", icon: <Home className="h-5 w-5" />, permission: "access_dashboard" },
+    { name: "Practice", path: "/practice", icon: <Music className="h-5 w-5" />, permission: "access_practice" },
+    { name: "Courses", path: "/courses", icon: <BookOpen className="h-5 w-5" />, permission: "access_courses" },
+    { name: "Community", path: "/community", icon: <MessagesSquare className="h-5 w-5" />, permission: "access_community" },
+    { name: "Wellness", path: "/wellness", icon: <Heart className="h-5 w-5" />, permission: "access_wellness" },
+    { name: "Calendar", path: "/calendar", icon: <Calendar className="h-5 w-5" />, permission: "access_dashboard" },
+    { name: "Shop", path: "/shop", icon: <ShoppingBag className="h-5 w-5" />, permission: "access_dashboard" },
   ];
+  
+  const adminLinks = [
+    { name: "Admin Panel", path: "/admin", icon: <Shield className="h-5 w-5" />, permission: "manage_users" },
+  ];
+  
+  const teamLinks = [
+    { name: "Team Dashboard", path: "/team", icon: <FileEdit className="h-5 w-5" />, permission: "contribute_content" },
+  ];
+  
+  const settingsLink = { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" />, permission: "access_dashboard" };
+
+  // Filter links based on permissions
+  const filteredCommonLinks = commonLinks.filter(link => hasPermission(link.permission));
+  const filteredAdminLinks = adminLinks.filter(link => hasPermission(link.permission));
+  const filteredTeamLinks = teamLinks.filter(link => hasPermission(link.permission));
 
   return (
     <aside className="w-64 h-screen sticky top-0 bg-card/30 backdrop-blur-md border-r border-white/10 p-4 flex flex-col">
@@ -25,7 +44,8 @@ const Sidebar: React.FC = () => {
       </div>
       
       <nav className="flex-1 space-y-1.5">
-        {links.map((link) => (
+        {/* Common Links */}
+        {filteredCommonLinks.map((link) => (
           <Link
             key={link.path}
             to={link.path}
@@ -35,14 +55,72 @@ const Sidebar: React.FC = () => {
             <span>{link.name}</span>
           </Link>
         ))}
+        
+        {/* Admin Links (if user has admin permissions) */}
+        {filteredAdminLinks.length > 0 && (
+          <>
+            <div className="pt-4 my-2 border-t border-white/10">
+              <p className="px-3 text-xs font-medium text-white/40 uppercase tracking-wider">
+                Administration
+              </p>
+            </div>
+            {filteredAdminLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`sidebar-link ${location.pathname === link.path ? "active" : ""}`}
+              >
+                {link.icon}
+                <span>{link.name}</span>
+              </Link>
+            ))}
+          </>
+        )}
+        
+        {/* Team Links (if user has team permissions) */}
+        {filteredTeamLinks.length > 0 && !filteredAdminLinks.length && (
+          <>
+            <div className="pt-4 my-2 border-t border-white/10">
+              <p className="px-3 text-xs font-medium text-white/40 uppercase tracking-wider">
+                Team
+              </p>
+            </div>
+            {filteredTeamLinks.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`sidebar-link ${location.pathname === link.path ? "active" : ""}`}
+              >
+                {link.icon}
+                <span>{link.name}</span>
+              </Link>
+            ))}
+          </>
+        )}
+        
+        {/* Settings is always available */}
+        <div className="pt-4 my-2 border-t border-white/10">
+          <Link
+            to={settingsLink.path}
+            className={`sidebar-link ${location.pathname === settingsLink.path ? "active" : ""}`}
+          >
+            {settingsLink.icon}
+            <span>{settingsLink.name}</span>
+          </Link>
+        </div>
       </nav>
       
       <div className="mt-auto pt-4 border-t border-white/10">
         <div className="sidebar-link">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center">
-            <span className="text-sm font-medium text-music-primary">DU</span>
+            <span className="text-sm font-medium text-music-primary">
+              {profile?.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+            </span>
           </div>
-          <span>Demo User</span>
+          <span>{profile?.username || 'User'}</span>
+          <span className="ml-auto text-xs px-2 py-1 rounded bg-white/10 text-white/70">
+            {profile?.role || 'user'}
+          </span>
         </div>
       </div>
     </aside>

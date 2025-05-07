@@ -4,18 +4,39 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import MusicLogo from "./MusicLogo";
 import { useAuth } from "@/context/AuthContext";
+import { Shield, User, Users } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
 }
 
 const Navbar: React.FC<NavbarProps> = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut, isAdmin, isTeamMember } = useAuth();
   const navigate = useNavigate();
   
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  // Function to get the role icon
+  const getRoleIcon = () => {
+    if (isAdmin) {
+      return <Shield className="h-4 w-4 mr-2 text-red-400" />;
+    } else if (isTeamMember) {
+      return <Users className="h-4 w-4 mr-2 text-blue-400" />;
+    } else {
+      return <User className="h-4 w-4 mr-2 text-green-400" />;
+    }
   };
 
   return (
@@ -37,12 +58,61 @@ const Navbar: React.FC<NavbarProps> = () => {
             </>
           ) : (
             <>
-              <Link to="/dashboard">
-                <Button className="music-button">Dashboard</Button>
-              </Link>
-              <Button variant="ghost" className="text-white/80 hover:text-white" onClick={handleSignOut}>
-                Sign Out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 text-white/80 hover:text-white">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center">
+                      <span className="text-sm font-medium text-music-primary">
+                        {profile?.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+                      </span>
+                    </div>
+                    <span className="hidden md:inline">{profile?.username || 'User'}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-md border-white/10 text-white">
+                  <DropdownMenuLabel className="flex items-center justify-between">
+                    <span>My Account</span>
+                    <Badge 
+                      variant="outline" 
+                      className="ml-2 bg-white/5"
+                    >
+                      <span className="flex items-center">
+                        {getRoleIcon()}
+                        {profile?.role || 'user'}
+                      </span>
+                    </Badge>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+
+                  {/* Dashboard link */}
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+
+                  {/* Admin-specific links */}
+                  {isAdmin && (
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/admin')}>
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
+
+                  {/* Team-specific links */}
+                  {isTeamMember && (
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/team')}>
+                      Team Dashboard
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/settings')}>
+                    Settings
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem className="cursor-pointer text-red-400" onClick={handleSignOut}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
         </div>

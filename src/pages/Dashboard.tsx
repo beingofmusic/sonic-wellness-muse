@@ -7,16 +7,50 @@ import PracticeRoutineCard from "@/components/PracticeRoutineCard";
 import CourseProgressCard from "@/components/CourseProgressCard";
 import CommunityPostCard from "@/components/CommunityPostCard";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
+  const { profile, isAdmin, isTeamMember, hasPermission } = useAuth();
+
+  // Custom welcome message based on user role
+  const getWelcomeMessage = () => {
+    if (isAdmin) {
+      return "Welcome to your admin dashboard!";
+    } else if (isTeamMember) {
+      return "Welcome to your team dashboard!";
+    } else {
+      return "Here's an overview of your musical journey";
+    }
+  };
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />
       
       <main className="flex-1 p-6">
         <header className="mb-8">
-          <h1 className="text-3xl font-semibold mb-1">Welcome Back, Demo User</h1>
-          <p className="text-white/70">Here's an overview of your musical journey</p>
+          <h1 className="text-3xl font-semibold mb-1">Welcome Back, {profile?.username || 'Music Lover'}</h1>
+          <p className="text-white/70">{getWelcomeMessage()}</p>
+          
+          {/* Role-specific action buttons */}
+          <div className="flex gap-3 mt-4">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10">
+                  Admin Panel
+                </Button>
+              </Link>
+            )}
+            
+            {isTeamMember && (
+              <Link to="/team">
+                <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10">
+                  Team Dashboard
+                </Button>
+              </Link>
+            )}
+          </div>
         </header>
         
         {/* Progress Overview */}
