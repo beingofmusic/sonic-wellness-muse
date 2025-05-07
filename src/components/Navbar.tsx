@@ -1,14 +1,23 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import MusicLogo from "./MusicLogo";
+import { useAuth } from "@/context/AuthContext";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ isAuthenticated = false }) => {
+const Navbar: React.FC<NavbarProps> = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <header className="border-b border-white/10 backdrop-blur-md bg-background/30 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -17,7 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated = false }) => {
         </Link>
         
         <div className="flex items-center gap-4">
-          {!isAuthenticated ? (
+          {!user ? (
             <>
               <Link to="/signin">
                 <Button variant="ghost" className="text-white/80 hover:text-white">Sign In</Button>
@@ -27,7 +36,14 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated = false }) => {
               </Link>
             </>
           ) : (
-            <Button className="music-button">Dashboard</Button>
+            <>
+              <Link to="/dashboard">
+                <Button className="music-button">Dashboard</Button>
+              </Link>
+              <Button variant="ghost" className="text-white/80 hover:text-white" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </>
           )}
         </div>
       </div>
