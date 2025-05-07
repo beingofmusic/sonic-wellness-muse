@@ -20,10 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { routineSchema, RoutineFormValues } from "@/schemas/routineSchema";
+import { routineSchema, RoutineFormValues, BlockFormValues } from "@/schemas/routineSchema";
 import RoutineBlockForm from "@/components/practice/RoutineBlockForm";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Save } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import BlockLibrarySidebar from "@/components/practice/BlockLibrarySidebar";
+import { Save, Library } from "lucide-react";
 
 const RoutineBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,6 +34,7 @@ const RoutineBuilder: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [routine, setRoutine] = useState<PracticeRoutine | null>(null);
   const [routineBlocks, setRoutineBlocks] = useState<RoutineBlock[]>([]);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   const form = useForm<RoutineFormValues>({
     resolver: zodResolver(routineSchema),
@@ -59,6 +61,22 @@ const RoutineBuilder: React.FC = () => {
     }
     return `${minutes}m`;
   }, [totalDuration]);
+
+  // Handle adding a template block
+  const handleAddTemplateBlock = (block: Omit<BlockFormValues, "order_index">) => {
+    const currentBlocks = form.getValues("blocks") || [];
+    form.setValue("blocks", [
+      ...currentBlocks,
+      {
+        ...block,
+        order_index: currentBlocks.length
+      }
+    ]);
+    toast({
+      title: "Block added",
+      description: "Template block added to your routine",
+    });
+  };
 
   // Fetch routine and blocks if id is provided
   useEffect(() => {
@@ -250,9 +268,20 @@ const RoutineBuilder: React.FC = () => {
               </div>
             )}
           </div>
-          <p className="text-white/60">
-            Design your custom practice routine by adding blocks of different activities below
-          </p>
+          <div className="flex justify-between items-center">
+            <p className="text-white/60">
+              Design your custom practice routine by adding blocks of different activities below
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsLibraryOpen(true)}
+              className="flex items-center gap-1.5"
+            >
+              <Library className="h-4 w-4" />
+              Block Library
+            </Button>
+          </div>
         </div>
 
         <Card className="bg-card/70 backdrop-blur-md border-white/10">
@@ -327,6 +356,13 @@ const RoutineBuilder: React.FC = () => {
             </Form>
           </CardContent>
         </Card>
+
+        {/* Block Library Sidebar */}
+        <BlockLibrarySidebar 
+          isOpen={isLibraryOpen}
+          setIsOpen={setIsLibraryOpen}
+          onAddBlock={handleAddTemplateBlock}
+        />
       </div>
     </Layout>
   );
