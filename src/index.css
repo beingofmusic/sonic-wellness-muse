@@ -81,4 +81,43 @@
   .progress-value {
     @apply h-full rounded-full bg-music-primary;
   }
+  
+  /* Mobile specific components */
+  .mobile-nav-item {
+    @apply flex flex-col items-center justify-center text-xs gap-1 py-2;
+  }
+  
+  .mobile-nav-item.active {
+    @apply text-music-primary;
+  }
+  
+  .mobile-card {
+    @apply rounded-xl border border-white/10 bg-card/70 backdrop-blur-sm p-4 shadow-lg w-full;
+  }
+  
+  .mobile-section {
+    @apply pb-16 md:pb-6;
+  }
+  
+  .mobile-touch-target {
+    @apply min-h-10 min-w-10 flex items-center justify-center;
+  }
+}
+
+/* Adjust for mobile navbar padding at bottom */
+@media (max-width: 767px) {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
+  }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
