@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Directly fetch permissions from role_permissions table
           // Type casting to any is necessary since TypeScript doesn't know about our SQL schema changes
           const { data: directPermissions, error: directPermError } = await supabase
-            .from('role_permissions' as any)
+            .from('role_permissions')
             .select('permission')
             .eq('role', typedProfile.role);
             
@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.error('Error fetching permissions:', directPermError);
           } else if (directPermissions) {
             // Need to type cast directPermissions since TypeScript doesn't recognize it
-            setPermissions((directPermissions as any[]).map(p => p.permission as string));
+            setPermissions(directPermissions.map(p => p.permission as string));
           }
         } catch (error) {
           console.error('Error in permissions fetch:', error);
