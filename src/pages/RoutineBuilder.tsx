@@ -24,7 +24,7 @@ import { routineSchema, RoutineFormValues, BlockFormValues } from "@/schemas/rou
 import RoutineBlockForm from "@/components/practice/RoutineBlockForm";
 import { Card, CardContent } from "@/components/ui/card";
 import BlockLibrarySidebar from "@/components/practice/BlockLibrarySidebar";
-import { Save, Library } from "lucide-react";
+import { Save } from "lucide-react";
 
 const RoutineBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +34,6 @@ const RoutineBuilder: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [routine, setRoutine] = useState<PracticeRoutine | null>(null);
   const [routineBlocks, setRoutineBlocks] = useState<RoutineBlock[]>([]);
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   const form = useForm<RoutineFormValues>({
     resolver: zodResolver(routineSchema),
@@ -240,7 +239,7 @@ const RoutineBuilder: React.FC = () => {
   if (isLoading && id) {
     return (
       <Layout>
-        <div className="container max-w-3xl">
+        <div className="container max-w-6xl py-4">
           <h1 className="text-3xl font-bold mb-6">Loading Routine...</h1>
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3"></div>
@@ -255,114 +254,111 @@ const RoutineBuilder: React.FC = () => {
 
   return (
     <Layout>
-      <div className="container max-w-3xl">
-        <div className="mb-8 space-y-2">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">
-              {id ? "Edit Practice Routine" : "Create New Practice Routine"}
-            </h1>
-            {totalDuration > 0 && (
-              <div className="bg-music-primary/10 px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5">
-                <span>Total Duration:</span>
-                <span className="text-music-primary">{formattedDuration}</span>
-              </div>
-            )}
-          </div>
-          <div className="flex justify-between items-center">
-            <p className="text-white/60">
-              Design your custom practice routine by adding blocks of different activities below
-            </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setIsLibraryOpen(true)}
-              className="flex items-center gap-1.5"
-            >
-              <Library className="h-4 w-4" />
-              Block Library
-            </Button>
-          </div>
-        </div>
-
-        <Card className="bg-card/70 backdrop-blur-md border-white/10">
-          <CardContent className="p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base">Routine Title</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Enter routine title" 
-                            className="text-lg bg-card/80 backdrop-blur-sm" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base">Description</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="What's this routine for? What will it help you achieve?" 
-                            className="min-h-[80px] bg-card/80 backdrop-blur-sm"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center">
-                    <span className="mr-2">Routine Blocks</span>
-                    {form.watch("blocks").length > 0 && (
-                      <span className="text-white/60 text-sm font-normal">
-                        ({form.watch("blocks").length} {form.watch("blocks").length === 1 ? 'block' : 'blocks'})
-                      </span>
-                    )}
-                  </h2>
-                  <RoutineBlockForm />
-                </div>
-
+      <div className="container max-w-7xl py-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex items-center justify-between sticky top-0 z-10 py-2 backdrop-blur-md bg-background/80">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                {id ? "Edit Practice Routine" : "Create New Practice Routine"}
+              </h1>
+              <div className="flex items-center gap-3">
+                {totalDuration > 0 && (
+                  <div className="bg-music-primary/10 px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5">
+                    <span>Total:</span>
+                    <span className="text-music-primary">{formattedDuration}</span>
+                  </div>
+                )}
                 <Button 
                   type="submit" 
                   disabled={isLoading} 
-                  className="w-full bg-gradient-to-r from-music-primary to-music-secondary hover:opacity-90 transition-all"
+                  className="bg-gradient-to-r from-music-primary to-music-secondary hover:opacity-90 transition-all"
                 >
                   {isLoading ? (
                     "Saving..."
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4 animate-pulse" />
-                      {id ? "Update Routine" : "Save Routine"}
+                      {id ? "Update" : "Save"}
                     </>
                   )}
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 h-[calc(100vh-250px)] min-h-[500px]">
+              {/* Left Column (Module Bank) */}
+              <div className="md:col-span-2 bg-card/70 backdrop-blur-md border-white/10 rounded-xl">
+                <BlockLibrarySidebar onAddBlock={handleAddTemplateBlock} />
+              </div>
+              
+              {/* Right Column (Practice Routine Builder) */}
+              <div className="md:col-span-3 flex flex-col">
+                <div className="bg-card/70 backdrop-blur-md border-white/10 rounded-xl p-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base">Routine Title</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter routine title" 
+                              className="text-lg bg-card/80 backdrop-blur-sm" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-        {/* Block Library Sidebar */}
-        <BlockLibrarySidebar 
-          isOpen={isLibraryOpen}
-          setIsOpen={setIsLibraryOpen}
-          onAddBlock={handleAddTemplateBlock}
-        />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base">Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="What's this routine for? What will it help you achieve?" 
+                              className="h-20 bg-card/80 backdrop-blur-sm"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                
+                <div className="bg-card/70 backdrop-blur-md border-white/10 rounded-xl p-6 flex-1">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="text-xl font-semibold flex items-center">
+                      <span className="mr-2">Your Practice Routine</span>
+                      {form.watch("blocks").length > 0 && (
+                        <span className="text-white/60 text-sm font-normal">
+                          ({form.watch("blocks").length} {form.watch("blocks").length === 1 ? 'block' : 'blocks'})
+                        </span>
+                      )}
+                    </h2>
+                  </div>
+                  
+                  {form.watch("blocks").length === 0 ? (
+                    <div className="flex items-center justify-center h-[200px] border-2 border-dashed border-white/10 rounded-xl">
+                      <p className="text-white/60 text-center">
+                        Add modules to create your practice routine
+                      </p>
+                    </div>
+                  ) : (
+                    <RoutineBlockForm />
+                  )}
+                </div>
+              </div>
+            </div>
+          </form>
+        </Form>
       </div>
     </Layout>
   );

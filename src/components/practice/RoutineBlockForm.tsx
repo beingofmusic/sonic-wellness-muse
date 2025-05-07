@@ -89,7 +89,7 @@ const RoutineBlockForm: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-y-auto pr-2 pb-6">
       <div className="relative">
         {fields.length > 0 && (
           <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-music-primary/20 -ml-3"></div>
