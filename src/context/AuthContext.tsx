@@ -71,18 +71,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (profileData) {
-        setProfile(profileData as Profile);
+        // Cast the profile data to our Profile type since Supabase types don't include the role yet
+        const typedProfile: Profile = {
+          id: profileData.id,
+          username: profileData.username,
+          avatar_url: profileData.avatar_url,
+          // If role is undefined, default to 'user'
+          role: (profileData as any).role || 'user'
+        };
         
-        // Fetch permissions based on user role
-        const { data: permissionsData, error: permissionsError } = await supabase
-          .from('role_permissions')
-          .select('permission')
-          .eq('role', profileData.role);
-
-        if (permissionsError) {
-          console.error('Error fetching permissions:', permissionsError);
-        } else if (permissionsData) {
-          setPermissions(permissionsData.map(p => p.permission));
+        setProfile(typedProfile);
+        
+        try {
+          // Fetch permissions based on user role
+          const { data: permissionsData, error: permissionsError } = await supabase
+            .rpc('has_permission', { user_id: userId, required_permission: 'access_dashboard' })
+            .select('permission');
+            
+          if (permissionsError) {
+            console.error('Error fetching permissions:', permissionsError);
+          } else {
+            // Query permissions directly from the role_permissions table instead
+            const { data: directPermissions, error: directPermError } = await supabase
+              .from('role_permissions')
+              .select('permission')
+              .eq('role', typedProfile.role);
+              
+            if (directPermError) {
+              console.error('Error fetching permissions:', directPermError);
+            } else if (directPermissions) {
+              setPermissions(directPermissions.map(p => p.permission));
+            }
+          }
+        } catch (error) {
+          console.error('Error in permissions fetch:', error);
         }
       }
     } catch (error) {

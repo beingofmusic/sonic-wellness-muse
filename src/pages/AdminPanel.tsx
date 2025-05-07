@@ -29,28 +29,39 @@ const AdminPanel: React.FC = () => {
       // Fetch all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, username, role');
+        .select('id, username, avatar_url');
 
       if (profilesError) {
         throw profilesError;
       }
 
-      // For each profile, fetch user details from auth
+      // For each profile, fetch user details and add the role
       if (profiles) {
         const usersWithDetails = await Promise.all(
           profiles.map(async (profile) => {
             // Here in a real app we'd make admin API calls to get user details
-            // But for this demo, we'll just return the profile data
+            // But for this demo, we'll just return the profile data with mock data
+            
+            // Get the user's role (which might not be in the type definition yet)
+            const { data: roleData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', profile.id)
+              .single();
+              
+            const role = (roleData as any)?.role || 'user';
+            
             const mockUserData = {
               email: `${profile.username || profile.id.substring(0, 8)}@example.com`,
               created_at: new Date().toISOString(),
-              last_sign_in_at: null
+              last_sign_in_at: null,
+              role: role as UserRole
             };
             
             return {
               ...profile,
               ...mockUserData
-            };
+            } as UserListItem;
           })
         );
         
@@ -74,9 +85,10 @@ const AdminPanel: React.FC = () => {
 
   const updateUserRole = async (userId: string, newRole: UserRole) => {
     try {
+      // We need to use a raw SQL update because the types don't include role yet
       const { error } = await supabase
         .from('profiles')
-        .update({ role: newRole })
+        .update({ role: newRole } as any)
         .eq('id', userId);
 
       if (error) throw error;
