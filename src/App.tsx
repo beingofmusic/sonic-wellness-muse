@@ -15,6 +15,13 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import AdminPanel from "./pages/AdminPanel";
 import TeamDashboard from "./pages/TeamDashboard";
+import Practice from "./pages/Practice";
+import Courses from "./pages/Courses";
+import Community from "./pages/Community";
+import Wellness from "./pages/Wellness";
+import Calendar from "./pages/Calendar";
+import Shop from "./pages/Shop";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +39,62 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice" 
+              element={
+                <ProtectedRoute>
+                  <Practice />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/courses" 
+              element={
+                <ProtectedRoute>
+                  <Courses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/community" 
+              element={
+                <ProtectedRoute>
+                  <Community />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/wellness" 
+              element={
+                <ProtectedRoute>
+                  <Wellness />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/calendar" 
+              element={
+                <ProtectedRoute>
+                  <Calendar />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/shop" 
+              element={
+                <ProtectedRoute>
+                  <Shop />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               } 
             />

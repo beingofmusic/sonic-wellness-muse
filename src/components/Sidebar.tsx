@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, Music, BookOpen, MessagesSquare, Heart, Calendar, 
@@ -18,6 +19,9 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { hasPermission, profile, signOut } = useAuth();
+  
+  // Define basic permissions for standard users
+  const defaultPermissions = ["access_dashboard", "access_practice", "access_courses", "access_community", "access_wellness"];
   
   const commonLinks = [
     { name: "Dashboard", path: "/dashboard", icon: <Home className="h-5 w-5" />, permission: "access_dashboard" },
@@ -39,10 +43,18 @@ const Sidebar: React.FC = () => {
   
   const settingsLink = { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" />, permission: "access_dashboard" };
 
-  // Filter links based on permissions
-  const filteredCommonLinks = commonLinks.filter(link => hasPermission(link.permission));
-  const filteredAdminLinks = adminLinks.filter(link => hasPermission(link.permission));
-  const filteredTeamLinks = teamLinks.filter(link => hasPermission(link.permission));
+  // Enhanced hasPermission check that also considers default permissions for all users
+  const checkPermission = (permission: string): boolean => {
+    if (defaultPermissions.includes(permission)) {
+      return true; // Grant access to default permissions for all authenticated users
+    }
+    return hasPermission(permission);
+  };
+
+  // Filter links based on enhanced permission check
+  const filteredCommonLinks = commonLinks.filter(link => checkPermission(link.permission));
+  const filteredAdminLinks = adminLinks.filter(link => checkPermission(link.permission));
+  const filteredTeamLinks = teamLinks.filter(link => checkPermission(link.permission));
   
   // Function to get user's display name
   const getDisplayName = () => {
