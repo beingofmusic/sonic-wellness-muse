@@ -88,3 +88,102 @@ export const fetchRoutineBlocks = async (routineId: string): Promise<RoutineBloc
 
   return data as RoutineBlock[];
 };
+
+export const fetchRoutineById = async (routineId: string): Promise<PracticeRoutine> => {
+  const { data, error } = await supabase
+    .from("routines")
+    .select("*")
+    .eq("id", routineId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching routine:", error);
+    throw error;
+  }
+
+  return {
+    ...data,
+    lastUpdated: formatDistanceToNow(new Date(data.updated_at), { addSuffix: true })
+  };
+};
+
+export const createRoutine = async (
+  routine: {
+    title: string;
+    description?: string;
+    is_template: boolean;
+    tags?: string[];
+  },
+  userId: string
+): Promise<PracticeRoutine> => {
+  const { data, error } = await supabase
+    .from("routines")
+    .insert({
+      ...routine,
+      created_by: userId,
+      duration: 0, // This will be updated after blocks are added
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating routine:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const updateRoutine = async (
+  routineId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    duration?: number;
+    tags?: string[];
+  }
+): Promise<void> => {
+  const { error } = await supabase
+    .from("routines")
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", routineId);
+
+  if (error) {
+    console.error("Error updating routine:", error);
+    throw error;
+  }
+};
+
+export const createRoutineBlocks = async (
+  blocks: {
+    routine_id: string;
+    type: string;
+    content: string | null;
+    duration: number;
+    order_index: number;
+  }[]
+): Promise<void> => {
+  const { error } = await supabase
+    .from("routine_blocks")
+    .insert(blocks);
+
+  if (error) {
+    console.error("Error creating routine blocks:", error);
+    throw error;
+  }
+};
+
+export const deleteRoutineBlocks = async (routineId: string): Promise<void> => {
+  const { error } = await supabase
+    .from("routine_blocks")
+    .delete()
+    .eq("routine_id", routineId);
+
+  if (error) {
+    console.error("Error deleting routine blocks:", error);
+    throw error;
+  }
+};

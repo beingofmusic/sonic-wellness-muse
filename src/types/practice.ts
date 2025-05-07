@@ -40,3 +40,11 @@ export interface RoutineBlock {
   duration: number;
   created_at: string;
 }
+
+export interface RoutineBlockFormData {
+  id?: string;
+  type: string;
+  content: string;
+  duration: number;
+  order_index: number;
+}

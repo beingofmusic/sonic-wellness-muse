@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import SignUp from "./pages/SignUp";
 import AdminPanel from "./pages/AdminPanel";
 import TeamDashboard from "./pages/TeamDashboard";
 import Practice from "./pages/Practice";
+import RoutineBuilder from "./pages/RoutineBuilder";
 import Courses from "./pages/Courses";
 import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
@@ -23,7 +25,6 @@ import Shop from "./pages/Shop";
 import Settings from "./pages/Settings";
 
 // Placeholder pages for practice routes - will be implemented later
-const RoutineBuilder = () => <div className="p-6"><h1>Routine Builder</h1><p>Coming soon</p></div>;
 const RoutinePlayer = () => <div className="p-6"><h1>Routine Player</h1><p>Coming soon</p></div>;
 const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
 
