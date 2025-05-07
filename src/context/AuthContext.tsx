@@ -15,7 +15,10 @@ interface AuthContextProps {
     error: Error | null;
     data: any | null;
   }>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<{
+    error: Error | null;
+    data: any | null;
+  }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
 }
@@ -76,12 +79,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const signInWithGoogle = async () => {
-    return supabase.auth.signInWithOAuth({
+    const response = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
       },
     });
+    return response;
   };
 
   const signOut = async () => {
