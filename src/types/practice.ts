@@ -29,6 +29,7 @@ export interface PracticeRoutine {
   
   // UI display field
   lastUpdated?: string; // Formatted time for UI display
+  progress?: number; // Progress through the routine (0-100%)
 }
 
 export interface RoutineBlock {
@@ -47,4 +48,11 @@ export interface RoutineBlockFormData {
   content: string;
   duration: number;
   order_index: number;
+}
+
+export interface SessionData {
+  currentBlockIndex: number;
+  timeRemaining: number; // in seconds
+  isPaused: boolean;
+  isComplete: boolean;
 }

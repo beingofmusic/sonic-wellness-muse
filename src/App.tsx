@@ -17,6 +17,7 @@ import AdminPanel from "./pages/AdminPanel";
 import TeamDashboard from "./pages/TeamDashboard";
 import Practice from "./pages/Practice";
 import RoutineBuilder from "./pages/RoutineBuilder";
+import RoutinePlayer from "./pages/RoutinePlayer";
 import Courses from "./pages/Courses";
 import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
@@ -24,8 +25,7 @@ import Calendar from "./pages/Calendar";
 import Shop from "./pages/Shop";
 import Settings from "./pages/Settings";
 
-// Placeholder pages for practice routes - will be implemented later
-const RoutinePlayer = () => <div className="p-6"><h1>Routine Player</h1><p>Coming soon</p></div>;
+// Placeholder page for templates list - will be implemented later
 const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
 
 const queryClient = new QueryClient();
