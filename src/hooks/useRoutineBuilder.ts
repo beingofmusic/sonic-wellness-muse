@@ -138,7 +138,7 @@ export const useRoutineBuilder = (routineId?: string) => {
         0
       );
 
-      let routineId = routineId;
+      let savedRoutineId = routineId;
       
       // If editing existing routine
       if (routineId) {
@@ -180,12 +180,12 @@ export const useRoutineBuilder = (routineId?: string) => {
           .single();
 
         if (insertError) throw insertError;
-        routineId = newRoutine.id;
+        savedRoutineId = newRoutine.id;
       }
 
       // Insert blocks
       const blocksToInsert = data.blocks.map((block, index) => ({
-        routine_id: routineId,
+        routine_id: savedRoutineId,
         order_index: index,
         type: block.type,
         content: block.content,
