@@ -8,6 +8,10 @@ export const featuredTemplates: PracticeTemplate[] = [
     description: "A brief, efficient warm-up for when time is limited",
     duration: 5,
     tags: ["warm-up", "quick", "daily"],
+    created_by: "staff-1",
+    is_template: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     includes: [
       "1 mindfulness exercise",
       "1 warmup exercise",
@@ -22,6 +26,10 @@ export const featuredTemplates: PracticeTemplate[] = [
     description: "Cultivate presence and awareness in your playing",
     duration: 15,
     tags: ["mindfulness", "awareness", "tone", "meditation"],
+    created_by: "staff-1",
+    is_template: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     includes: [
       "3 mindfulness exercises",
       "1 technique exercise",
@@ -36,6 +44,10 @@ export const featuredTemplates: PracticeTemplate[] = [
     description: "Gradually extend your upper register with control",
     duration: 15,
     tags: ["range", "high-notes", "endurance"],
+    created_by: "staff-1",
+    is_template: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     includes: [
       "2 mindfulness exercises",
       "1 warmup exercise",

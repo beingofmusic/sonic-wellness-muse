@@ -7,6 +7,11 @@ export const myRoutines: PracticeRoutine[] = [
     title: "baloney paradox",
     description: "predisposition that favors apples",
     duration: 53,
+    created_by: "user-1",
+    is_template: false,
+    tags: [],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     lastUpdated: "3 days"
   },
   {
@@ -14,14 +19,23 @@ export const myRoutines: PracticeRoutine[] = [
     title: "5-Min Quick Warm-Up (from template)",
     description: "A brief, efficient warm-up for when time is limited",
     duration: 5,
-    lastUpdated: "3 days",
-    isTemplate: true
+    created_by: "user-1",
+    is_template: true,
+    tags: ["warm-up", "quick"],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    lastUpdated: "3 days"
   },
   {
     id: "routine-3",
     title: "trot bgbrervq",
     description: "t3xc qrgtbwrg",
     duration: 23,
+    created_by: "user-1",
+    is_template: false,
+    tags: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
     lastUpdated: "3 days"
   }
 ];

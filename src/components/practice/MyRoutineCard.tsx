@@ -22,23 +22,28 @@ const MyRoutineCard: React.FC<MyRoutineCardProps> = ({ routine }) => {
       <p className="text-white/70 text-sm mb-4">{routine.description}</p>
       
       <div className="flex gap-2 mt-4">
-        <Button 
-          className="flex-1 bg-music-primary hover:bg-music-secondary text-white"
-          as={Link}
+        <Link 
           to={`/practice/routine/${routine.id}`}
+          className="flex-1"
         >
-          <Play className="mr-2 h-4 w-4" />
-          Resume
-        </Button>
-        <Button 
-          variant="outline"
-          className="border-white/10 hover:border-white/20 bg-transparent"
-          as={Link}
+          <Button className="w-full bg-music-primary hover:bg-music-secondary text-white">
+            <Play className="mr-2 h-4 w-4" />
+            Resume
+          </Button>
+        </Link>
+        
+        <Link 
           to={`/practice/builder/${routine.id}`}
+          className="flex-shrink-0"
         >
-          <Edit className="mr-2 h-4 w-4" />
-          Edit
-        </Button>
+          <Button 
+            variant="outline"
+            className="border-white/10 hover:border-white/20 bg-transparent"
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Edit
+          </Button>
+        </Link>
       </div>
     </div>
   );
