@@ -38,6 +38,28 @@ const Navbar: React.FC<NavbarProps> = () => {
       return <User className="h-4 w-4 mr-2 text-green-400" />;
     }
   };
+  
+  // Function to get user display name
+  const getDisplayName = () => {
+    if (profile?.first_name) {
+      return profile.first_name;
+    } else if (profile?.username) {
+      return profile.username;
+    }
+    return 'User';
+  };
+  
+  // Function to get user initials for avatar
+  const getUserInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`;
+    } else if (profile?.first_name) {
+      return profile.first_name.charAt(0);
+    } else if (profile?.username) {
+      return profile.username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
 
   return (
     <header className="border-b border-white/10 backdrop-blur-md bg-background/30 sticky top-0 z-50">
@@ -63,10 +85,10 @@ const Navbar: React.FC<NavbarProps> = () => {
                   <Button variant="ghost" className="flex items-center gap-2 text-white/80 hover:text-white">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center">
                       <span className="text-sm font-medium text-music-primary">
-                        {profile?.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+                        {getUserInitials()}
                       </span>
                     </div>
-                    <span className="hidden md:inline">{profile?.username || 'User'}</span>
+                    <span className="hidden md:inline">{getDisplayName()}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-md border-white/10 text-white">

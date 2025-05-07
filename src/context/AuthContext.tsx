@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +10,8 @@ export type UserRole = 'admin' | 'team' | 'user';
 export interface Profile {
   id: string;
   username: string | null;
+  first_name: string | null;
+  last_name: string | null;
   avatar_url: string | null;
   role: UserRole;
 }
@@ -19,7 +20,7 @@ interface AuthContextProps {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
-  signUp: (email: string, password: string) => Promise<{
+  signUp: (email: string, password: string, metadata?: { first_name?: string, last_name?: string }) => Promise<{
     error: Error | null;
     data: any | null;
   }>;
@@ -75,6 +76,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const typedProfile: Profile = {
           id: profileData.id,
           username: profileData.username,
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
           avatar_url: profileData.avatar_url,
           // If role is undefined, default to 'user'
           role: (profileData as any).role || 'user'
@@ -84,7 +87,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         try {
           // Directly fetch permissions from role_permissions table
-          // Type casting to any is necessary since TypeScript doesn't know about our SQL schema changes
           const { data: directPermissions, error: directPermError } = await supabase
             .from('role_permissions')
             .select('permission')
@@ -93,7 +95,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (directPermError) {
             console.error('Error fetching permissions:', directPermError);
           } else if (directPermissions) {
-            // Need to type cast directPermissions since TypeScript doesn't recognize it
             setPermissions(directPermissions.map(p => p.permission as string));
           }
         } catch (error) {
@@ -137,11 +138,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, metadata?: { first_name?: string, last_name?: string }) => {
     setIsLoading(true);
     const response = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: metadata,
+      }
     });
     setIsLoading(false);
     return response;

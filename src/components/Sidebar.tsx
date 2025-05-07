@@ -36,6 +36,26 @@ const Sidebar: React.FC = () => {
   const filteredCommonLinks = commonLinks.filter(link => hasPermission(link.permission));
   const filteredAdminLinks = adminLinks.filter(link => hasPermission(link.permission));
   const filteredTeamLinks = teamLinks.filter(link => hasPermission(link.permission));
+  
+  // Function to get user's display name
+  const getDisplayName = () => {
+    if (profile?.first_name) {
+      return profile.first_name;
+    } else if (profile?.username) {
+      return profile.username;
+    }
+    return 'User';
+  };
+  
+  // Function to get user's initials
+  const getUserInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return profile.first_name.charAt(0).toUpperCase();
+    } else if (profile?.username) {
+      return profile.username.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
 
   return (
     <aside className="w-64 h-screen sticky top-0 bg-card/30 backdrop-blur-md border-r border-white/10 p-4 flex flex-col">
@@ -114,10 +134,10 @@ const Sidebar: React.FC = () => {
         <div className="sidebar-link">
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center">
             <span className="text-sm font-medium text-music-primary">
-              {profile?.username ? profile.username.charAt(0).toUpperCase() : 'U'}
+              {getUserInitials()}
             </span>
           </div>
-          <span>{profile?.username || 'User'}</span>
+          <span>{getDisplayName()}</span>
           <span className="ml-auto text-xs px-2 py-1 rounded bg-white/10 text-white/70">
             {profile?.role || 'user'}
           </span>

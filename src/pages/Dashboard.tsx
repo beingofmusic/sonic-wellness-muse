@@ -11,8 +11,20 @@ import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
-  const { profile, isAdmin, isTeamMember, hasPermission } = useAuth();
+  const { profile, isAdmin, isTeamMember } = useAuth();
 
+  // Get user's full name or fallback to username or a default
+  const getFullName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    } else if (profile?.first_name) {
+      return profile.first_name;
+    } else if (profile?.username) {
+      return profile.username;
+    }
+    return 'Music Lover';
+  };
+  
   // Custom welcome message based on user role
   const getWelcomeMessage = () => {
     if (isAdmin) {
@@ -30,7 +42,7 @@ const Dashboard: React.FC = () => {
       
       <main className="flex-1 p-6">
         <header className="mb-8">
-          <h1 className="text-3xl font-semibold mb-1">Welcome Back, {profile?.username || 'Music Lover'}</h1>
+          <h1 className="text-3xl font-semibold mb-1">Welcome Back, {getFullName()}</h1>
           <p className="text-white/70">{getWelcomeMessage()}</p>
           
           {/* Role-specific action buttons */}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import { useAuth } from "@/context/AuthContext";
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +43,11 @@ const SignUp: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(email, password);
+      // Pass first_name and last_name as metadata
+      const { error } = await signUp(email, password, {
+        first_name: firstName,
+        last_name: lastName,
+      });
       
       if (error) {
         setError(error.message);
@@ -91,16 +97,30 @@ const SignUp: React.FC = () => {
           )}
           
           <form className="space-y-4" onSubmit={handleSignUp}>
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                className="bg-background/50 border-white/20"
-                required
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="John"
+                  className="bg-background/50 border-white/20"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Doe"
+                  className="bg-background/50 border-white/20"
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
