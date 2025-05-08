@@ -9,7 +9,6 @@ interface BlockContentProps {
 
 const BlockContent: React.FC<BlockContentProps> = ({ block }) => {
   // Parse content from the block
-  // The first line is treated as the title, remaining as instructions
   const contentLines = block.content?.split('\n') || [];
   const instructions = contentLines.slice(1).join('\n') || 'Follow along with this exercise.';
 
@@ -32,7 +31,7 @@ const BlockContent: React.FC<BlockContentProps> = ({ block }) => {
         </div>
         {hasInstructions ? (
           <div 
-            className="prose prose-invert max-w-none"
+            className="prose prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-1.5 prose-blockquote:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-hr:my-4"
             dangerouslySetInnerHTML={{ __html: block.instructions || '' }}
           />
         ) : (
