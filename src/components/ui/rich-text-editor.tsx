@@ -49,7 +49,7 @@ interface RichTextEditorProps {
   className?: string;
 }
 
-const RichTextEditor = ({ 
+export const RichTextEditor = ({ 
   value, 
   onChange,
   placeholder = "Type here...",
@@ -109,11 +109,11 @@ const RichTextEditor = ({
 
   const handleLinkSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (linkUrl) {
+    if (linkUrl && editor) {
       // Make sure to include protocol if missing
       const url = linkUrl.startsWith('http') ? linkUrl : `https://${linkUrl}`;
       
-      editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
       setLinkUrl('');
       setLinkPopoverOpen(false);
     }
@@ -121,8 +121,9 @@ const RichTextEditor = ({
 
   const handleImageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (imageUrl) {
-      editor?.chain().focus().setImage({ src: imageUrl }).run();
+    if (imageUrl && editor) {
+      // Use the proper command for inserting images
+      editor.chain().focus().setImage({ src: imageUrl }).run();
       setImageUrl('');
       setImagePopoverOpen(false);
     }
@@ -130,8 +131,9 @@ const RichTextEditor = ({
 
   const handleYoutubeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (youtubeUrl) {
-      editor?.commands.setYoutubeVideo({ src: youtubeUrl });
+    if (youtubeUrl && editor) {
+      // Use the proper command for inserting YouTube videos
+      editor.commands.setYoutubeVideo({ src: youtubeUrl });
       setYoutubeUrl('');
       setYoutubePopoverOpen(false);
     }
@@ -498,5 +500,3 @@ const RichTextEditor = ({
     </div>
   );
 };
-
-export { RichTextEditor };
