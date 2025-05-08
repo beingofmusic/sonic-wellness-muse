@@ -24,6 +24,7 @@ import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
 import Shop from "./pages/Shop";
 import Settings from "./pages/Settings";
+import PracticeHistory from "./pages/PracticeHistory";
 
 // Placeholder page for templates list - will be implemented later
 const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
@@ -52,6 +53,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Practice />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/practice/history" 
+              element={
+                <ProtectedRoute>
+                  <PracticeHistory />
                 </ProtectedRoute>
               } 
             />
