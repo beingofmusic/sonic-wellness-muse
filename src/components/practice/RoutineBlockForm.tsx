@@ -18,10 +18,11 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { ArrowUp, ArrowDown, Trash2, Guitar, Drum, Headphones, Mic, MicOff, Plus } from "lucide-react";
+import { ArrowUp, ArrowDown, Trash2, Guitar, Drum, Headphones, Mic, MicOff, Plus, Info } from "lucide-react";
 import { RoutineFormValues } from "@/schemas/routineSchema";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 const BLOCK_TYPES = [
   { value: "warmup", label: "Warm-up", icon: <Mic className="h-4 w-4 text-orange-400" /> },
@@ -84,6 +85,7 @@ const RoutineBlockForm: React.FC = () => {
       type: "warmup", 
       duration: 5, 
       content: "", 
+      instructions: "",
       order_index: fields.length 
     });
   };
@@ -215,12 +217,33 @@ const RoutineBlockForm: React.FC = () => {
                         name={`blocks.${index}.content`}
                         render={({ field }) => (
                           <FormItem className="md:col-span-2">
-                            <FormLabel className="text-sm">Content</FormLabel>
+                            <FormLabel className="text-sm">Content (Title)</FormLabel>
                             <FormControl>
                               <Textarea 
                                 placeholder={getPlaceholderByType(blockType)}
                                 className="min-h-[100px] bg-card/70 backdrop-blur-sm"
                                 {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={control}
+                        name={`blocks.${index}.instructions`}
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel className="flex items-center gap-1.5 text-sm">
+                              <Info className="h-4 w-4" />
+                              <span>Instructions</span>
+                            </FormLabel>
+                            <FormControl>
+                              <RichTextEditor 
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                placeholder="Add detailed instructions for this block (optional)"
+                                className="bg-card/70 backdrop-blur-sm"
                               />
                             </FormControl>
                             <FormMessage />

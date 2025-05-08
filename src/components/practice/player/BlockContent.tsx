@@ -19,15 +19,25 @@ const BlockContent: React.FC<BlockContentProps> = ({ block }) => {
     "Focus on one aspect of technique at a time for best results."
   ];
 
+  // Check if we have formatted instructions
+  const hasInstructions = block.instructions && block.instructions.trim() !== "";
+
   return (
     <div className="space-y-6">
-      {/* Instructions section */}
+      {/* Instructions section - either from the instructions field or the old way */}
       <div className="p-5 rounded-xl bg-card/60 border border-white/10">
         <div className="flex items-center gap-2 mb-3">
           <Info className="h-5 w-5 text-music-primary" />
           <h3 className="text-lg font-medium">Instructions</h3>
         </div>
-        <p>{instructions}</p>
+        {hasInstructions ? (
+          <div 
+            className="prose prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: block.instructions || '' }}
+          />
+        ) : (
+          <p>{instructions}</p>
+        )}
       </div>
       
       {/* Tips section */}

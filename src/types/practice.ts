@@ -38,6 +38,7 @@ export interface RoutineBlock {
   order_index: number;
   type: string;
   content: string | null;
+  instructions: string | null;
   duration: number;
   created_at: string;
 }
@@ -47,6 +48,7 @@ export interface RoutineBlockFormData {
   type: string;
   content: string;
   duration: number;
+  instructions?: string | null;
   order_index: number;
 }
 

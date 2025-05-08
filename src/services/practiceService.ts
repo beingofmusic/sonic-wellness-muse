@@ -162,6 +162,7 @@ export const createRoutineBlocks = async (
     routine_id: string;
     type: string;
     content: string | null;
+    instructions?: string | null;
     duration: number;
     order_index: number;
   }[]
