@@ -5,6 +5,7 @@ import { Layout } from "@/components/Layout";
 import { useRoutinePlayer } from "@/hooks/useRoutinePlayer";
 import PracticeSession from "@/components/practice/player/PracticeSession";
 import LoadingState from "@/components/practice/player/LoadingState";
+import PracticeCompletionScreen from "@/components/practice/player/PracticeCompletionScreen";
 
 const RoutinePlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,11 +15,13 @@ const RoutinePlayer: React.FC = () => {
     blocks,
     currentBlockIndex,
     sessionProgress,
+    isCompleted,
     setCurrentBlockIndex,
     handleNext,
     handlePrevious,
     handleReset,
     handlePause,
+    handleStartNewSession,
     isPaused,
     timeRemaining,
     secondsLeft,
@@ -52,23 +55,31 @@ const RoutinePlayer: React.FC = () => {
 
   return (
     <Layout>
-      <PracticeSession 
-        routine={routine}
-        blocks={blocks}
-        currentBlockIndex={currentBlockIndex}
-        sessionProgress={sessionProgress}
-        setCurrentBlockIndex={setCurrentBlockIndex}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        onReset={handleReset}
-        onPause={handlePause}
-        isPaused={isPaused}
-        timeRemaining={timeRemaining}
-        secondsLeft={secondsLeft}
-        focusMode={focusMode}
-        toggleFocusMode={toggleFocusMode}
-        onExit={handleExit}
-      />
+      {isCompleted ? (
+        <PracticeCompletionScreen 
+          routine={routine} 
+          blocks={blocks}
+          onStartNewSession={handleStartNewSession}
+        />
+      ) : (
+        <PracticeSession 
+          routine={routine}
+          blocks={blocks}
+          currentBlockIndex={currentBlockIndex}
+          sessionProgress={sessionProgress}
+          setCurrentBlockIndex={setCurrentBlockIndex}
+          onNext={handleNext}
+          onPrevious={handlePrevious}
+          onReset={handleReset}
+          onPause={handlePause}
+          isPaused={isPaused}
+          timeRemaining={timeRemaining}
+          secondsLeft={secondsLeft}
+          focusMode={focusMode}
+          toggleFocusMode={toggleFocusMode}
+          onExit={handleExit}
+        />
+      )}
     </Layout>
   );
 };

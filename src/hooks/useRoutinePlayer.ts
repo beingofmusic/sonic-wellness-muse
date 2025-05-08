@@ -16,6 +16,7 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [isPaused, setIsPaused] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -120,6 +121,7 @@ export const useRoutinePlayer = (routineId?: string) => {
             setCurrentBlockIndex(prevIndex => prevIndex + 1);
           } else {
             // Show completion state for the last block
+            setIsCompleted(true);
             toast({
               title: "Session Complete",
               description: "Congratulations on completing your practice session!",
@@ -148,6 +150,7 @@ export const useRoutinePlayer = (routineId?: string) => {
       setCurrentBlockIndex(prevIndex => prevIndex + 1);
     } else {
       // Show completion state
+      setIsCompleted(true);
       toast({
         title: "Session Complete",
         description: "Congratulations on completing your practice session!",
@@ -216,17 +219,31 @@ export const useRoutinePlayer = (routineId?: string) => {
     navigate("/practice");
   }, [navigate]);
 
+  const handleStartNewSession = useCallback(() => {
+    // Reset the session state to start over
+    if (blocks.length > 0) {
+      setCurrentBlockIndex(0);
+      setIsCompleted(false);
+      const initialDuration = blocks[0].duration * 60;
+      setSecondsLeft(initialDuration);
+      setTimeRemaining(formatTime(initialDuration));
+      setIsPaused(false);
+    }
+  }, [blocks]);
+
   return {
     isLoading,
     routine,
     blocks,
     currentBlockIndex,
     sessionProgress,
+    isCompleted,
     setCurrentBlockIndex,
     handleNext,
     handlePrevious,
     handleReset,
     handlePause,
+    handleStartNewSession,
     isPaused,
     timeRemaining,
     secondsLeft,
