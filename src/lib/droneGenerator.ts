@@ -1,4 +1,3 @@
-
 import { getAudioContext, ensureAudioContextRunning } from "./audioContext";
 
 // Note frequencies in Hz (A4 = 440Hz)
@@ -33,6 +32,7 @@ export class DroneGenerator {
   private rootNote: string;
   private playChord: boolean;
   private chordType: ChordType;
+  private transitionTimer: NodeJS.Timeout | null = null;
   
   constructor(options: DroneOptions) {
     this.audioContext = getAudioContext();
@@ -42,18 +42,20 @@ export class DroneGenerator {
   }
 
   async start() {
-    if (this.isPlaying) {
-      this.stop();
-      await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to ensure clean transition
-    }
-    
     await ensureAudioContextRunning();
-    this.isPlaying = true;
+    
+    // If already playing, we'll keep it playing and just update the notes
+    if (!this.isPlaying) {
+      this.isPlaying = true;
+    }
     
     this.generateDrone();
   }
 
   private generateDrone() {
+    // Clear any existing oscillators first
+    this.clearCurrentOscillators();
+    
     // Create oscillators based on options
     if (this.playChord) {
       // Play chord based on selected chord type
@@ -85,6 +87,39 @@ export class DroneGenerator {
       this.playNote(this.rootNote, 0.3);
     }
   }
+  
+  // New method to safely clear current oscillators without stopping playback
+  private clearCurrentOscillators() {
+    // Cancel any pending transition timer
+    if (this.transitionTimer) {
+      clearTimeout(this.transitionTimer);
+      this.transitionTimer = null;
+    }
+    
+    // Stop and disconnect all current oscillators and gain nodes
+    const now = this.audioContext.currentTime;
+    
+    // Quick fade out to avoid clicks/pops
+    this.gainNodes.forEach(gainNode => {
+      gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    });
+    
+    // Stop oscillators after the short fade
+    this.oscillators.forEach(osc => {
+      try {
+        // Schedule stopping after the short fade to avoid clicks
+        osc.stop(now + 0.06);
+        // We'll disconnect after stopping
+      } catch (e) {
+        // Oscillator might already be stopped
+      }
+    });
+    
+    // Clear arrays right away so new oscillators can be created immediately
+    this.oscillators = [];
+    this.gainNodes = [];
+  }
 
   stop() {
     if (!this.isPlaying) return;
@@ -98,7 +133,11 @@ export class DroneGenerator {
     });
     
     // Stop all oscillators after fade out
-    setTimeout(() => {
+    if (this.transitionTimer) {
+      clearTimeout(this.transitionTimer);
+    }
+    
+    this.transitionTimer = setTimeout(() => {
       this.oscillators.forEach(osc => {
         try {
           osc.stop();
@@ -110,37 +149,38 @@ export class DroneGenerator {
       
       this.oscillators = [];
       this.gainNodes = [];
+      this.transitionTimer = null;
     }, 600);
     
     this.isPlaying = false;
   }
 
   updateOptions(options: Partial<DroneOptions>) {
-    let shouldRestart = false;
+    let optionsChanged = false;
     
     if (options.rootNote !== undefined && options.rootNote !== this.rootNote) {
       this.rootNote = options.rootNote;
-      shouldRestart = true;
+      optionsChanged = true;
     }
     
     if (options.playChord !== undefined && options.playChord !== this.playChord) {
       this.playChord = options.playChord;
-      shouldRestart = true;
+      optionsChanged = true;
     }
     
     if (options.chordType !== undefined && options.chordType !== this.chordType) {
       this.chordType = options.chordType;
-      shouldRestart = true;
+      optionsChanged = true;
     }
     
-    // Restart with new options if any change was made
-    if (shouldRestart && this.isPlaying) {
-      this.stop();
-      setTimeout(() => this.start(), 100); // Small delay to ensure clean transition
+    // If we're playing and options changed, update the drone sound
+    // without stopping/restarting the entire audio context
+    if (optionsChanged && this.isPlaying) {
+      this.generateDrone();
     }
     
-    // If we have a root note but aren't playing, start automatically
-    if (this.rootNote && !this.isPlaying && shouldRestart) {
+    // If we're not playing but have a root note and options changed, start
+    if (this.rootNote && !this.isPlaying && optionsChanged) {
       this.start();
     }
   }
