@@ -22,7 +22,6 @@ import {
   Code, 
   Link as LinkIcon, 
   Image as ImageIcon,
-  Youtube as YoutubeIcon,
   Minus,
   Undo,
   Redo,
@@ -34,7 +33,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent
-} from "@/components/ui";
+} from "@/components/ui/tooltip";
 import {
   Popover,
   PopoverContent,
@@ -123,7 +122,7 @@ const RichTextEditor = ({
   const handleImageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (imageUrl) {
-      editor?.chain().focus().setImage({ src: imageUrl }).run();
+      editor?.chain().focus().insertContent(`<img src="${imageUrl}" alt="" />`).run();
       setImageUrl('');
       setImagePopoverOpen(false);
     }
@@ -132,7 +131,7 @@ const RichTextEditor = ({
   const handleYoutubeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (youtubeUrl) {
-      editor?.chain().focus().setYoutubeVideo({ src: youtubeUrl }).run();
+      editor?.commands.setYoutubeVideo({ src: youtubeUrl });
       setYoutubeUrl('');
       setYoutubePopoverOpen(false);
     }
