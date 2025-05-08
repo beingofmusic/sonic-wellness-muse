@@ -144,11 +144,28 @@ export const fetchPracticeSessions = async ({
     
     // Get routine summary
     const { data: routineSummary, error: summaryError } = await supabase
-      .rpc('get_routine_practice_summary', { user_id_param: userId });
+      .from('routines')
+      .select(`
+        id,
+        title,
+        practice_sessions!inner (id, total_duration)
+      `)
+      .eq('practice_sessions.user_id', userId)
+      .order('title');
     
     if (summaryError) {
       console.error("Error fetching routine summary:", summaryError);
     }
+    
+    // Process the routine summary data into the expected format
+    const formattedRoutineSummary: RoutineSummary[] = routineSummary 
+      ? routineSummary.map((routine: any) => ({
+          id: routine.id,
+          title: routine.title,
+          count: routine.practice_sessions.length,
+          totalDuration: routine.practice_sessions.reduce((sum: number, session: any) => sum + (session.total_duration || 0), 0)
+        }))
+      : [];
     
     // Format the sessions for display
     const formattedSessions: PracticeSessionWithRoutine[] = sessions?.map((session: any) => {
@@ -173,7 +190,7 @@ export const fetchPracticeSessions = async ({
       hasMore,
       totalPracticeTime,
       totalSessions: totalSessions || 0,
-      routineSummary: routineSummary || []
+      routineSummary: formattedRoutineSummary
     };
     
   } catch (error) {
