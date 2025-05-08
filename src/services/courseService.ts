@@ -1,0 +1,180 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { Course, CourseWithProgress, Lesson } from "@/types/course";
+
+// Fetch all courses with progress for current user
+export async function fetchCoursesWithProgress(): Promise<CourseWithProgress[]> {
+  try {
+    // First, get all courses
+    const { data: courses, error: coursesError } = await supabase
+      .from("courses")
+      .select("*");
+
+    if (coursesError) throw coursesError;
+    if (!courses) return [];
+
+    // Get user session for the user_id
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return courses.map(course => ({ ...course, total_lessons: 0, completed_lessons: 0, completion_percentage: 0 }));
+
+    // For each course, calculate completion percentage
+    const coursesWithProgress: CourseWithProgress[] = await Promise.all(
+      courses.map(async (course) => {
+        const { data, error } = await supabase.rpc("get_course_completion", {
+          course_uuid: course.id,
+          user_uuid: session.user.id
+        });
+
+        if (error || !data || data.length === 0) {
+          return {
+            ...course,
+            total_lessons: 0,
+            completed_lessons: 0,
+            completion_percentage: 0
+          };
+        }
+
+        return {
+          ...course,
+          total_lessons: Number(data[0].total_lessons),
+          completed_lessons: Number(data[0].completed_lessons),
+          completion_percentage: Number(data[0].completion_percentage)
+        };
+      })
+    );
+
+    return coursesWithProgress;
+  } catch (error) {
+    console.error("Error fetching courses with progress:", error);
+    return [];
+  }
+}
+
+// Fetch a single course by ID
+export async function fetchCourseById(courseId: string): Promise<Course | null> {
+  try {
+    const { data, error } = await supabase
+      .from("courses")
+      .select("*")
+      .eq("id", courseId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error fetching course:", error);
+    return null;
+  }
+}
+
+// Fetch lessons for a specific course with completion status
+export async function fetchLessonsForCourse(courseId: string): Promise<Lesson[]> {
+  try {
+    // Get user session for the user_id
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Get all lessons for the course
+    const { data: lessons, error: lessonsError } = await supabase
+      .from("lessons")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("order_index");
+
+    if (lessonsError) throw lessonsError;
+    if (!lessons) return [];
+    
+    // If no user is logged in, return lessons without completion status
+    if (!session) return lessons;
+
+    // Get completion status for each lesson
+    const { data: completedLessons, error: progressError } = await supabase
+      .from("lesson_progress")
+      .select("lesson_id")
+      .eq("user_id", session.user.id);
+
+    if (progressError) throw progressError;
+
+    // Mark lessons as completed if they exist in the lesson_progress table
+    const completedLessonIds = new Set(completedLessons?.map(item => item.lesson_id) || []);
+    
+    return lessons.map(lesson => ({
+      ...lesson,
+      completed: completedLessonIds.has(lesson.id)
+    }));
+  } catch (error) {
+    console.error("Error fetching lessons:", error);
+    return [];
+  }
+}
+
+// Fetch a single lesson by ID with completion status
+export async function fetchLessonById(lessonId: string): Promise<Lesson | null> {
+  try {
+    const { data: lesson, error: lessonError } = await supabase
+      .from("lessons")
+      .select("*")
+      .eq("id", lessonId)
+      .single();
+
+    if (lessonError) throw lessonError;
+    if (!lesson) return null;
+
+    // Get user session for the user_id
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // If no user is logged in, return lesson without completion status
+    if (!session) return lesson;
+
+    // Check if lesson is completed by this user
+    const { data: progress, error: progressError } = await supabase
+      .from("lesson_progress")
+      .select("*")
+      .eq("lesson_id", lessonId)
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if (progressError) throw progressError;
+    
+    return {
+      ...lesson,
+      completed: !!progress
+    };
+  } catch (error) {
+    console.error("Error fetching lesson:", error);
+    return null;
+  }
+}
+
+// Mark a lesson as completed
+export async function markLessonAsCompleted(lessonId: string): Promise<boolean> {
+  try {
+    // Get user session for the user_id
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return false;
+
+    // Check if a record already exists
+    const { data: existing } = await supabase
+      .from("lesson_progress")
+      .select("*")
+      .eq("lesson_id", lessonId)
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    // If a record already exists, return true as it's already marked completed
+    if (existing) return true;
+
+    // Insert new completion record
+    const { error } = await supabase
+      .from("lesson_progress")
+      .insert({
+        lesson_id: lessonId,
+        user_id: session.user.id
+      });
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error marking lesson as completed:", error);
+    return false;
+  }
+}

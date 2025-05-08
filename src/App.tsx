@@ -19,6 +19,8 @@ import Practice from "./pages/Practice";
 import RoutineBuilder from "./pages/RoutineBuilder";
 import RoutinePlayer from "./pages/RoutinePlayer";
 import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
+import LessonViewer from "./pages/LessonViewer";
 import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
@@ -109,6 +111,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Courses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/courses/:courseId" 
+              element={
+                <ProtectedRoute>
+                  <CourseDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/courses/:courseId/lessons/:lessonId" 
+              element={
+                <ProtectedRoute>
+                  <LessonViewer />
                 </ProtectedRoute>
               } 
             />

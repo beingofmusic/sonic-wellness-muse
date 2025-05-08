@@ -9,6 +9,106 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      courses: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          instructor: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          instructor: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          instructor?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      lesson_progress: {
+        Row: {
+          completed_at: string
+          id: string
+          lesson_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          lesson_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          lesson_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          order_index: number
+          pdf_url: string | null
+          summary: string
+          title: string
+          video_url: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          order_index: number
+          pdf_url?: string | null
+          summary: string
+          title: string
+          video_url: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          order_index?: number
+          pdf_url?: string | null
+          summary?: string
+          title?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_reflections: {
         Row: {
           created_at: string
@@ -229,6 +329,15 @@ export type Database = {
           last_name: string
           avatar_url: string
           total_minutes: number
+        }[]
+      }
+      get_course_completion: {
+        Args: { course_uuid: string; user_uuid: string }
+        Returns: {
+          course_id: string
+          total_lessons: number
+          completed_lessons: number
+          completion_percentage: number
         }[]
       }
       get_streak_leaderboard: {
