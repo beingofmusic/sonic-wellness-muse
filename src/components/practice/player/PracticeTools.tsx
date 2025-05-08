@@ -1,19 +1,83 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, ChevronDown, ChevronUp } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Metronome, MetronomeOptions } from "@/lib/metronome";
+import { DroneGenerator, DroneOptions } from "@/lib/droneGenerator";
 
 const PracticeTools: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [tempo, setTempo] = useState([100]);
   const [isMetronomeActive, setIsMetronomeActive] = useState(false);
-  const [timeSignature, setTimeSignature] = useState("4/4");
+  const [timeSignature, setTimeSignature] = useState<"2/4" | "3/4" | "4/4">("4/4");
   const [rootNote, setRootNote] = useState("A");
+  const [isDroneActive, setIsDroneActive] = useState(false);
+  const [playChord, setPlayChord] = useState(false);
+  
+  // Refs to store class instances
+  const metronomeRef = useRef<Metronome | null>(null);
+  const droneRef = useRef<DroneGenerator | null>(null);
+  
+  // Initialize audio tools on component mount
+  useEffect(() => {
+    metronomeRef.current = new Metronome({ tempo: tempo[0], timeSignature });
+    droneRef.current = new DroneGenerator({ rootNote, playChord });
+    
+    // Cleanup on unmount
+    return () => {
+      if (metronomeRef.current?.isActive()) {
+        metronomeRef.current.stop();
+      }
+      if (droneRef.current?.isActive()) {
+        droneRef.current.stop();
+      }
+    };
+  }, []);
+  
+  // Update metronome when tempo changes
+  useEffect(() => {
+    if (metronomeRef.current) {
+      metronomeRef.current.updateTempo(tempo[0]);
+    }
+  }, [tempo]);
+  
+  // Update metronome when time signature changes
+  useEffect(() => {
+    if (metronomeRef.current) {
+      metronomeRef.current.updateTimeSignature(timeSignature);
+    }
+  }, [timeSignature]);
+  
+  // Update drone generator when options change
+  useEffect(() => {
+    if (droneRef.current) {
+      droneRef.current.updateOptions({ rootNote, playChord });
+    }
+  }, [rootNote, playChord]);
   
   const toggleMetronome = () => {
-    setIsMetronomeActive(!isMetronomeActive);
+    if (metronomeRef.current) {
+      if (isMetronomeActive) {
+        metronomeRef.current.stop();
+      } else {
+        metronomeRef.current.start();
+      }
+      setIsMetronomeActive(!isMetronomeActive);
+    }
+  };
+  
+  const toggleDrone = async () => {
+    if (droneRef.current) {
+      if (isDroneActive) {
+        droneRef.current.stop();
+      } else {
+        await droneRef.current.start();
+      }
+      setIsDroneActive(!isDroneActive);
+    }
   };
   
   const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
@@ -75,7 +139,7 @@ const PracticeTools: React.FC = () => {
                       key={sig}
                       variant={timeSignature === sig ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setTimeSignature(sig)}
+                      onClick={() => setTimeSignature(sig as "2/4" | "3/4" | "4/4")}
                       className={timeSignature === sig ? "bg-music-primary" : ""}
                     >
                       {sig}
@@ -85,7 +149,7 @@ const PracticeTools: React.FC = () => {
               </div>
               
               <Button 
-                className="w-full mt-2"
+                className={`w-full mt-2 ${isMetronomeActive ? "bg-music-secondary" : ""}`}
                 onClick={toggleMetronome}
               >
                 {isMetronomeActive ? (
@@ -126,11 +190,29 @@ const PracticeTools: React.FC = () => {
                 ))}
               </div>
               
+              <div className="flex items-center justify-between mt-4">
+                <span className="text-sm text-white/70">Play as chord</span>
+                <Switch 
+                  checked={playChord}
+                  onCheckedChange={setPlayChord}
+                />
+              </div>
+              
               <Button 
-                className="w-full mt-4"
+                className={`w-full mt-4 ${isDroneActive ? "bg-music-secondary" : ""}`}
+                onClick={toggleDrone}
               >
-                <Play className="h-4 w-4 mr-2" />
-                Start Drone
+                {isDroneActive ? (
+                  <>
+                    <Pause className="h-4 w-4 mr-2" />
+                    Stop Drone
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Start Drone
+                  </>
+                )}
               </Button>
             </div>
           </div>
