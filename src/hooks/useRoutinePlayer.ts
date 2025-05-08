@@ -32,41 +32,73 @@ export const useRoutinePlayer = (routineId?: string) => {
     handlePrevious,
     updateBlockProgress
   } = useBlockNavigation(blocks, (seconds) => {
-    timerControls.setTimer(seconds, !timerControls.isPaused);
+    timerControls.setTimer(seconds, true); // Always try to auto-start
   });
 
   // Focus mode toggle
   const { focusMode, toggleFocusMode } = useFocusMode();
 
-  // Initialize timer with the first block's duration after data loads
+  // Initialize timer when blocks are loaded
   useEffect(() => {
-    if (isLoading || blocks.length === 0 || initialized) return;
+    // Only initialize if we have blocks and aren't already initialized
+    if (isLoading || blocks.length === 0) return;
     
-    const initialDuration = blocks[0].duration * 60; // convert to seconds
+    // Reset initialization if blocks change
+    if (initialized) {
+      setInitialized(false);
+      return;
+    }
+    
+    const initialDuration = blocks[0]?.duration * 60; // convert to seconds
     console.log("Initializing timer with duration:", initialDuration);
     
-    // Short delay to ensure components are mounted
+    if (!initialDuration || initialDuration <= 0) {
+      console.error("Invalid initial duration:", initialDuration);
+      return;
+    }
+    
+    // Initialize timer with a delay to ensure proper component mounting
     const initTimer = setTimeout(() => {
+      // Explicitly set paused state to false to ensure it starts
       timerControls.setTimer(initialDuration, true);
+      
+      // Mark as initialized so we don't re-initialize
       setInitialized(true);
       
-      // Make sure the timer started
-      setTimeout(() => {
+      // Add a further check to ensure timer starts correctly
+      const recoveryTimer = setTimeout(() => {
         if (!timerControls.isActive && !timerControls.isPaused) {
           console.log("Timer didn't start automatically, forcing start");
           timerControls.forceStart();
         }
-      }, 500);
+      }, 1000); // Longer delay for recovery
+      
+      return () => clearTimeout(recoveryTimer);
     }, 300);
     
     return () => clearTimeout(initTimer);
-  }, [blocks, isLoading, timerControls, initialized]);
+  }, [blocks, isLoading, timerControls]);
   
   // Update progress and timer when current block changes
   useEffect(() => {
-    if (!initialized) return;
+    if (!initialized || blocks.length === 0) return;
+    
+    console.log("Block changed to", currentBlockIndex, "updating progress");
     updateBlockProgress();
-  }, [currentBlockIndex, blocks, updateBlockProgress, initialized]);
+    
+    // Verify timer is running after block change
+    const checkTimer = setTimeout(() => {
+      if (!timerControls.isActive && !timerControls.isPaused) {
+        console.log("Timer not active after block change, restarting");
+        const blockDuration = blocks[currentBlockIndex]?.duration * 60;
+        if (blockDuration > 0) {
+          timerControls.forceStart();
+        }
+      }
+    }, 500);
+    
+    return () => clearTimeout(checkTimer);
+  }, [currentBlockIndex, blocks, updateBlockProgress, initialized, timerControls]);
   
   // Handle reset for current block
   const handleReset = useCallback(() => {

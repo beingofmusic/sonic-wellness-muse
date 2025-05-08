@@ -59,7 +59,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
     if (totalDuration === 0) return 0;
     
     const elapsed = totalDuration - secondsLeft;
-    return (elapsed / totalDuration) * 100;
+    return Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
   }, [currentBlock, secondsLeft]);
 
   return (
