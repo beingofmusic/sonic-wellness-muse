@@ -121,7 +121,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             <h2 className="text-2xl font-semibold mb-4">{currentBlock.content?.split('\n')[0] || 'Practice Block'}</h2>
             
             {/* Timer */}
-            <div className="text-center py-8">
+            <div className="text-center py-8 relative">
               <div className="text-5xl font-mono mb-4">{timeRemaining}</div>
               <div className="w-full h-2 bg-white/10 rounded-full mb-4 overflow-hidden">
                 <div 
@@ -130,8 +130,20 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
                 />
               </div>
               
+              {/* Status indicator */}
+              {isPaused && (
+                <div className="absolute top-2 right-2 bg-amber-600 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                  Paused
+                </div>
+              )}
+              
               <div className="flex justify-center gap-4">
-                <Button variant="outline" size="sm" onClick={onPause}>
+                <Button 
+                  variant={isPaused ? "default" : "outline"} 
+                  size="sm" 
+                  onClick={onPause}
+                  className={isPaused ? "bg-music-primary hover:bg-music-secondary" : ""}
+                >
                   {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                   <span className="ml-1">{isPaused ? 'Resume' : 'Pause'}</span>
                 </Button>
