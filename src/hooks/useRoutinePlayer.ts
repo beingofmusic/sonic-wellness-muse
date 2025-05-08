@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
 import { fetchRoutineById, fetchRoutineBlocks } from "@/services/practiceService";
@@ -15,8 +15,19 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [sessionProgress, setSessionProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   // Fetch routine and block data
   useEffect(() => {
@@ -37,6 +48,7 @@ export const useRoutinePlayer = (routineId?: string) => {
         // Initialize timer with first block's duration
         if (blocksData.length > 0) {
           const initialDuration = blocksData[0].duration * 60; // convert to seconds
+          setSecondsLeft(initialDuration);
           setTimeRemaining(formatTime(initialDuration));
         }
       } catch (error) {
@@ -54,6 +66,20 @@ export const useRoutinePlayer = (routineId?: string) => {
     fetchRoutineData();
   }, [routineId, toast]);
 
+  // Start countdown timer when blocks load and not paused
+  useEffect(() => {
+    if (blocks.length === 0 || isLoading || isPaused) return;
+    
+    // Start the timer
+    startTimer();
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [blocks, isLoading, isPaused]);
+
   // Update session progress when current block changes
   useEffect(() => {
     if (blocks.length === 0) return;
@@ -64,12 +90,60 @@ export const useRoutinePlayer = (routineId?: string) => {
     // Update timer for the new block
     if (blocks[currentBlockIndex]) {
       const blockDuration = blocks[currentBlockIndex].duration * 60; // convert to seconds
+      setSecondsLeft(blockDuration);
       setTimeRemaining(formatTime(blockDuration));
+      
+      // Auto-start timer for the new block if not paused
+      if (!isPaused) {
+        startTimer();
+      }
     }
   }, [currentBlockIndex, blocks]);
 
+  // Timer function
+  const startTimer = useCallback(() => {
+    // Clear any existing timers first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    timerRef.current = setInterval(() => {
+      setSecondsLeft(prev => {
+        if (prev <= 1) {
+          // Timer reached zero, clear the interval
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+          }
+          
+          // Auto advance to next block
+          if (currentBlockIndex < blocks.length - 1) {
+            setCurrentBlockIndex(prevIndex => prevIndex + 1);
+          } else {
+            // Show completion state for the last block
+            toast({
+              title: "Session Complete",
+              description: "Congratulations on completing your practice session!",
+            });
+          }
+          
+          return 0;
+        }
+        
+        // Update the formatted time display
+        const newTime = prev - 1;
+        setTimeRemaining(formatTime(newTime));
+        return newTime;
+      });
+    }, 1000);
+  }, [blocks, currentBlockIndex, toast]);
+
   // Handle navigation between blocks
   const handleNext = useCallback(() => {
+    // Stop the current timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     if (currentBlockIndex < blocks.length - 1) {
       setCurrentBlockIndex(prevIndex => prevIndex + 1);
     } else {
@@ -82,6 +156,11 @@ export const useRoutinePlayer = (routineId?: string) => {
   }, [currentBlockIndex, blocks.length, toast]);
 
   const handlePrevious = useCallback(() => {
+    // Stop the current timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     if (currentBlockIndex > 0) {
       setCurrentBlockIndex(prevIndex => prevIndex - 1);
     }
@@ -89,22 +168,51 @@ export const useRoutinePlayer = (routineId?: string) => {
 
   // Handle timer controls
   const handleReset = useCallback(() => {
+    // Stop the current timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     const currentBlock = blocks[currentBlockIndex];
     if (currentBlock) {
       const blockDuration = currentBlock.duration * 60; // convert to seconds
+      setSecondsLeft(blockDuration);
       setTimeRemaining(formatTime(blockDuration));
+      
+      // Restart the timer if not paused
+      if (!isPaused) {
+        startTimer();
+      }
     }
-  }, [blocks, currentBlockIndex]);
+  }, [blocks, currentBlockIndex, isPaused, startTimer]);
 
   const handlePause = useCallback(() => {
-    setIsPaused(prev => !prev);
-  }, []);
+    setIsPaused(prev => {
+      const newPausedState = !prev;
+      
+      // If resuming, start the timer
+      if (!newPausedState) {
+        startTimer();
+      } else {
+        // If pausing, clear the timer
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      }
+      
+      return newPausedState;
+    });
+  }, [startTimer]);
 
   const toggleFocusMode = useCallback(() => {
     setFocusMode(prev => !prev);
   }, []);
 
   const handleExit = useCallback(() => {
+    // Clean up timer before navigating away
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     navigate("/practice");
   }, [navigate]);
 
@@ -121,6 +229,7 @@ export const useRoutinePlayer = (routineId?: string) => {
     handlePause,
     isPaused,
     timeRemaining,
+    secondsLeft,
     focusMode,
     toggleFocusMode,
     handleExit

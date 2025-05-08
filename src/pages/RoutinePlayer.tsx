@@ -21,6 +21,7 @@ const RoutinePlayer: React.FC = () => {
     handlePause,
     isPaused,
     timeRemaining,
+    secondsLeft,
     focusMode,
     toggleFocusMode,
     handleExit
@@ -63,6 +64,7 @@ const RoutinePlayer: React.FC = () => {
         onPause={handlePause}
         isPaused={isPaused}
         timeRemaining={timeRemaining}
+        secondsLeft={secondsLeft}
         focusMode={focusMode}
         toggleFocusMode={toggleFocusMode}
         onExit={handleExit}

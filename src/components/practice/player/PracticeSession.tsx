@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { ArrowLeft, X, Maximize, Play, Pause, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -22,6 +22,7 @@ interface PracticeSessionProps {
   onPause: () => void;
   isPaused: boolean;
   timeRemaining: string;
+  secondsLeft: number;
   focusMode: boolean;
   toggleFocusMode: () => void;
   onExit: () => void;
@@ -39,6 +40,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   onPause,
   isPaused,
   timeRemaining,
+  secondsLeft,
   focusMode,
   toggleFocusMode,
   onExit
@@ -48,6 +50,17 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   const categoryIcon = currentBlock ? getCategoryIcon(currentBlock.type) : null;
   const blockNum = currentBlockIndex + 1;
   const totalBlocks = blocks.length;
+  
+  // Calculate timer progress percentage
+  const timerProgress = useMemo(() => {
+    if (!currentBlock) return 0;
+    
+    const totalDuration = currentBlock.duration * 60; // total seconds
+    if (totalDuration === 0) return 0;
+    
+    const elapsed = totalDuration - secondsLeft;
+    return (elapsed / totalDuration) * 100;
+  }, [currentBlock, secondsLeft]);
 
   return (
     <div className="h-full max-w-full">
@@ -111,7 +124,10 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             <div className="text-center py-8">
               <div className="text-5xl font-mono mb-4">{timeRemaining}</div>
               <div className="w-full h-2 bg-white/10 rounded-full mb-4 overflow-hidden">
-                <div className="h-full bg-music-primary rounded-full" style={{ width: `${sessionProgress}%` }} />
+                <div 
+                  className="h-full bg-music-primary rounded-full transition-all duration-1000" 
+                  style={{ width: `${timerProgress}%` }} 
+                />
               </div>
               
               <div className="flex justify-center gap-4">
