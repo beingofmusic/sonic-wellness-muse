@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Clock, Calendar, Music } from "lucide-react";
 import ProgressCard from "@/components/ProgressCard";
@@ -9,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
-
 const Dashboard: React.FC = () => {
-  const { profile, isAdmin, isTeamMember } = useAuth();
+  const {
+    profile,
+    isAdmin,
+    isTeamMember
+  } = useAuth();
 
   // Get user's full name or fallback to username or a default
   const getFullName = () => {
@@ -24,7 +26,7 @@ const Dashboard: React.FC = () => {
     }
     return 'Music Lover';
   };
-  
+
   // Custom welcome message based on user role
   const getWelcomeMessage = () => {
     if (isAdmin) {
@@ -35,66 +37,40 @@ const Dashboard: React.FC = () => {
       return "Here's an overview of your musical journey";
     }
   };
-
-  return (
-    <Layout>
+  return <Layout>
       <header className="mb-8">
         <h1 className="text-3xl font-semibold mb-1">Welcome Back, {getFullName()}</h1>
         <p className="text-white/70">{getWelcomeMessage()}</p>
         
         {/* Role-specific action buttons */}
         <div className="flex flex-wrap gap-3 mt-4">
-          {isAdmin && (
-            <Link to="/admin">
+          {isAdmin && <Link to="/admin">
               <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10">
                 Admin Panel
               </Button>
-            </Link>
-          )}
+            </Link>}
           
-          {isTeamMember && (
-            <Link to="/team">
+          {isTeamMember && <Link to="/team">
               <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10">
                 Team Dashboard
               </Button>
-            </Link>
-          )}
+            </Link>}
         </div>
       </header>
       
       {/* Progress Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <ProgressCard
-          icon={<Clock className="h-5 w-5 text-music-primary" />}
-          title="Total Practice Time"
-          value="0 min"
-        />
-        <ProgressCard
-          icon={<Calendar className="h-5 w-5 text-music-secondary" />}
-          title="Current Streak"
-          value="0 days"
-        />
-        <ProgressCard
-          icon={<Music className="h-5 w-5 text-music-tertiary" />}
-          title="Completed Routines"
-          value="0"
-        />
+        <ProgressCard icon={<Clock className="h-5 w-5 text-music-primary" />} title="Total Practice Time" value="0 min" />
+        <ProgressCard icon={<Calendar className="h-5 w-5 text-music-secondary" />} title="Current Streak" value="0 days" />
+        <ProgressCard icon={<Music className="h-5 w-5 text-music-tertiary" />} title="Completed Routines" value="0" />
       </div>
       
       {/* Practice Routines */}
       <section className="mb-8">
         <h2 className="text-xl font-medium mb-4">Your Practice Routines</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-          <PracticeRoutineCard
-            title="Morning Warmup Routine"
-            duration="30 min"
-            progress={25}
-          />
-          <PracticeRoutineCard
-            title="Evening Technical Practice"
-            duration="45 min"
-            progress={15}
-          />
+          <PracticeRoutineCard title="Morning Warmup Routine" duration="30 min" progress={25} />
+          <PracticeRoutineCard title="Evening Technical Practice" duration="45 min" progress={15} />
         </div>
       </section>
       
@@ -109,20 +85,9 @@ const Dashboard: React.FC = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <CourseProgressCard
-            title="Music Theory Fundamentals"
-            progress={65}
-          />
-          <CourseProgressCard
-            title="Mindfulness for Musicians"
-            progress={30}
-            color="bg-music-secondary"
-          />
-          <CourseProgressCard
-            title="Sight Reading Mastery"
-            progress={10}
-            color="bg-music-tertiary"
-          />
+          <CourseProgressCard title="Music Theory Fundamentals" progress={65} />
+          <CourseProgressCard title="Mindfulness for Musicians" progress={30} color="bg-music-secondary" />
+          <CourseProgressCard title="Sight Reading Mastery" progress={10} color="bg-music-tertiary" />
         </div>
       </section>
       
@@ -133,7 +98,7 @@ const Dashboard: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Practice Leaderboard</h3>
           </div>
-          <p className="text-white/70 text-sm">Inspire. Challenge. Grow together.</p>
+          <p className="text-white/70 text-sm">Inspire, Challenge, Grow!</p>
           <div className="mt-8 text-center text-white/50">
             <p>Unable to load leaderboard data</p>
           </div>
@@ -167,22 +132,10 @@ const Dashboard: React.FC = () => {
         </div>
         
         <div className="space-y-4">
-          <CommunityPostCard
-            userName="Bill Chicken"
-            timeAgo="30 days ago"
-            message="First message..."
-            reactionCount={0}
-          />
-          <CommunityPostCard
-            userName="Bill Chicken"
-            timeAgo="20 days ago"
-            message="Testing..."
-            reactionCount={0}
-          />
+          <CommunityPostCard userName="Bill Chicken" timeAgo="30 days ago" message="First message..." reactionCount={0} />
+          <CommunityPostCard userName="Bill Chicken" timeAgo="20 days ago" message="Testing..." reactionCount={0} />
         </div>
       </section>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Dashboard;
