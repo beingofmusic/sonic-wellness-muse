@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
@@ -162,6 +161,7 @@ export const createRoutineBlocks = async (
     routine_id: string;
     type: string;
     content: string | null;
+    instructions: string | null;
     duration: number;
     order_index: number;
   }[]

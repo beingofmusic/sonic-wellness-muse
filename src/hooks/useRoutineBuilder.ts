@@ -101,6 +101,7 @@ export const useRoutineBuilder = (routineId?: string) => {
             type: block.type,
             duration: block.duration,
             content: block.content || "",
+            instructions: block.instructions || null,
             order_index: block.order_index
           }))
         });
@@ -189,6 +190,7 @@ export const useRoutineBuilder = (routineId?: string) => {
         order_index: index,
         type: block.type,
         content: block.content,
+        instructions: block.instructions,
         duration: block.duration,
       }));
 

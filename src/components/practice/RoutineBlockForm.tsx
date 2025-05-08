@@ -48,6 +48,23 @@ const getPlaceholderByType = (type: string): string => {
   }
 };
 
+const getInstructionsPlaceholderByType = (type: string): string => {
+  switch (type) {
+    case "warmup":
+      return "e.g., Begin with a relaxed breath and full posture. Aim for a clear, resonant sound.";
+    case "technique":
+      return "e.g., Focus on finger placement and precise movements. Start slowly and gradually increase speed.";
+    case "mindfulness":
+      return "e.g., Close your eyes, focus on your breath for 5 counts in and 5 counts out. Notice how your body feels.";
+    case "creative":
+      return "e.g., Allow yourself to explore without judgment. Focus on expression rather than perfection.";
+    case "cooldown":
+      return "e.g., Gradually decrease intensity and focus on relaxing tension in your muscles after playing.";
+    default:
+      return "Enter detailed instructions for how to perform this exercise...";
+  }
+};
+
 const getIconForType = (type: string) => {
   const blockType = BLOCK_TYPES.find(t => t.value === type);
   return blockType?.icon || <Guitar className="h-4 w-4" />;
@@ -84,6 +101,7 @@ const RoutineBlockForm: React.FC = () => {
       type: "warmup", 
       duration: 5, 
       content: "", 
+      instructions: null,
       order_index: fields.length 
     });
   };
@@ -221,6 +239,25 @@ const RoutineBlockForm: React.FC = () => {
                                 placeholder={getPlaceholderByType(blockType)}
                                 className="min-h-[100px] bg-card/70 backdrop-blur-sm"
                                 {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {/* New instructions field */}
+                      <FormField
+                        control={control}
+                        name={`blocks.${index}.instructions`}
+                        render={({ field }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel className="text-sm">Instructions</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder={getInstructionsPlaceholderByType(blockType)}
+                                className="min-h-[100px] bg-card/70 backdrop-blur-sm"
+                                {...field}
+                                value={field.value || ''}
                               />
                             </FormControl>
                             <FormMessage />

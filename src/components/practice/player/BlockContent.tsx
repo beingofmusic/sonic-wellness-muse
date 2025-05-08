@@ -11,7 +11,9 @@ const BlockContent: React.FC<BlockContentProps> = ({ block }) => {
   // Parse content from the block
   // The first line is treated as the title, remaining as instructions
   const contentLines = block.content?.split('\n') || [];
-  const instructions = contentLines.slice(1).join('\n') || 'Follow along with this exercise.';
+  
+  // Use custom instructions if available, otherwise use the default fallback
+  const instructions = block.instructions || (contentLines.slice(1).join('\n') || 'Follow along with this exercise.');
 
   const tips = [
     "Notice tone quality, intonation, and how the sound fills the space.",

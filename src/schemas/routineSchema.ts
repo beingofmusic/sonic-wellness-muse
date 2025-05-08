@@ -8,6 +8,7 @@ export const blockSchema = z.object({
     .min(1, "Duration must be at least 1 minute")
     .max(180, "Duration cannot exceed 180 minutes"),
   content: z.string().min(1, "Content is required"),
+  instructions: z.string().nullable().optional(),
   order_index: z.number(),
 });
 
