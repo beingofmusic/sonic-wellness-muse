@@ -17,9 +17,12 @@ const NOTE_FREQUENCIES: Record<string, number> = {
   'G#': 830.61,
 };
 
+export type ChordType = 'major' | 'minor' | 'diminished' | 'augmented';
+
 export interface DroneOptions {
   rootNote: string;
   playChord: boolean;
+  chordType: ChordType;
 }
 
 export class DroneGenerator {
@@ -29,28 +32,54 @@ export class DroneGenerator {
   private isPlaying: boolean = false;
   private rootNote: string;
   private playChord: boolean;
+  private chordType: ChordType;
   
   constructor(options: DroneOptions) {
     this.audioContext = getAudioContext();
     this.rootNote = options.rootNote;
     this.playChord = options.playChord;
+    this.chordType = options.chordType || 'major';
   }
 
   async start() {
     if (this.isPlaying) {
       this.stop();
-      return;
+      await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to ensure clean transition
     }
     
     await ensureAudioContextRunning();
     this.isPlaying = true;
     
+    this.generateDrone();
+  }
+
+  private generateDrone() {
     // Create oscillators based on options
     if (this.playChord) {
-      // Play a major triad: root, major third (4 semitones up), perfect fifth (7 semitones up)
+      // Play chord based on selected chord type
       this.playNote(this.rootNote, 0.2); // Root
-      this.playMajorThird(this.rootNote, 0.15); // Third
-      this.playPerfectFifth(this.rootNote, 0.15); // Fifth
+      
+      switch (this.chordType) {
+        case 'major':
+          this.playInterval(this.rootNote, 4, 0.15); // Major 3rd (4 semitones)
+          this.playInterval(this.rootNote, 7, 0.15); // Perfect 5th (7 semitones)
+          break;
+        case 'minor':
+          this.playInterval(this.rootNote, 3, 0.15); // Minor 3rd (3 semitones)
+          this.playInterval(this.rootNote, 7, 0.15); // Perfect 5th (7 semitones)
+          break;
+        case 'diminished':
+          this.playInterval(this.rootNote, 3, 0.15); // Minor 3rd (3 semitones)
+          this.playInterval(this.rootNote, 6, 0.15); // Diminished 5th (6 semitones)
+          break;
+        case 'augmented':
+          this.playInterval(this.rootNote, 4, 0.15); // Major 3rd (4 semitones)
+          this.playInterval(this.rootNote, 8, 0.15); // Augmented 5th (8 semitones)
+          break;
+        default:
+          this.playInterval(this.rootNote, 4, 0.15); // Default to major (4 semitones)
+          this.playInterval(this.rootNote, 7, 0.15); // Perfect 5th (7 semitones)
+      }
     } else {
       // Play just the root note
       this.playNote(this.rootNote, 0.3);
@@ -99,10 +128,20 @@ export class DroneGenerator {
       shouldRestart = true;
     }
     
-    // Restart with new options if currently playing
+    if (options.chordType !== undefined && options.chordType !== this.chordType) {
+      this.chordType = options.chordType;
+      shouldRestart = true;
+    }
+    
+    // Restart with new options if any change was made
     if (shouldRestart && this.isPlaying) {
       this.stop();
       setTimeout(() => this.start(), 100); // Small delay to ensure clean transition
+    }
+    
+    // If we have a root note but aren't playing, start automatically
+    if (this.rootNote && !this.isPlaying && shouldRestart) {
+      this.start();
     }
   }
   
@@ -131,27 +170,25 @@ export class DroneGenerator {
     this.gainNodes.push(gainNode);
   }
   
-  private playMajorThird(rootNote: string, volume: number) {
-    // Major third is 4 semitones up from root
+  private playInterval(rootNote: string, semitones: number, volume: number) {
+    // Calculate note at given interval from root
     const notes = Object.keys(NOTE_FREQUENCIES);
     const rootIndex = notes.indexOf(rootNote);
     if (rootIndex === -1) return;
     
-    const thirdIndex = (rootIndex + 4) % notes.length;
-    this.playNote(notes[thirdIndex], volume);
-  }
-  
-  private playPerfectFifth(rootNote: string, volume: number) {
-    // Perfect fifth is 7 semitones up from root
-    const notes = Object.keys(NOTE_FREQUENCIES);
-    const rootIndex = notes.indexOf(rootNote);
-    if (rootIndex === -1) return;
-    
-    const fifthIndex = (rootIndex + 7) % notes.length;
-    this.playNote(notes[fifthIndex], volume);
+    const targetIndex = (rootIndex + semitones) % notes.length;
+    this.playNote(notes[targetIndex], volume);
   }
   
   isActive(): boolean {
     return this.isPlaying;
+  }
+  
+  getRootNote(): string {
+    return this.rootNote;
+  }
+  
+  getChordType(): ChordType {
+    return this.chordType;
   }
 }

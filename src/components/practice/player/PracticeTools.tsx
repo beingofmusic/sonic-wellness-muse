@@ -3,19 +3,21 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Slider } from "@/components/ui/slider";
-import { Play, Pause, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, CirclePlay, CircleStop } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Metronome, MetronomeOptions } from "@/lib/metronome";
-import { DroneGenerator, DroneOptions } from "@/lib/droneGenerator";
+import { DroneGenerator, DroneOptions, ChordType } from "@/lib/droneGenerator";
 
 const PracticeTools: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [tempo, setTempo] = useState([100]);
   const [isMetronomeActive, setIsMetronomeActive] = useState(false);
   const [timeSignature, setTimeSignature] = useState<"2/4" | "3/4" | "4/4">("4/4");
-  const [rootNote, setRootNote] = useState("A");
+  const [rootNote, setRootNote] = useState<string | null>(null);
   const [isDroneActive, setIsDroneActive] = useState(false);
   const [playChord, setPlayChord] = useState(false);
+  const [chordType, setChordType] = useState<ChordType>("major");
   
   // Refs to store class instances
   const metronomeRef = useRef<Metronome | null>(null);
@@ -24,7 +26,11 @@ const PracticeTools: React.FC = () => {
   // Initialize audio tools on component mount
   useEffect(() => {
     metronomeRef.current = new Metronome({ tempo: tempo[0], timeSignature });
-    droneRef.current = new DroneGenerator({ rootNote, playChord });
+    droneRef.current = new DroneGenerator({ 
+      rootNote: rootNote || "A", 
+      playChord, 
+      chordType 
+    });
     
     // Cleanup on unmount
     return () => {
@@ -53,10 +59,13 @@ const PracticeTools: React.FC = () => {
   
   // Update drone generator when options change
   useEffect(() => {
-    if (droneRef.current) {
-      droneRef.current.updateOptions({ rootNote, playChord });
+    if (droneRef.current && rootNote) {
+      droneRef.current.updateOptions({ rootNote, playChord, chordType });
+      
+      // Update active state based on drone's status
+      setIsDroneActive(droneRef.current.isActive());
     }
-  }, [rootNote, playChord]);
+  }, [rootNote, playChord, chordType]);
   
   const toggleMetronome = () => {
     if (metronomeRef.current) {
@@ -73,14 +82,44 @@ const PracticeTools: React.FC = () => {
     if (droneRef.current) {
       if (isDroneActive) {
         droneRef.current.stop();
-      } else {
+        setIsDroneActive(false);
+      } else if (rootNote) {
         await droneRef.current.start();
+        setIsDroneActive(true);
       }
-      setIsDroneActive(!isDroneActive);
+    }
+  };
+  
+  const selectRootNote = async (note: string) => {
+    setRootNote(note);
+    if (droneRef.current) {
+      // If we're not playing yet, start automatically
+      if (!isDroneActive) {
+        await droneRef.current.start();
+        setIsDroneActive(true);
+      } else {
+        // If already playing, the updateOptions in the useEffect will handle the change
+      }
     }
   };
   
   const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
+  const chordTypes: { value: ChordType, label: string }[] = [
+    { value: "major", label: "Major" },
+    { value: "minor", label: "Minor" },
+    { value: "diminished", label: "Diminished" },
+    { value: "augmented", label: "Augmented" }
+  ];
+  
+  // Get current playing status for display
+  const getDroneStatusText = () => {
+    if (!isDroneActive || !rootNote) return null;
+    
+    if (playChord) {
+      return `Now Playing: ${rootNote} ${chordType}`;
+    }
+    return `Now Playing: ${rootNote}`;
+  };
   
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="rounded-xl border border-white/10 bg-card/80 backdrop-blur-sm overflow-hidden">
@@ -154,12 +193,12 @@ const PracticeTools: React.FC = () => {
               >
                 {isMetronomeActive ? (
                   <>
-                    <Pause className="h-4 w-4 mr-2" />
+                    <CircleStop className="h-4 w-4 mr-2" />
                     Stop Metronome
                   </>
                 ) : (
                   <>
-                    <Play className="h-4 w-4 mr-2" />
+                    <CirclePlay className="h-4 w-4 mr-2" />
                     Start Metronome
                   </>
                 )}
@@ -175,6 +214,13 @@ const PracticeTools: React.FC = () => {
             </div>
             
             <div>
+              {/* Current drone status display */}
+              {getDroneStatusText() && (
+                <div className="mb-4 p-2 bg-music-primary/20 border border-music-primary/30 rounded text-center">
+                  {getDroneStatusText()}
+                </div>
+              )}
+              
               <span className="text-sm text-white/70 block mb-2">Root Note</span>
               <div className="grid grid-cols-4 gap-2">
                 {notes.map(note => (
@@ -182,7 +228,7 @@ const PracticeTools: React.FC = () => {
                     key={note}
                     variant={rootNote === note ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setRootNote(note)}
+                    onClick={() => selectRootNote(note)}
                     className={rootNote === note ? "bg-music-primary" : ""}
                   >
                     {note}
@@ -198,18 +244,41 @@ const PracticeTools: React.FC = () => {
                 />
               </div>
               
+              {/* Chord Type Selector - only visible when Play as chord is enabled */}
+              {playChord && (
+                <div className="mt-3">
+                  <span className="text-sm text-white/70 block mb-2">Chord Type</span>
+                  <Select
+                    defaultValue={chordType}
+                    onValueChange={(value) => setChordType(value as ChordType)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Chord Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chordTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
               <Button 
                 className={`w-full mt-4 ${isDroneActive ? "bg-music-secondary" : ""}`}
                 onClick={toggleDrone}
+                disabled={!rootNote}
               >
                 {isDroneActive ? (
                   <>
-                    <Pause className="h-4 w-4 mr-2" />
+                    <CircleStop className="h-4 w-4 mr-2" />
                     Stop Drone
                   </>
                 ) : (
                   <>
-                    <Play className="h-4 w-4 mr-2" />
+                    <CirclePlay className="h-4 w-4 mr-2" />
                     Start Drone
                   </>
                 )}
