@@ -154,9 +154,9 @@ const PracticeHistoryFilters: React.FC<PracticeHistoryFiltersProps> = ({
         <div className="space-y-2">
           <label className="text-xs text-white/70">Routine</label>
           <Select
-            value={routineFilter || ''}
+            value={routineFilter || "all"}
             onValueChange={(value) => {
-              const routineId = value === '' ? null : value;
+              const routineId = value === "all" ? null : value;
               onRoutineFilterChange(routineId);
             }}
           >
@@ -166,7 +166,7 @@ const PracticeHistoryFilters: React.FC<PracticeHistoryFiltersProps> = ({
               <SelectValue placeholder="All Routines" />
             </SelectTrigger>
             <SelectContent className="max-h-[300px]">
-              <SelectItem value="">All Routines</SelectItem>
+              <SelectItem value="all">All Routines</SelectItem>
               {/* Routines would be mapped here */}
             </SelectContent>
           </Select>
@@ -176,9 +176,9 @@ const PracticeHistoryFilters: React.FC<PracticeHistoryFiltersProps> = ({
         <div className="space-y-2">
           <label className="text-xs text-white/70">Minimum Duration</label>
           <Select
-            value={minDuration?.toString() || ''}
+            value={minDuration?.toString() || "any"}
             onValueChange={(value) => {
-              const durValue = value === '' ? null : parseInt(value);
+              const durValue = value === "any" ? null : parseInt(value);
               onMinDurationChange(durValue);
             }}
           >
@@ -188,7 +188,7 @@ const PracticeHistoryFilters: React.FC<PracticeHistoryFiltersProps> = ({
               <SelectValue placeholder="Any Duration" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any Duration</SelectItem>
+              <SelectItem value="any">Any Duration</SelectItem>
               <SelectItem value="5">5+ minutes</SelectItem>
               <SelectItem value="10">10+ minutes</SelectItem>
               <SelectItem value="15">15+ minutes</SelectItem>
