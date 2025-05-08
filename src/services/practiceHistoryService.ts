@@ -67,7 +67,7 @@ export const fetchPracticeSessions = async ({
     if (dateRange) {
       query = query
         .gte("completed_at", startOfDay(dateRange[0]).toISOString())
-        .lte("completed_at", endOfDay(dateRange[1]).toISOString());
+        .lte("completed_at", dateRange[1] ? endOfDay(dateRange[1]).toISOString() : endOfDay(new Date()).toISOString());
     }
     
     if (routineId) {
@@ -78,8 +78,32 @@ export const fetchPracticeSessions = async ({
       query = query.gte("total_duration", minDuration);
     }
     
-    // Get count for total sessions (matching the filters)
-    const { count: totalSessions } = await query.count();
+    // Execute count query first
+    const countQuery = supabase
+      .from("practice_sessions")
+      .select("id", { count: "exact" })
+      .eq("user_id", userId);
+      
+    // Apply the same filters to count query
+    if (dateRange) {
+      countQuery.gte("completed_at", startOfDay(dateRange[0]).toISOString())
+        .lte("completed_at", dateRange[1] ? endOfDay(dateRange[1]).toISOString() : endOfDay(new Date()).toISOString());
+    }
+    
+    if (routineId) {
+      countQuery.eq("routine_id", routineId);
+    }
+    
+    if (minDuration && minDuration > 0) {
+      countQuery.gte("total_duration", minDuration);
+    }
+    
+    const { count: totalSessions, error: countError } = await countQuery;
+    
+    if (countError) {
+      console.error("Error counting practice sessions:", countError);
+      throw countError;
+    }
     
     // Add pagination
     const from = page * pageSize;
@@ -104,7 +128,7 @@ export const fetchPracticeSessions = async ({
     if (dateRange) {
       totalQuery = totalQuery
         .gte("completed_at", startOfDay(dateRange[0]).toISOString())
-        .lte("completed_at", endOfDay(dateRange[1]).toISOString());
+        .lte("completed_at", dateRange[1] ? endOfDay(dateRange[1]).toISOString() : endOfDay(new Date()).toISOString());
     }
     
     if (routineId) {
@@ -127,7 +151,7 @@ export const fetchPracticeSessions = async ({
     }
     
     // Format the sessions for display
-    const formattedSessions = sessions?.map(session => {
+    const formattedSessions: PracticeSessionWithRoutine[] = sessions?.map(session => {
       const routine = session.routines as any;
       const completedDate = new Date(session.completed_at);
       

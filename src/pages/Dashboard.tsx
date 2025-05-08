@@ -9,6 +9,7 @@ import PracticeRoutineCard from "@/components/PracticeRoutineCard";
 import CourseProgressCard from "@/components/CourseProgressCard";
 import CommunityPostCard from "@/components/CommunityPostCard";
 import PracticeStats from "@/components/practice/stats/PracticeStats";
+import PracticeLeaderboard from "@/components/practice/leaderboard/PracticeLeaderboard";
 
 const Dashboard: React.FC = () => {
   const {
@@ -98,10 +99,7 @@ const Dashboard: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">Practice Leaderboard</h3>
           </div>
-          <p className="text-white/70 text-sm">Inspire, Challenge, Grow!</p>
-          <div className="mt-8 text-center text-white/50">
-            <p>Unable to load leaderboard data</p>
-          </div>
+          <PracticeLeaderboard />
         </div>
         
         {/* Upcoming Events */}
