@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Award, ArrowRight, Calendar, Check, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
 import { saveReflection } from "@/services/reflectionService";
+import { logPracticeSession } from "@/services/practiceStatsService";
 import { useToast } from "@/hooks/use-toast";
 
 interface PracticeCompletionScreenProps {
@@ -22,6 +23,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
   const [reflection, setReflection] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [reflectionSaved, setReflectionSaved] = useState(false);
+  const [sessionLogged, setSessionLogged] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -33,6 +35,21 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
     const mins = minutes % 60;
     return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
   };
+
+  // Log the practice session once when component mounts
+  useEffect(() => {
+    const logSession = async () => {
+      if (!sessionLogged) {
+        const success = await logPracticeSession(routine.id, totalPracticeMinutes, blocks);
+        if (success) {
+          setSessionLogged(true);
+          console.log("Practice session logged successfully");
+        }
+      }
+    };
+
+    logSession();
+  }, [routine.id, totalPracticeMinutes, blocks, sessionLogged]);
 
   const handleSaveReflection = async () => {
     if (!reflection.trim()) return;

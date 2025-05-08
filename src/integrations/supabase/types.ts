@@ -41,6 +41,41 @@ export type Database = {
           },
         ]
       }
+      practice_sessions: {
+        Row: {
+          block_breakdown: Json | null
+          completed_at: string
+          id: string
+          routine_id: string | null
+          total_duration: number
+          user_id: string
+        }
+        Insert: {
+          block_breakdown?: Json | null
+          completed_at?: string
+          id?: string
+          routine_id?: string | null
+          total_duration: number
+          user_id: string
+        }
+        Update: {
+          block_breakdown?: Json | null
+          completed_at?: string
+          id?: string
+          routine_id?: string | null
+          total_duration?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_sessions_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

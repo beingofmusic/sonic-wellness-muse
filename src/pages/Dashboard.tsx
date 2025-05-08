@@ -1,13 +1,15 @@
+
 import React from "react";
 import { Clock, Calendar, Music } from "lucide-react";
-import ProgressCard from "@/components/ProgressCard";
-import PracticeRoutineCard from "@/components/PracticeRoutineCard";
-import CourseProgressCard from "@/components/CourseProgressCard";
-import CommunityPostCard from "@/components/CommunityPostCard";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import PracticeRoutineCard from "@/components/PracticeRoutineCard";
+import CourseProgressCard from "@/components/CourseProgressCard";
+import CommunityPostCard from "@/components/CommunityPostCard";
+import PracticeStats from "@/components/practice/stats/PracticeStats";
+
 const Dashboard: React.FC = () => {
   const {
     profile,
@@ -58,11 +60,9 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
       
-      {/* Progress Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <ProgressCard icon={<Clock className="h-5 w-5 text-music-primary" />} title="Total Practice Time" value="0 min" />
-        <ProgressCard icon={<Calendar className="h-5 w-5 text-music-secondary" />} title="Current Streak" value="0 days" />
-        <ProgressCard icon={<Music className="h-5 w-5 text-music-tertiary" />} title="Completed Routines" value="0" />
+      {/* Practice Stats */}
+      <div className="mb-8 md:mb-10">
+        <PracticeStats />
       </div>
       
       {/* Practice Routines */}
