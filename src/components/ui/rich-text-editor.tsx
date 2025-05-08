@@ -122,7 +122,7 @@ const RichTextEditor = ({
   const handleImageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (imageUrl) {
-      editor?.chain().focus().insertContent(`<img src="${imageUrl}" alt="" />`).run();
+      editor?.chain().focus().setImage({ src: imageUrl }).run();
       setImageUrl('');
       setImagePopoverOpen(false);
     }
