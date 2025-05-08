@@ -26,7 +26,7 @@ const PracticeHistory: React.FC = () => {
     hasNextPage,
     isFetchingNextPage
   } = usePracticeHistory({
-    dateRange: dateRange.from && dateRange.to ? [dateRange.from, dateRange.to] : undefined,
+    dateRange: dateRange.from && [dateRange.from, dateRange.to || dateRange.from],
     routineId: routineFilter,
     minDuration: minDuration,
   });

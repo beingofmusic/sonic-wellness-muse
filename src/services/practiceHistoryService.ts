@@ -151,7 +151,7 @@ export const fetchPracticeSessions = async ({
     }
     
     // Format the sessions for display
-    const formattedSessions: PracticeSessionWithRoutine[] = sessions?.map(session => {
+    const formattedSessions: PracticeSessionWithRoutine[] = sessions?.map((session: any) => {
       const routine = session.routines as any;
       const completedDate = new Date(session.completed_at);
       

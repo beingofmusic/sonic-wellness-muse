@@ -75,7 +75,7 @@ export const fetchLeaderboardData = async (): Promise<LeaderboardData> => {
     }
     
     // Process weekly time data
-    const weeklyEntries: LeaderboardEntry[] = (weeklyData || []).slice(0, 3).map((entry, index) => ({
+    const weeklyEntries: LeaderboardEntry[] = (weeklyData || []).slice(0, 3).map((entry: any, index: number) => ({
       id: entry.user_id,
       username: entry.username || `User ${entry.user_id.slice(0, 4)}`,
       first_name: entry.first_name,
@@ -87,7 +87,7 @@ export const fetchLeaderboardData = async (): Promise<LeaderboardData> => {
     }));
     
     // Process all-time time data
-    const allTimeEntries: LeaderboardEntry[] = (allTimeData || []).slice(0, 3).map((entry, index) => ({
+    const allTimeEntries: LeaderboardEntry[] = (allTimeData || []).slice(0, 3).map((entry: any, index: number) => ({
       id: entry.user_id,
       username: entry.username || `User ${entry.user_id.slice(0, 4)}`,
       first_name: entry.first_name,
@@ -99,7 +99,7 @@ export const fetchLeaderboardData = async (): Promise<LeaderboardData> => {
     }));
     
     // Process streak data
-    const streakEntries: LeaderboardEntry[] = (streakData || []).slice(0, 3).map((entry, index) => ({
+    const streakEntries: LeaderboardEntry[] = (streakData || []).slice(0, 3).map((entry: any, index: number) => ({
       id: entry.user_id,
       username: entry.username || `User ${entry.user_id.slice(0, 4)}`,
       first_name: entry.first_name,
@@ -112,9 +112,9 @@ export const fetchLeaderboardData = async (): Promise<LeaderboardData> => {
     
     // Find current user's rank in each category if not in top 3
     const userRank = {
-      weeklyTimeRank: (weeklyData || []).findIndex(entry => entry.user_id === currentUserId) + 1 || undefined,
-      allTimeTimeRank: (allTimeData || []).findIndex(entry => entry.user_id === currentUserId) + 1 || undefined,
-      currentStreakRank: (streakData || []).findIndex(entry => entry.user_id === currentUserId) + 1 || undefined,
+      weeklyTimeRank: weeklyData ? (weeklyData.findIndex((entry: any) => entry.user_id === currentUserId) + 1 || undefined) : undefined,
+      allTimeTimeRank: allTimeData ? (allTimeData.findIndex((entry: any) => entry.user_id === currentUserId) + 1 || undefined) : undefined,
+      currentStreakRank: streakData ? (streakData.findIndex((entry: any) => entry.user_id === currentUserId) + 1 || undefined) : undefined,
     };
     
     return {

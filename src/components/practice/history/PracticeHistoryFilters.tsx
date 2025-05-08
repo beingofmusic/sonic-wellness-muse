@@ -9,48 +9,35 @@ import { DateRange } from 'react-day-picker';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isValid } from 'date-fns';
 
 interface PracticeHistoryFiltersProps {
-  onFilterChange: (filters: {
-    dateRange?: DateRange | undefined;
-    routineId?: string | null;
-    minDuration?: number | null;
-  }) => void;
-  routines: Array<{ id: string; title: string }>;
-  isLoading?: boolean;
-  onClearFilters: () => void;
+  dateRange: { from: Date | undefined; to: Date | undefined };
+  onDateRangeChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  routineFilter: string | null;
+  onRoutineFilterChange: (routineId: string | null) => void;
+  minDuration: number | null;
+  onMinDurationChange: (duration: number | null) => void;
 }
 
 const PracticeHistoryFilters: React.FC<PracticeHistoryFiltersProps> = ({
-  onFilterChange,
-  routines,
-  isLoading,
-  onClearFilters
+  dateRange,
+  onDateRangeChange,
+  routineFilter,
+  onRoutineFilterChange,
+  minDuration,
+  onMinDurationChange
 }) => {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [selectedRoutine, setSelectedRoutine] = useState<string | null>(null);
-  const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
-  
   // Check if any filters are active
-  const isFiltersActive = !!(dateRange || selectedRoutine || selectedDuration);
-  
-  // Apply all filters
-  const applyFilters = () => {
-    onFilterChange({
-      dateRange: dateRange,
-      routineId: selectedRoutine,
-      minDuration: selectedDuration ? parseInt(selectedDuration) : null
-    });
-  };
+  const isFiltersActive = !!(dateRange.from || routineFilter || minDuration);
   
   // Handle date preset selection
   const handleDatePreset = (preset: string) => {
     const today = new Date();
-    let newRange: DateRange | undefined;
+    let newRange: { from: Date | undefined; to: Date | undefined } = { from: undefined, to: undefined };
     
     switch (preset) {
       case 'week':
         newRange = {
-          from: startOfWeek(today),
-          to: endOfWeek(today)
+          from: startOfWeek(today, { weekStartsOn: 1 }),
+          to: endOfWeek(today, { weekStartsOn: 1 })
         };
         break;
       case 'month':
@@ -60,170 +47,170 @@ const PracticeHistoryFilters: React.FC<PracticeHistoryFiltersProps> = ({
         };
         break;
       case 'all':
-        newRange = undefined;
+        newRange = { from: undefined, to: undefined };
         break;
       default:
         break;
     }
     
-    setDateRange(newRange);
-    onFilterChange({
-      dateRange: newRange,
-      routineId: selectedRoutine,
-      minDuration: selectedDuration ? parseInt(selectedDuration) : null
-    });
+    onDateRangeChange(newRange);
   };
   
   // Handle filter clearing
   const clearFilters = () => {
-    setDateRange(undefined);
-    setSelectedRoutine(null);
-    setSelectedDuration(null);
-    onClearFilters();
+    onDateRangeChange({ from: undefined, to: undefined });
+    onRoutineFilterChange(null);
+    onMinDurationChange(null);
   };
   
+  // Convert DateRange to our component's expected format
+  const handleCalendarSelect = (range: DateRange | undefined) => {
+    onDateRangeChange({
+      from: range?.from,
+      to: range?.to
+    });
+  };
+  
+  // Get current date range in the format required by the Calendar component
+  const calendarValue: DateRange | undefined = dateRange.from ? {
+    from: dateRange.from,
+    to: dateRange.to
+  } : undefined;
+  
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-4">
-      {/* Date Range Filter */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button 
-            variant={dateRange ? "default" : "outline"} 
-            className={`h-9 px-3 ${dateRange ? 'bg-music-primary text-white' : 'border-white/10 bg-white/5'}`}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateRange?.from ? (
-              dateRange.to ? (
-                <>
-                  {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
-                </>
-              ) : (
-                format(dateRange.from, "MMM d")
-              )
-            ) : (
-              "Date Range"
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 bg-card dark" align="start">
-          <div className="p-2 border-b border-white/10">
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-xs h-7"
-                onClick={() => handleDatePreset('week')}
-              >
-                This Week
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-xs h-7"
-                onClick={() => handleDatePreset('month')}
-              >
-                This Month
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-xs h-7"
-                onClick={() => handleDatePreset('all')}
-              >
-                All Time
-              </Button>
-            </div>
+    <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-4">
+      <h3 className="text-sm font-medium mb-2">Filter Practice Sessions</h3>
+      
+      <div className="space-y-4">
+        {/* Date Range Filter */}
+        <div className="space-y-2">
+          <label className="text-xs text-white/70">Date Range</label>
+          <div className="flex flex-wrap items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant={dateRange.from ? "default" : "outline"} 
+                  className={`h-9 px-3 ${dateRange.from ? 'bg-music-primary text-white' : 'border-white/10 bg-white/5'}`}
+                  size="sm"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "MMM d")
+                    )
+                  ) : (
+                    "Select dates"
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-card dark" align="start">
+                <div className="p-2 border-b border-white/10">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs h-7"
+                      onClick={() => handleDatePreset('week')}
+                    >
+                      This Week
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs h-7"
+                      onClick={() => handleDatePreset('month')}
+                    >
+                      This Month
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs h-7"
+                      onClick={() => handleDatePreset('all')}
+                    >
+                      All Time
+                    </Button>
+                  </div>
+                </div>
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange.from}
+                  selected={calendarValue}
+                  onSelect={handleCalendarSelect}
+                  numberOfMonths={1}
+                  className="border-white/10"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={dateRange?.from}
-            selected={dateRange}
-            onSelect={(range) => {
-              setDateRange(range);
-              // Only trigger filter change if both dates are selected or range is cleared
-              if ((range?.from && range?.to) || !range) {
-                onFilterChange({
-                  dateRange: range,
-                  routineId: selectedRoutine,
-                  minDuration: selectedDuration ? parseInt(selectedDuration) : null
-                });
-              }
+        </div>
+        
+        {/* Routine Filter */}
+        <div className="space-y-2">
+          <label className="text-xs text-white/70">Routine</label>
+          <Select
+            value={routineFilter || ''}
+            onValueChange={(value) => {
+              const routineId = value === '' ? null : value;
+              onRoutineFilterChange(routineId);
             }}
-            numberOfMonths={1}
-            className="border-white/10"
-          />
-        </PopoverContent>
-      </Popover>
-      
-      {/* Routine Filter */}
-      <Select
-        value={selectedRoutine || ''}
-        onValueChange={(value) => {
-          const routineId = value === '' ? null : value;
-          setSelectedRoutine(routineId);
-          onFilterChange({
-            dateRange,
-            routineId,
-            minDuration: selectedDuration ? parseInt(selectedDuration) : null
-          });
-        }}
-      >
-        <SelectTrigger 
-          className={`w-[150px] h-9 ${selectedRoutine ? 'bg-music-primary text-white border-music-primary' : 'border-white/10 bg-white/5'}`}
-        >
-          <SelectValue placeholder="Select Routine" />
-        </SelectTrigger>
-        <SelectContent className="max-h-[300px]">
-          <SelectItem value="">All Routines</SelectItem>
-          {routines.map((routine) => (
-            <SelectItem key={routine.id} value={routine.id}>
-              {routine.title || 'Unnamed Routine'}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      
-      {/* Duration Filter */}
-      <Select
-        value={selectedDuration || ''}
-        onValueChange={(value) => {
-          const durValue = value === '' ? null : value;
-          setSelectedDuration(durValue);
-          onFilterChange({
-            dateRange,
-            routineId: selectedRoutine,
-            minDuration: durValue ? parseInt(durValue) : null
-          });
-        }}
-      >
-        <SelectTrigger 
-          className={`w-[150px] h-9 ${selectedDuration ? 'bg-music-primary text-white border-music-primary' : 'border-white/10 bg-white/5'}`}
-        >
-          <SelectValue placeholder="Min Duration" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="">Any Duration</SelectItem>
-          <SelectItem value="5">5+ minutes</SelectItem>
-          <SelectItem value="10">10+ minutes</SelectItem>
-          <SelectItem value="15">15+ minutes</SelectItem>
-          <SelectItem value="30">30+ minutes</SelectItem>
-          <SelectItem value="60">1+ hour</SelectItem>
-        </SelectContent>
-      </Select>
-      
-      {/* Clear Filters Button */}
-      {isFiltersActive && (
-        <Button 
-          variant="ghost"
-          size="sm"
-          className="h-9 border border-white/10"
-          onClick={clearFilters}
-        >
-          <XIcon className="h-4 w-4 mr-1" />
-          Clear Filters
-        </Button>
-      )}
+          >
+            <SelectTrigger 
+              className={`w-full h-9 ${routineFilter ? 'bg-music-primary text-white border-music-primary' : 'border-white/10 bg-white/5'}`}
+            >
+              <SelectValue placeholder="All Routines" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              <SelectItem value="">All Routines</SelectItem>
+              {/* Routines would be mapped here */}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* Duration Filter */}
+        <div className="space-y-2">
+          <label className="text-xs text-white/70">Minimum Duration</label>
+          <Select
+            value={minDuration?.toString() || ''}
+            onValueChange={(value) => {
+              const durValue = value === '' ? null : parseInt(value);
+              onMinDurationChange(durValue);
+            }}
+          >
+            <SelectTrigger 
+              className={`w-full h-9 ${minDuration ? 'bg-music-primary text-white border-music-primary' : 'border-white/10 bg-white/5'}`}
+            >
+              <SelectValue placeholder="Any Duration" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Any Duration</SelectItem>
+              <SelectItem value="5">5+ minutes</SelectItem>
+              <SelectItem value="10">10+ minutes</SelectItem>
+              <SelectItem value="15">15+ minutes</SelectItem>
+              <SelectItem value="30">30+ minutes</SelectItem>
+              <SelectItem value="60">1+ hour</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* Clear Filters Button */}
+        {isFiltersActive && (
+          <Button 
+            variant="ghost"
+            size="sm"
+            className="w-full h-9 border border-white/10 mt-2"
+            onClick={clearFilters}
+          >
+            <XIcon className="h-4 w-4 mr-2" />
+            Clear All Filters
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

@@ -220,7 +220,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_alltime_practice_leaderboard: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          username: string
+          first_name: string
+          last_name: string
+          avatar_url: string
+          total_minutes: number
+        }[]
+      }
+      get_streak_leaderboard: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          username: string
+          first_name: string
+          last_name: string
+          avatar_url: string
+          current_streak: number
+        }[]
+      }
+      get_weekly_practice_leaderboard: {
+        Args: { week_start: string; week_end: string }
+        Returns: {
+          user_id: string
+          username: string
+          first_name: string
+          last_name: string
+          avatar_url: string
+          total_minutes: number
+        }[]
+      }
     }
     Enums: {
       user_role: "admin" | "team" | "user"
