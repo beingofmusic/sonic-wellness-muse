@@ -15,8 +15,8 @@ const MobileNavbar: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
-  // Don't render on desktop
-  if (!isMobile) {
+  // Don't render if we're sure we're on desktop
+  if (isMobile === false) {
     return null;
   }
   
@@ -37,6 +37,9 @@ const MobileNavbar: React.FC = () => {
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
+  
+  // Show navbar only when isMobile is true
+  if (!isMobile) return null;
   
   return (
     <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-card/90 backdrop-blur-lg md:hidden z-50">

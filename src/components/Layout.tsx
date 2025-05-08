@@ -9,6 +9,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  // Use the hook safely
   const isMobile = useIsMobile();
 
   return (
