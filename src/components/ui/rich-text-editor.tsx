@@ -28,12 +28,12 @@ import {
   Code2
 } from "lucide-react";
 import { 
-  Toggle,
   TooltipProvider,
   Tooltip,
   TooltipTrigger,
   TooltipContent
 } from "@/components/ui/tooltip";
+import { Toggle } from "@/components/ui/toggle";
 import {
   Popover,
   PopoverContent,
