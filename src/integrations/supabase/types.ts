@@ -69,7 +69,6 @@ export type Database = {
           created_at: string
           duration: number
           id: string
-          instructions: string | null
           order_index: number
           routine_id: string
           type: string
@@ -79,7 +78,6 @@ export type Database = {
           created_at?: string
           duration?: number
           id?: string
-          instructions?: string | null
           order_index: number
           routine_id: string
           type: string
@@ -89,7 +87,6 @@ export type Database = {
           created_at?: string
           duration?: number
           id?: string
-          instructions?: string | null
           order_index?: number
           routine_id?: string
           type?: string

@@ -1,5 +1,5 @@
 
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { ArrowLeft, X, Maximize, Play, Pause, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -9,7 +9,6 @@ import SessionProgress from "./SessionProgress";
 import BlockContent from "./BlockContent";
 import PracticeTools from "./PracticeTools";
 import { getCategoryColorClass, getCategoryIcon } from "@/components/practice/CategoryConfig";
-import { useToast } from "@/hooks/use-toast";
 
 interface PracticeSessionProps {
   routine: PracticeRoutine;
@@ -51,7 +50,6 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   const categoryIcon = currentBlock ? getCategoryIcon(currentBlock.type) : null;
   const blockNum = currentBlockIndex + 1;
   const totalBlocks = blocks.length;
-  const { toast } = useToast();
   
   // Calculate timer progress percentage
   const timerProgress = useMemo(() => {
@@ -61,18 +59,8 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
     if (totalDuration === 0) return 0;
     
     const elapsed = totalDuration - secondsLeft;
-    return Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
+    return (elapsed / totalDuration) * 100;
   }, [currentBlock, secondsLeft]);
-
-  // Effect to show toast when a new block is rendered
-  useEffect(() => {
-    if (currentBlock) {
-      toast({
-        title: `${currentBlock.type} - ${blockNum}/${totalBlocks}`,
-        description: currentBlock.content?.split('\n')[0] || 'Practice Block',
-      });
-    }
-  }, [currentBlock, blockNum, totalBlocks, toast]);
 
   return (
     <div className="h-full max-w-full">
@@ -132,8 +120,8 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             
             <h2 className="text-2xl font-semibold mb-4">{currentBlock.content?.split('\n')[0] || 'Practice Block'}</h2>
             
-            {/* Timer with status indicator */}
-            <div className="text-center py-8 relative">
+            {/* Timer */}
+            <div className="text-center py-8">
               <div className="text-5xl font-mono mb-4">{timeRemaining}</div>
               <div className="w-full h-2 bg-white/10 rounded-full mb-4 overflow-hidden">
                 <div 
@@ -142,24 +130,8 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
                 />
               </div>
               
-              {/* Status indicator */}
-              {isPaused ? (
-                <div className="absolute top-2 right-2 bg-amber-600 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-                  Paused
-                </div>
-              ) : (
-                <div className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                  Active
-                </div>
-              )}
-              
               <div className="flex justify-center gap-4">
-                <Button 
-                  variant={isPaused ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={onPause}
-                  className={isPaused ? "bg-music-primary hover:bg-music-secondary" : ""}
-                >
+                <Button variant="outline" size="sm" onClick={onPause}>
                   {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                   <span className="ml-1">{isPaused ? 'Resume' : 'Pause'}</span>
                 </Button>

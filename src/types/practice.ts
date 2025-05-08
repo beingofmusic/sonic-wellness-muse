@@ -38,7 +38,6 @@ export interface RoutineBlock {
   order_index: number;
   type: string;
   content: string | null;
-  instructions: string | null; // Added instructions field
   duration: number;
   created_at: string;
 }
@@ -47,7 +46,6 @@ export interface RoutineBlockFormData {
   id?: string;
   type: string;
   content: string;
-  instructions: string | null; // Added instructions field
   duration: number;
   order_index: number;
 }
