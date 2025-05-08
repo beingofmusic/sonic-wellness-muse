@@ -15,7 +15,7 @@ export const useRoutinePlayer = (routineId?: string) => {
   // Fetch routine data
   const { isLoading, routine, blocks } = useRoutineData(routineId);
   
-  // Timer controls
+  // Timer controls with enhanced initialization
   const timerControls = useRoutineTimer(() => {
     // Auto advance to next block when timer completes
     if (currentBlockIndex < blocks.length - 1) {
@@ -38,46 +38,36 @@ export const useRoutinePlayer = (routineId?: string) => {
   // Focus mode toggle
   const { focusMode, toggleFocusMode } = useFocusMode();
 
-  // Initialize timer when blocks are loaded
+  // Immediate initialization when blocks are loaded - highest priority effect
   useEffect(() => {
-    // Only initialize if we have blocks and aren't already initialized
     if (isLoading || blocks.length === 0) return;
     
-    // Reset initialization if blocks change
-    if (initialized) {
-      setInitialized(false);
-      return;
-    }
+    console.log("Blocks loaded, initializing player with first block");
     
     const initialDuration = blocks[0]?.duration * 60; // convert to seconds
-    console.log("Initializing timer with duration:", initialDuration);
-    
     if (!initialDuration || initialDuration <= 0) {
       console.error("Invalid initial duration:", initialDuration);
       return;
     }
     
-    // Initialize timer with a delay to ensure proper component mounting
-    const initTimer = setTimeout(() => {
-      // Explicitly set paused state to false to ensure it starts
-      timerControls.setTimer(initialDuration, true);
-      
-      // Mark as initialized so we don't re-initialize
-      setInitialized(true);
-      
-      // Add a further check to ensure timer starts correctly
-      const recoveryTimer = setTimeout(() => {
-        if (!timerControls.isActive && !timerControls.isPaused) {
-          console.log("Timer didn't start automatically, forcing start");
-          timerControls.forceStart();
-        }
-      }, 1000); // Longer delay for recovery
-      
-      return () => clearTimeout(recoveryTimer);
-    }, 300);
+    // Set the timer with the initial duration
+    timerControls.setTimer(initialDuration, true);
     
-    return () => clearTimeout(initTimer);
-  }, [blocks, isLoading, timerControls]);
+    // Mark as being in the process of initializing
+    if (!initialized) {
+      setInitialized(true);
+    }
+    
+    // Double-check timer starts with a slightly longer delay
+    const initRecoveryTimer = setTimeout(() => {
+      if (!timerControls.isActive && !timerControls.isPaused) {
+        console.log("Timer didn't auto-start during init, forcing start");
+        timerControls.forceStart();
+      }
+    }, 500);
+    
+    return () => clearTimeout(initRecoveryTimer);
+  }, [blocks, isLoading, timerControls, initialized]);
   
   // Update progress and timer when current block changes
   useEffect(() => {
@@ -99,6 +89,20 @@ export const useRoutinePlayer = (routineId?: string) => {
     
     return () => clearTimeout(checkTimer);
   }, [currentBlockIndex, blocks, updateBlockProgress, initialized, timerControls]);
+
+  // Third recovery mechanism - check periodically if timer should be running but isn't
+  useEffect(() => {
+    if (!initialized || blocks.length === 0) return;
+    
+    const recoveryInterval = setInterval(() => {
+      if (blocks[currentBlockIndex] && !timerControls.isActive && !timerControls.isPaused) {
+        console.log("Recovery check: Timer should be running but isn't, restarting");
+        timerControls.forceStart();
+      }
+    }, 2000);
+    
+    return () => clearInterval(recoveryInterval);
+  }, [blocks, currentBlockIndex, timerControls, initialized]);
   
   // Handle reset for current block
   const handleReset = useCallback(() => {

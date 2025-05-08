@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { RoutineBlock } from "@/types/practice";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,13 +22,22 @@ export const useBlockNavigation = (
     // Update timer for the new block if available
     if (blocks[currentBlockIndex]) {
       const blockDuration = blocks[currentBlockIndex].duration * 60; // convert to seconds
+      console.log("Updating timer for block", currentBlockIndex, "with duration", blockDuration);
       onTimerReset(blockDuration);
     }
   }, [blocks, currentBlockIndex, onTimerReset]);
 
+  // Effect to initialize progress on first load
+  useEffect(() => {
+    if (blocks.length > 0) {
+      updateBlockProgress();
+    }
+  }, [blocks.length, updateBlockProgress]);
+
   // Handle navigation to next block
   const handleNext = useCallback(() => {
     if (currentBlockIndex < blocks.length - 1) {
+      console.log("Navigating to next block", currentBlockIndex + 1);
       setCurrentBlockIndex(prevIndex => prevIndex + 1);
     } else {
       // Show completion state
@@ -42,6 +51,7 @@ export const useBlockNavigation = (
   // Handle navigation to previous block
   const handlePrevious = useCallback(() => {
     if (currentBlockIndex > 0) {
+      console.log("Navigating to previous block", currentBlockIndex - 1);
       setCurrentBlockIndex(prevIndex => prevIndex - 1);
     }
   }, [currentBlockIndex]);

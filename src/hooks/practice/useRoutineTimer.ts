@@ -8,6 +8,7 @@ export const useRoutineTimer = (onTimerComplete: () => void) => {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isActive, setIsActive] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const durationRef = useRef(0); // Reference to store the current duration
   const { toast } = useToast();
@@ -58,6 +59,8 @@ export const useRoutineTimer = (onTimerComplete: () => void) => {
     }, 1000);
     
     setIsActive(true);
+    // Once we start, we're definitely initialized
+    setIsInitialized(true);
   }, [onTimerComplete, clearTimer]);
 
   // Set timer duration and optionally start it
@@ -80,7 +83,7 @@ export const useRoutineTimer = (onTimerComplete: () => void) => {
       // Small delay to ensure state updates before starting
       setTimeout(() => {
         startTimer();
-      }, 50);
+      }, 100);
     }
   }, [isPaused, startTimer]);
 
@@ -126,7 +129,7 @@ export const useRoutineTimer = (onTimerComplete: () => void) => {
     if (!isPaused) {
       setTimeout(() => {
         startTimer();
-      }, 50);
+      }, 100);
     }
   }, [isPaused, startTimer, clearTimer]);
 
@@ -155,11 +158,20 @@ export const useRoutineTimer = (onTimerComplete: () => void) => {
     startTimer();
   }, [secondsLeft, startTimer]);
 
+  // Add an initialization check effect that runs once
+  useEffect(() => {
+    if (!isInitialized && durationRef.current > 0 && !isActive && !isPaused) {
+      console.log("Auto-initializing timer with", durationRef.current, "seconds");
+      forceStart();
+    }
+  }, [isInitialized, isActive, isPaused, forceStart]);
+
   return {
     timeRemaining,
     secondsLeft,
     isPaused,
     isActive,
+    isInitialized,
     togglePause,
     setTimer,
     resetTimer,
