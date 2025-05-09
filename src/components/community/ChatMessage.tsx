@@ -2,6 +2,7 @@
 import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChatMessage as ChatMessageType } from "@/hooks/useCommunityChat";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -35,17 +36,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className="p-3 hover:bg-white/5 transition-colors">
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center shrink-0">
+        <Avatar className="w-8 h-8">
           {message.avatar_url ? (
-            <img 
+            <AvatarImage 
               src={message.avatar_url} 
               alt={getFullName()} 
-              className="w-8 h-8 rounded-full object-cover"
+              className="object-cover"
             />
           ) : (
-            <span className="text-sm font-medium text-music-primary">{getInitials()}</span>
+            <AvatarFallback className="bg-music-primary/20 text-music-primary text-sm">
+              {getInitials()}
+            </AvatarFallback>
           )}
-        </div>
+        </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline mb-1">
             <span className="font-medium text-white mr-2 truncate">{getFullName()}</span>

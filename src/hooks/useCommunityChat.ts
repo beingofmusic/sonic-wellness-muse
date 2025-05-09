@@ -33,7 +33,7 @@ export const useCommunityChat = () => {
             content,
             created_at,
             user_id,
-            profiles:user_id (
+            profiles(
               username,
               first_name,
               last_name,
@@ -51,10 +51,10 @@ export const useCommunityChat = () => {
           user_id: msg.user_id,
           content: msg.content,
           created_at: msg.created_at,
-          username: msg.profiles?.username,
-          first_name: msg.profiles?.first_name,
-          last_name: msg.profiles?.last_name,
-          avatar_url: msg.profiles?.avatar_url,
+          username: msg.profiles?.username || null,
+          first_name: msg.profiles?.first_name || null,
+          last_name: msg.profiles?.last_name || null,
+          avatar_url: msg.profiles?.avatar_url || null,
         }));
 
         setMessages(formattedMessages);
@@ -92,10 +92,24 @@ export const useCommunityChat = () => {
               user_id: payload.new.user_id,
               content: payload.new.content,
               created_at: payload.new.created_at,
-              username: data.username,
-              first_name: data.first_name,
-              last_name: data.last_name,
-              avatar_url: data.avatar_url,
+              username: data.username || null,
+              first_name: data.first_name || null,
+              last_name: data.last_name || null,
+              avatar_url: data.avatar_url || null,
+            };
+            setMessages((prev) => [...prev, newMsg]);
+            
+            // Scroll to bottom on new message
+            setTimeout(() => {
+              scrollToBottom();
+            }, 100);
+          } else {
+            // Even if we can't fetch the profile, still add the message
+            const newMsg: ChatMessage = {
+              id: payload.new.id,
+              user_id: payload.new.user_id,
+              content: payload.new.content,
+              created_at: payload.new.created_at
             };
             setMessages((prev) => [...prev, newMsg]);
             
