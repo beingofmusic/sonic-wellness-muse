@@ -2,11 +2,13 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface PracticeRoutineCardProps {
   title: string;
   duration: string;
   progress: number;
+  routineId?: string;
   onContinue?: () => void;
   onSchedule?: () => void;
 }
@@ -15,6 +17,7 @@ const PracticeRoutineCard: React.FC<PracticeRoutineCardProps> = ({
   title,
   duration,
   progress,
+  routineId,
   onContinue,
   onSchedule,
 }) => {
@@ -39,12 +42,20 @@ const PracticeRoutineCard: React.FC<PracticeRoutineCardProps> = ({
         </div>
       </div>
       <div className="flex gap-2">
-        <Button
-          onClick={onContinue}
-          className="flex-1 music-button"
-        >
-          Continue Practice
-        </Button>
+        {routineId ? (
+          <Link to={`/practice/routine/${routineId}`} className="flex-1">
+            <Button className="w-full music-button">
+              Continue Practice
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            onClick={onContinue}
+            className="flex-1 music-button"
+          >
+            Continue Practice
+          </Button>
+        )}
         <Button
           onClick={onSchedule}
           variant="outline"
