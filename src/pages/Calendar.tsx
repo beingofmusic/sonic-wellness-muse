@@ -7,7 +7,7 @@ import EventModal from "@/components/calendar/EventModal";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { CalendarEvent, ViewType } from "@/types/calendar";
+import { CalendarEvent, CalendarEventFormData, ViewType, CalendarEventInput } from "@/types/calendar";
 
 const Calendar: React.FC = () => {
   const [viewType, setViewType] = useState<ViewType>("month");
@@ -34,7 +34,7 @@ const Calendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  const handleSaveEvent = async (eventData: Partial<CalendarEvent>) => {
+  const handleSaveEvent = async (eventData: CalendarEventFormData) => {
     try {
       if (selectedEvent) {
         // Update existing event

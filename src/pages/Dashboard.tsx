@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Clock, Calendar, Music, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ const Dashboard: React.FC = () => {
   } = useAuth();
   
   // Get user's routines
-  const { data: userRoutines = [], isLoading: loadingRoutines } = useUserRoutines(2); // Limit to 2 for dashboard
+  const { routines: userRoutines = [], isLoading: loadingRoutines } = useUserRoutines(2); // Limit to 2 for dashboard
 
   // Get user's full name or fallback to username or a default
   const getFullName = () => {

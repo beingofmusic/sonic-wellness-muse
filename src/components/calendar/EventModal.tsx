@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +43,7 @@ interface EventModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event: CalendarEvent | null;
-  onSave: (data: Partial<CalendarEvent>) => Promise<void>;
+  onSave: (data: CalendarEventFormData) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
@@ -111,13 +110,7 @@ const EventModal: React.FC<EventModalProps> = ({
   }, [event, form]);
 
   const onSubmit = async (data: CalendarEventFormData) => {
-    const formattedData = {
-      ...data,
-      event_date: format(data.event_date, "yyyy-MM-dd"),
-      event_time: `${data.event_time}:00` // Add seconds
-    };
-
-    await onSave(formattedData);
+    await onSave(data);
   };
 
   const handleDelete = async () => {
