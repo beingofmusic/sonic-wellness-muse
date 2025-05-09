@@ -236,7 +236,8 @@ export const createOrder = async (cartItems: CartItem[]): Promise<Order | null> 
       .from("orders")
       .insert({
         user_id: userData.user.id,
-        total_amount: totalAmount
+        total_amount: totalAmount,
+        status: 'pending' as const // Explicitly set as a literal type
       })
       .select()
       .single();
@@ -260,7 +261,12 @@ export const createOrder = async (cartItems: CartItem[]): Promise<Order | null> 
     // Clear cart after successful order
     await clearCart();
 
-    return order;
+    // Type assertion to ensure compatibility with Order type
+    return {
+      ...order,
+      status: order.status as "pending" | "completed" | "cancelled",
+      items: []
+    };
   } catch (error) {
     console.error("Error creating order:", error);
     return null;
