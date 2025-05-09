@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +27,7 @@ import Calendar from "./pages/Calendar";
 import Shop from "./pages/Shop";
 import Settings from "./pages/Settings";
 import PracticeHistory from "./pages/PracticeHistory";
+import Profile from "./pages/Profile";
 
 // Placeholder page for templates list - will be implemented later
 const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
@@ -178,6 +178,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
                 </ProtectedRoute>
               } 
             />
