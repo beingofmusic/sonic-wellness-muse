@@ -14,23 +14,30 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   
   // Get full name display (first + last name)
   const getFullName = () => {
+    // First priority: Use first and last name if available
     if (message.first_name) {
       const lastName = message.last_name ? ` ${message.last_name}` : '';
       return `${message.first_name}${lastName}`;
     }
-    if (message.username) return message.username;
-    return "User";
+    
+    // Second priority: Use username if first name isn't available
+    if (message.username) {
+      return message.username;
+    }
+    
+    // Fallback: Anonymous user
+    return "Anonymous User";
   };
 
   // Get initials for the avatar
   const getInitials = () => {
     if (message.first_name) {
-      const firstInitial = message.first_name.charAt(0);
-      const lastInitial = message.last_name ? message.last_name.charAt(0) : '';
+      const firstInitial = message.first_name.charAt(0).toUpperCase();
+      const lastInitial = message.last_name ? message.last_name.charAt(0).toUpperCase() : '';
       return `${firstInitial}${lastInitial}`;
     }
     if (message.username) return message.username.charAt(0).toUpperCase();
-    return "U";
+    return "?";
   };
 
   return (

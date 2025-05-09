@@ -88,33 +88,35 @@ export const useCommunityChat = () => {
         async (payload) => {
           console.log('New message received:', payload);
           // When we get a new message, fetch the profile information
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('username, first_name, last_name, avatar_url')
-            .eq('id', payload.new.user_id)
-            .single();
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('username, first_name, last_name, avatar_url')
+              .eq('id', payload.new.user_id)
+              .single();
 
-          console.log('Profile data for new message:', data, error);
+            console.log('Profile data for new message:', profileData, profileError);
 
-          if (!error && data) {
             const newMsg: ChatMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
               content: payload.new.content,
               created_at: payload.new.created_at,
-              username: data.username || null,
-              first_name: data.first_name || null,
-              last_name: data.last_name || null,
-              avatar_url: data.avatar_url || null,
+              username: profileData?.username || null,
+              first_name: profileData?.first_name || null,
+              last_name: profileData?.last_name || null,
+              avatar_url: profileData?.avatar_url || null,
             };
+            
             setMessages((prev) => [...prev, newMsg]);
             
             // Scroll to bottom on new message
             setTimeout(() => {
               scrollToBottom();
             }, 100);
-          } else {
-            // Even if we can't fetch the profile, still add the message
+          } catch (error) {
+            console.error('Error fetching profile for new message:', error);
+            // Still add the message even if we can't fetch the profile
             const newMsg: ChatMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
@@ -123,7 +125,6 @@ export const useCommunityChat = () => {
             };
             setMessages((prev) => [...prev, newMsg]);
             
-            // Scroll to bottom on new message
             setTimeout(() => {
               scrollToBottom();
             }, 100);
