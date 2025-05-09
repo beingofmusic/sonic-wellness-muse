@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,22 @@ import CourseManagementList from "@/components/course/admin/CourseManagementList
 import CourseForm from "@/components/course/admin/CourseForm";
 import { useToast } from "@/hooks/use-toast";
 import PermissionRoute from "@/components/PermissionRoute";
+import { useNavigate } from "react-router-dom";
 
 const CourseManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddingCourse, setIsAddingCourse] = useState(false);
-  const { data: courses = [], isLoading, error } = useCourses();
+  const { data: courses = [], isLoading, error, refetch } = useCourses();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Effect to refetch courses when the component mounts or the user changes
+  useEffect(() => {
+    if (user) {
+      refetch();
+    }
+  }, [user, refetch]);
 
   const filteredCourses = courses.filter(
     (course) =>
@@ -24,13 +34,26 @@ const CourseManagement = () => {
       (course.tags && course.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
   );
 
+  // Handle successful course creation
+  const handleCourseCreated = () => {
+    setIsAddingCourse(false);
+    refetch();
+    toast({
+      title: "Course Created",
+      description: "The course has been created successfully.",
+    });
+  };
+
   return (
     <Layout>
       <PermissionRoute permission="manage_courses">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold">Course Management</h1>
-            <Button onClick={() => setIsAddingCourse(true)} className="flex items-center gap-2">
+            <Button 
+              onClick={() => setIsAddingCourse(true)} 
+              className="flex items-center gap-2"
+            >
               <Plus className="h-4 w-4" />
               New Course
             </Button>
@@ -55,7 +78,16 @@ const CourseManagement = () => {
           ) : error ? (
             <div className="p-6 text-center rounded-lg border border-white/10 bg-card/30">
               <h3 className="text-lg font-medium mb-2">Error Loading Courses</h3>
-              <p className="text-white/70">There was a problem loading the course data.</p>
+              <p className="text-white/70">
+                {error instanceof Error ? error.message : "There was a problem loading the course data."}
+              </p>
+              <Button 
+                variant="outline" 
+                className="mt-4" 
+                onClick={() => refetch()}
+              >
+                Try Again
+              </Button>
             </div>
           ) : filteredCourses.length === 0 ? (
             <div className="p-6 text-center rounded-lg border border-white/10 bg-card/30">
@@ -71,13 +103,7 @@ const CourseManagement = () => {
           {isAddingCourse && (
             <CourseForm
               onClose={() => setIsAddingCourse(false)}
-              onSuccess={() => {
-                setIsAddingCourse(false);
-                toast({
-                  title: "Course Created",
-                  description: "The course has been created successfully.",
-                });
-              }}
+              onSuccess={handleCourseCreated}
             />
           )}
         </div>

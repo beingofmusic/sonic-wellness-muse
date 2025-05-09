@@ -23,7 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useCreateLesson, useUpdateLesson } from "@/hooks/useCourseAdmin";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface LessonFormProps {
   courseId: string;
@@ -53,6 +54,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
   const isEditing = !!lesson;
   const createLesson = useCreateLesson();
   const updateLesson = useUpdateLesson();
+  const { toast } = useToast();
 
   const defaultValues: FormValues = {
     title: lesson?.title || "",
@@ -69,6 +71,8 @@ const LessonForm: React.FC<LessonFormProps> = ({
 
   const onSubmit = async (data: FormValues) => {
     try {
+      console.log("Submitting lesson form with data:", data);
+      
       const lessonData = {
         title: data.title, // Ensure title is included and not optional
         video_url: data.video_url, // Ensure video_url is included and not optional
@@ -78,20 +82,39 @@ const LessonForm: React.FC<LessonFormProps> = ({
         course_id: courseId,
       };
 
+      console.log("Processing lesson data:", lessonData);
+
       if (isEditing && lesson) {
         await updateLesson.mutateAsync({
           id: lesson.id,
           ...lessonData,
         });
+        toast({
+          title: "Lesson Updated",
+          description: "The lesson has been updated successfully.",
+        });
       } else {
+        console.log("Creating new lesson...");
         await createLesson.mutateAsync(lessonData);
+        toast({
+          title: "Lesson Created",
+          description: "The lesson has been created successfully.",
+        });
       }
 
       onSuccess();
     } catch (error) {
       console.error("Error saving lesson:", error);
+      toast({
+        title: "Error",
+        description: `Failed to ${isEditing ? 'update' : 'create'} lesson. Please try again.`,
+        variant: "destructive",
+      });
     }
   };
+
+  const isSubmitting = createLesson.isPending || updateLesson.isPending;
+  const error = createLesson.error || updateLesson.error;
 
   const isYouTubeUrl = (url: string): boolean => {
     return url.includes('youtube.com') || url.includes('youtu.be');
@@ -128,10 +151,18 @@ const LessonForm: React.FC<LessonFormProps> = ({
             size="icon" 
             className="absolute right-4 top-4" 
             onClick={onClose}
+            disabled={isSubmitting}
           >
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>Error: {error instanceof Error ? error.message : "Unknown error occurred"}</p>
+          </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -141,7 +172,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Lesson title" {...field} />
+                    <Input placeholder="Lesson title" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -158,6 +189,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
                     <Input 
                       placeholder="YouTube or direct video URL" 
                       {...field} 
+                      disabled={isSubmitting}
                       onChange={(e) => {
                         field.onChange(e);
                         form.trigger("video_url");
@@ -192,7 +224,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
                 <FormItem>
                   <FormLabel>PDF URL (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="URL to PDF resource" {...field} />
+                    <Input placeholder="URL to PDF resource" {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,6 +242,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
                       placeholder="Lesson summary or description"
                       className="min-h-32"
                       {...field}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -229,6 +262,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
                       min="1"
                       placeholder="Lesson order (1, 2, 3...)"
                       {...field}
+                      disabled={isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -237,8 +271,15 @@ const LessonForm: React.FC<LessonFormProps> = ({
             />
 
             <DialogFooter>
-              <Button type="submit" disabled={createLesson.isPending || updateLesson.isPending}>
-                {isEditing ? "Update Lesson" : "Add Lesson"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isEditing ? "Updating..." : "Adding Lesson"}
+                  </>
+                ) : (
+                  isEditing ? "Update Lesson" : "Add Lesson"
+                )}
               </Button>
             </DialogFooter>
           </form>

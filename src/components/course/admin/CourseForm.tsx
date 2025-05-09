@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,7 +25,8 @@ import { Button } from "@/components/ui/button";
 import { useCreateCourse, useUpdateCourse } from "@/hooks/useCourseAdmin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LessonManagementList from "./LessonManagementList";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CourseFormProps {
   course?: Course;
@@ -45,6 +47,7 @@ type FormValues = z.infer<typeof formSchema>;
 const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) => {
   const isEditing = !!course;
   const [activeTab, setActiveTab] = useState("details");
+  const { toast } = useToast();
   
   const createCourse = useCreateCourse();
   const updateCourse = useUpdateCourse();
@@ -64,6 +67,8 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
 
   const onSubmit = async (data: FormValues) => {
     try {
+      console.log("Form submitted with data:", data);
+      
       const courseData = {
         title: data.title, // Ensure title is included and not optional
         description: data.description, // Ensure description is included and not optional
@@ -72,20 +77,39 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
         thumbnail_url: data.thumbnail_url || null,
       };
 
+      console.log("Processing course data:", courseData);
+
       if (isEditing && course) {
         await updateCourse.mutateAsync({
           id: course.id,
           ...courseData,
         });
+        toast({
+          title: "Course Updated",
+          description: "The course has been updated successfully.",
+        });
       } else {
+        console.log("Creating new course...");
         await createCourse.mutateAsync(courseData);
+        toast({
+          title: "Course Created",
+          description: "The course has been created successfully.",
+        });
       }
 
       onSuccess();
     } catch (error) {
       console.error("Error saving course:", error);
+      toast({
+        title: "Error",
+        description: `Failed to ${isEditing ? 'update' : 'create'} course. Please try again.`,
+        variant: "destructive",
+      });
     }
   };
+
+  const isSubmitting = createCourse.isPending || updateCourse.isPending;
+  const error = createCourse.error || updateCourse.error;
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -97,10 +121,17 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
             size="icon" 
             className="absolute right-4 top-4" 
             onClick={onClose}
+            disabled={isSubmitting}
           >
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p>Error: {error instanceof Error ? error.message : "Unknown error occurred"}</p>
+          </div>
+        )}
 
         {isEditing ? (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -118,7 +149,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                       <FormItem>
                         <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <Input placeholder="Course title" {...field} />
+                          <Input placeholder="Course title" {...field} disabled={isSubmitting} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -136,6 +167,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                             placeholder="Course description"
                             className="min-h-32"
                             {...field}
+                            disabled={isSubmitting}
                           />
                         </FormControl>
                         <FormMessage />
@@ -150,7 +182,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                       <FormItem>
                         <FormLabel>Instructor</FormLabel>
                         <FormControl>
-                          <Input placeholder="Instructor name" {...field} />
+                          <Input placeholder="Instructor name" {...field} disabled={isSubmitting} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -167,6 +199,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                           <Input
                             placeholder="Enter tags separated by commas"
                             {...field}
+                            disabled={isSubmitting}
                           />
                         </FormControl>
                         <FormMessage />
@@ -181,7 +214,11 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                       <FormItem>
                         <FormLabel>Thumbnail URL</FormLabel>
                         <FormControl>
-                          <Input placeholder="Image URL for course thumbnail" {...field} />
+                          <Input 
+                            placeholder="Image URL for course thumbnail" 
+                            {...field} 
+                            disabled={isSubmitting}
+                          />
                         </FormControl>
                         {field.value && (
                           <div className="mt-2">
@@ -201,8 +238,15 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                   />
 
                   <DialogFooter>
-                    <Button type="submit" disabled={createCourse.isPending || updateCourse.isPending}>
-                      {isEditing ? "Update Course" : "Create Course"}
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {isEditing ? "Updating..." : "Creating..."}
+                        </>
+                      ) : (
+                        isEditing ? "Update Course" : "Create Course"
+                      )}
                     </Button>
                   </DialogFooter>
                 </form>
@@ -222,7 +266,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Course title" {...field} />
+                      <Input placeholder="Course title" {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,6 +284,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                         placeholder="Course description"
                         className="min-h-32"
                         {...field}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -254,7 +299,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                   <FormItem>
                     <FormLabel>Instructor</FormLabel>
                     <FormControl>
-                      <Input placeholder="Instructor name" {...field} />
+                      <Input placeholder="Instructor name" {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -271,6 +316,7 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                       <Input
                         placeholder="Enter tags separated by commas"
                         {...field}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -285,7 +331,11 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
                   <FormItem>
                     <FormLabel>Thumbnail URL</FormLabel>
                     <FormControl>
-                      <Input placeholder="Image URL for course thumbnail" {...field} />
+                      <Input 
+                        placeholder="Image URL for course thumbnail" 
+                        {...field} 
+                        disabled={isSubmitting}
+                      />
                     </FormControl>
                     {field.value && (
                       <div className="mt-2">
@@ -305,8 +355,15 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
               />
 
               <DialogFooter>
-                <Button type="submit" disabled={createCourse.isPending || updateCourse.isPending}>
-                  {isEditing ? "Update Course" : "Create Course"}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isEditing ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    isEditing ? "Update Course" : "Create Course"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
