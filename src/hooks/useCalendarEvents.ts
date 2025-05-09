@@ -47,7 +47,6 @@ export const useCalendarEvents = () => {
     const eventToCreate: CalendarEventInput = {
       ...eventData,
       user_id: user.id,
-      // Ensure required fields are present
       title: eventData.title,
       event_type: eventData.event_type,
       event_date: eventData.event_date,

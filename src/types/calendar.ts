@@ -21,8 +21,8 @@ export interface CalendarEvent {
 export interface CalendarEventFormData {
   title: string;
   event_type: EventType;
-  event_date: Date;
-  event_time: string;
+  event_date: Date;  // JavaScript Date object for form handling
+  event_time: string; // HH:MM format
   duration_minutes: number;
   location?: string;
   description?: string;
@@ -32,8 +32,8 @@ export interface CalendarEventFormData {
 export interface CalendarEventInput {
   title: string;
   event_type: EventType;
-  event_date: string;
-  event_time: string;
+  event_date: string; // String format for API/database
+  event_time: string; // HH:MM:SS format for API/database
   duration_minutes: number;
   location?: string;
   description?: string;

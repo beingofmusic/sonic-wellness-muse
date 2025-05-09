@@ -7,6 +7,7 @@ import EventModal from "@/components/calendar/EventModal";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { format } from "date-fns";
 import { CalendarEvent, CalendarEventFormData, ViewType, CalendarEventInput } from "@/types/calendar";
 
 const Calendar: React.FC = () => {
@@ -34,8 +35,15 @@ const Calendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  const handleSaveEvent = async (eventData: CalendarEventFormData) => {
+  const handleSaveEvent = async (formData: CalendarEventFormData) => {
     try {
+      // Convert the Date object to string format for the API
+      const eventData: Omit<CalendarEventInput, "user_id"> = {
+        ...formData,
+        event_date: format(formData.event_date, "yyyy-MM-dd"),
+        event_time: `${formData.event_time}:00` // Add seconds component
+      };
+
       if (selectedEvent) {
         // Update existing event
         await updateEvent(selectedEvent.id, eventData);
