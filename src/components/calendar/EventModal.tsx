@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -179,7 +180,7 @@ const EventModal: React.FC<EventModalProps> = ({
                       <FormLabel>Practice Routine</FormLabel>
                       <Select 
                         onValueChange={field.onChange}
-                        value={field.value}
+                        value={field.value || "none"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -187,7 +188,7 @@ const EventModal: React.FC<EventModalProps> = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {routines.map(routine => (
                             <SelectItem key={routine.id} value={routine.id}>
                               {routine.title}

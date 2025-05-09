@@ -37,9 +37,13 @@ const Calendar: React.FC = () => {
 
   const handleSaveEvent = async (formData: CalendarEventFormData) => {
     try {
+      // Process routine_id - convert "none" to undefined/null
+      const processedRoutineId = formData.routine_id === "none" ? null : formData.routine_id;
+      
       // Convert the Date object to string format for the API
       const eventData: Omit<CalendarEventInput, "user_id"> = {
         ...formData,
+        routine_id: processedRoutineId,
         event_date: format(formData.event_date, "yyyy-MM-dd"),
         event_time: `${formData.event_time}:00` // Add seconds component
       };
