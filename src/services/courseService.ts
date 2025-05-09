@@ -26,6 +26,7 @@ export async function fetchCoursesWithProgress(): Promise<CourseWithProgress[]> 
         });
 
         if (error || !data || data.length === 0) {
+          console.log("No course completion data for course:", course.id, error);
           return {
             ...course,
             total_lessons: 0,
@@ -34,6 +35,7 @@ export async function fetchCoursesWithProgress(): Promise<CourseWithProgress[]> 
           };
         }
 
+        console.log("Course completion data:", course.id, data[0]);
         return {
           ...course,
           total_lessons: Number(data[0].total_lessons),
@@ -83,6 +85,8 @@ export async function fetchLessonsForCourse(courseId: string): Promise<Lesson[]>
     if (lessonsError) throw lessonsError;
     if (!lessons) return [];
     
+    console.log(`Fetched ${lessons.length} lessons for course ${courseId}`);
+    
     // If no user is logged in, return lessons without completion status
     if (!session) return lessons;
 
@@ -92,10 +96,14 @@ export async function fetchLessonsForCourse(courseId: string): Promise<Lesson[]>
       .select("lesson_id")
       .eq("user_id", session.user.id);
 
-    if (progressError) throw progressError;
+    if (progressError) {
+      console.error("Error fetching lesson progress:", progressError);
+      throw progressError;
+    }
 
     // Mark lessons as completed if they exist in the lesson_progress table
     const completedLessonIds = new Set(completedLessons?.map(item => item.lesson_id) || []);
+    console.log("Completed lesson IDs:", Array.from(completedLessonIds));
     
     return lessons.map(lesson => ({
       ...lesson,
@@ -119,6 +127,8 @@ export async function fetchLessonById(lessonId: string): Promise<Lesson | null> 
     if (lessonError) throw lessonError;
     if (!lesson) return null;
 
+    console.log("Fetched lesson:", lessonId, lesson);
+
     // Get user session for the user_id
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -133,7 +143,12 @@ export async function fetchLessonById(lessonId: string): Promise<Lesson | null> 
       .eq("user_id", session.user.id)
       .maybeSingle();
 
-    if (progressError) throw progressError;
+    if (progressError) {
+      console.error("Error fetching lesson progress:", progressError);
+      throw progressError;
+    }
+
+    console.log("Lesson progress:", lessonId, progress ? "Completed" : "Not completed");
     
     return {
       ...lesson,
@@ -148,20 +163,38 @@ export async function fetchLessonById(lessonId: string): Promise<Lesson | null> 
 // Mark a lesson as completed
 export async function markLessonAsCompleted(lessonId: string): Promise<boolean> {
   try {
+    console.log("Starting markLessonAsCompleted for lesson:", lessonId);
+    
     // Get user session for the user_id
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return false;
+    
+    if (!session) {
+      console.error("No active session found");
+      return false;
+    }
+    
+    console.log("User session found:", session.user.id);
 
     // Check if a record already exists
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from("lesson_progress")
       .select("*")
       .eq("lesson_id", lessonId)
       .eq("user_id", session.user.id)
       .maybeSingle();
+      
+    if (checkError) {
+      console.error("Error checking existing progress:", checkError);
+      throw checkError;
+    }
 
     // If a record already exists, return true as it's already marked completed
-    if (existing) return true;
+    if (existing) {
+      console.log("Lesson already completed:", lessonId);
+      return true;
+    }
+
+    console.log("Inserting new lesson progress record");
 
     // Insert new completion record
     const { error } = await supabase
@@ -171,10 +204,15 @@ export async function markLessonAsCompleted(lessonId: string): Promise<boolean> 
         user_id: session.user.id
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error inserting lesson progress:", error);
+      throw error;
+    }
+    
+    console.log("Lesson marked as completed successfully:", lessonId);
     return true;
   } catch (error) {
-    console.error("Error marking lesson as completed:", error);
+    console.error("Error in markLessonAsCompleted:", error);
     return false;
   }
 }

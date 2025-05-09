@@ -18,6 +18,7 @@ const LessonItem: React.FC<LessonItemProps> = ({ lesson, courseId }) => {
         "flex items-center p-3 rounded-lg border border-white/10 mb-2 gap-3 hover:bg-white/5 transition-colors",
         lesson.completed ? "bg-white/5" : ""
       )}
+      aria-label={`${lesson.title} - ${lesson.completed ? 'Completed' : 'Not started'}`}
     >
       <div className={cn(
         "w-8 h-8 rounded-full flex items-center justify-center",

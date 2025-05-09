@@ -16,25 +16,37 @@ const LessonViewer: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Handle marking the lesson as completed
   const handleMarkCompleted = async () => {
-    if (lessonId) {
-      markCompleted.mutate(lessonId, {
-        onSuccess: () => {
-          toast({
-            title: "Lesson completed!",
-            description: "Your progress has been updated.",
-          });
-        },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Failed to mark lesson as completed. Please try again.",
-            variant: "destructive",
-          });
-        }
-      });
-    }
+    if (!lessonId) return;
+    
+    console.log("Marking lesson as completed:", lessonId);
+    
+    markCompleted.mutate(lessonId, {
+      onSuccess: () => {
+        console.log("Lesson marked as completed successfully");
+        toast({
+          title: "Lesson completed!",
+          description: "Your progress has been updated.",
+        });
+      },
+      onError: (error) => {
+        console.error("Error marking lesson as completed:", error);
+        toast({
+          title: "Error",
+          description: "Failed to mark lesson as completed. Please try again.",
+          variant: "destructive",
+        });
+      }
+    });
   };
+
+  // Debug output for the lesson data
+  useEffect(() => {
+    if (lesson) {
+      console.log("Current lesson data:", lesson);
+    }
+  }, [lesson]);
 
   if (isLoading) {
     return (
@@ -110,8 +122,14 @@ const LessonViewer: React.FC = () => {
               disabled={markCompleted.isPending}
               className="flex items-center gap-2"
             >
-              <Check className="h-4 w-4" />
-              Mark as Completed
+              {markCompleted.isPending ? (
+                <span className="animate-pulse">Processing...</span>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  Mark as Completed
+                </>
+              )}
             </Button>
           ) : (
             <Button 
