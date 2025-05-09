@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -230,7 +230,7 @@ const ProductsManagement: React.FC = () => {
                   size="icon"
                   onClick={() => handleDeletePrompt(product)}
                 >
-                  <Trash className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
