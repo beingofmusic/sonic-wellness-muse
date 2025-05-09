@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Clock, Calendar, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import PracticeRoutineCard from "@/components/PracticeRoutineCard";
-import CourseProgressCard from "@/components/CourseProgressCard";
+import UserCourseProgress from "@/components/dashboard/UserCourseProgress";
 import CommunityPostCard from "@/components/CommunityPostCard";
 import PracticeStats from "@/components/practice/stats/PracticeStats";
 import PracticeLeaderboard from "@/components/practice/leaderboard/PracticeLeaderboard";
@@ -75,22 +74,8 @@ const Dashboard: React.FC = () => {
         </div>
       </section>
       
-      {/* Course Progress */}
-      <section className="mb-8">
-        <div className="flex flex-wrap justify-between items-center mb-4">
-          <h2 className="text-xl font-medium">Course Progress</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-white/70">Your Courses in Progress</span>
-            <button className="text-sm text-white/70 hover:text-white transition-colors">All Courses</button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <CourseProgressCard title="Music Theory Fundamentals" progress={65} />
-          <CourseProgressCard title="Mindfulness for Musicians" progress={30} color="bg-music-secondary" />
-          <CourseProgressCard title="Sight Reading Mastery" progress={10} color="bg-music-tertiary" />
-        </div>
-      </section>
+      {/* Course Progress - Using our new component */}
+      <UserCourseProgress />
       
       {/* Split Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
