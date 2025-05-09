@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
@@ -5,7 +6,8 @@ import ChatMessage from "@/components/community/ChatMessage";
 import ChatInput from "@/components/community/ChatInput";
 import { useCommunityChat } from "@/hooks/useCommunityChat";
 import { toast } from "sonner";
-import { users } from "lucide-react";
+import { Users } from "lucide-react";
+
 const Community: React.FC = () => {
   const {
     user
@@ -39,7 +41,7 @@ const Community: React.FC = () => {
           {/* Chat Header */}
           <div className="p-3 border-b border-white/10 bg-card/80 backdrop-blur-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <users className="h-5 w-5 text-music-primary" />
+              <Users className="h-5 w-5 text-music-primary" />
               <h2 className="font-medium">MUSEchat</h2>
             </div>
             <div className="text-xs text-white/50">
@@ -52,7 +54,7 @@ const Community: React.FC = () => {
             {loading ? <div className="flex justify-center items-center h-full">
                 <div className="animate-pulse text-white/50">Loading messages...</div>
               </div> : messages.length === 0 ? <div className="flex flex-col justify-center items-center h-full text-center p-6">
-                <users className="h-12 w-12 text-white/20 mb-2" />
+                <Users className="h-12 w-12 text-white/20 mb-2" />
                 <h3 className="text-lg font-medium mb-2">Welcome to the community!</h3>
                 <p className="text-white/50 mb-4">
                   Be the first to start a conversation with fellow musicians.

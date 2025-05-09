@@ -88,7 +88,10 @@ export const useCommunityChat = () => {
 
           if (!error && data) {
             const newMsg: ChatMessage = {
-              ...payload.new,
+              id: payload.new.id,
+              user_id: payload.new.user_id,
+              content: payload.new.content,
+              created_at: payload.new.created_at,
               username: data.username,
               first_name: data.first_name,
               last_name: data.last_name,
