@@ -8,9 +8,11 @@ import ProductGrid from "@/components/shop/ProductGrid";
 import CartButton from "@/components/shop/CartButton";
 import CartDrawer from "@/components/shop/CartDrawer";
 import CheckoutDialog from "@/components/shop/CheckoutDialog";
+import ProductDetailModal from "@/components/shop/ProductDetailModal";
 import ProductsManagement from "@/components/shop/admin/ProductsManagement";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
+import { Product } from "@/types/shop";
 
 const Shop: React.FC = () => {
   const { user } = useAuth();
@@ -18,6 +20,7 @@ const Shop: React.FC = () => {
   
   const [showAdmin, setShowAdmin] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const {
     products,
@@ -43,6 +46,14 @@ const Shop: React.FC = () => {
   const processOrder = () => {
     checkout();
     setCheckoutOpen(false);
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
+  const handleCloseProductDetail = () => {
+    setSelectedProduct(null);
   };
 
   return (
@@ -98,6 +109,7 @@ const Shop: React.FC = () => {
               <ProductGrid 
                 products={products} 
                 onAddToCart={addItemToCart} 
+                onSelectProduct={handleSelectProduct}
                 isLoading={isLoading} 
               />
             )}
@@ -119,6 +131,13 @@ const Shop: React.FC = () => {
           onClose={() => setCheckoutOpen(false)}
           onConfirm={processOrder}
           total={cartTotal}
+        />
+
+        <ProductDetailModal
+          product={selectedProduct}
+          isOpen={selectedProduct !== null}
+          onClose={handleCloseProductDetail}
+          onAddToCart={addItemToCart}
         />
       </div>
     </Layout>

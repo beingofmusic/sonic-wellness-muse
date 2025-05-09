@@ -9,13 +9,26 @@ import { ShoppingCart } from 'lucide-react';
 interface ProductCardProps {
   product: Product;
   onAddToCart: (productId: string) => void;
+  onSelectProduct: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onSelectProduct }) => {
   const isOutOfStock = product.stock_count <= 0;
   
+  const handleCardClick = () => {
+    onSelectProduct(product);
+  };
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening product detail when clicking add to cart
+    onAddToCart(product.id);
+  };
+  
   return (
-    <Card className="overflow-hidden">
+    <Card 
+      className="overflow-hidden cursor-pointer transition-transform hover:scale-[1.02]" 
+      onClick={handleCardClick}
+    >
       <div className="relative h-48 overflow-hidden">
         <img 
           src={product.image_url} 
@@ -36,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
       </CardContent>
       <CardFooter>
         <Button 
-          onClick={() => onAddToCart(product.id)}
+          onClick={handleAddToCart}
           disabled={isOutOfStock}
           className="w-full"
           variant={isOutOfStock ? "outline" : "default"}
