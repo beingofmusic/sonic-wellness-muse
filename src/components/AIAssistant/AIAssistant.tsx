@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from "react";
-import { motion, useDragControls } from "framer-motion";
+import { motion, useDragControls, PanInfo } from "framer-motion";
 import { Bot, X, Maximize2, Minimize2, Volume2, VolumeX, Trash } from "lucide-react";
 import { useAIAssistant } from "@/context/AIAssistantContext";
 import ChatMessage from "./ChatMessage";
@@ -31,12 +31,12 @@ const AIAssistant: React.FC = () => {
   }, [messages, isOpen]);
 
   // Handle drag start
-  const onDragStart = (event: React.PointerEvent) => {
+  const startDrag = (event: React.PointerEvent<Element>) => {
     dragControls.start(event);
   };
 
-  // Handle drag end
-  const onDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: any) => {
+  // Handle drag end with correct typing
+  const onDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // Update position after drag
     setPosition({
       x: info.point.x,
@@ -50,14 +50,13 @@ const AIAssistant: React.FC = () => {
       <motion.div
         drag
         dragControls={dragControls}
-        onDragStart={onDragStart}
+        onPointerDown={startDrag}
         onDragEnd={onDragEnd}
         dragMomentum={false}
-        initial={position}
+        initial={{ x: position.x - 30, y: position.y - 30 }}
         animate={isOpen ? { opacity: 0, scale: 0 } : { opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
         className={`fixed z-50 ${isOpen ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
-        style={{ left: position.x - 30, top: position.y - 30 }} // Adjust for button size
       >
         <button
           onClick={toggleChat}
@@ -78,8 +77,20 @@ const AIAssistant: React.FC = () => {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={
           isOpen
-            ? { opacity: 1, y: 0, scale: 1, x: position.x - 320, bottom: window.innerHeight - position.y + 30 }
-            : { opacity: 0, y: 20, scale: 0.95, x: position.x - 320, bottom: window.innerHeight - position.y + 30 }
+            ? { 
+                opacity: 1, 
+                y: 0, 
+                scale: 1, 
+                x: position.x - 320, 
+                bottom: window.innerHeight - position.y + 30 
+              }
+            : { 
+                opacity: 0, 
+                y: 20, 
+                scale: 0.95, 
+                x: position.x - 320, 
+                bottom: window.innerHeight - position.y + 30 
+              }
         }
         transition={{ duration: 0.3 }}
         style={{ 
@@ -88,14 +99,14 @@ const AIAssistant: React.FC = () => {
         }}
         drag
         dragControls={dragControls}
-        onDragStart={onDragStart}
+        onPointerDown={startDrag}
         onDragEnd={onDragEnd}
         dragMomentum={false}
       >
         {/* Chat Header */}
         <div 
           className="flex items-center justify-between p-3 border-b border-white/10 cursor-grab active:cursor-grabbing"
-          onPointerDown={onDragStart}
+          onPointerDown={startDrag}
         >
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-music-primary to-music-secondary flex items-center justify-center">

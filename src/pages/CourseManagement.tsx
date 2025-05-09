@@ -46,7 +46,7 @@ const CourseManagement = () => {
 
   return (
     <Layout>
-      <PermissionRoute permission="manage_courses">
+      <PermissionRoute requiredPermission="manage_courses">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl md:text-3xl font-bold">Course Management</h1>
