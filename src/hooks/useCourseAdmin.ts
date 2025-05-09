@@ -31,6 +31,9 @@ export const useCreateCourse = () => {
 
       if (error) {
         console.error("Error creating course:", error);
+        if (error.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to create courses. Please make sure you have the correct role.");
+        }
         throw error;
       }
       
@@ -62,6 +65,9 @@ export const useUpdateCourse = () => {
 
       if (error) {
         console.error("Error updating course:", error);
+        if (error.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to update courses. Please make sure you have the correct role.");
+        }
         throw error;
       }
       
@@ -93,6 +99,9 @@ export const useDeleteCourse = () => {
         
       if (lessonsError) {
         console.error("Error deleting course lessons:", lessonsError);
+        if (lessonsError.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to delete lessons. Please make sure you have the correct role.");
+        }
         throw lessonsError;
       }
       
@@ -100,6 +109,9 @@ export const useDeleteCourse = () => {
       const { error } = await supabase.from("courses").delete().eq("id", courseId);
       if (error) {
         console.error("Error deleting course:", error);
+        if (error.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to delete courses. Please make sure you have the correct role.");
+        }
         throw error;
       }
       
@@ -136,6 +148,9 @@ export const useCreateLesson = () => {
 
       if (error) {
         console.error("Error creating lesson:", error);
+        if (error.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to create lessons. Please make sure you have the correct role.");
+        }
         throw error;
       }
       
@@ -168,6 +183,9 @@ export const useUpdateLesson = () => {
 
       if (error) {
         console.error("Error updating lesson:", error);
+        if (error.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to update lessons. Please make sure you have the correct role.");
+        }
         throw error;
       }
       
@@ -209,6 +227,9 @@ export const useDeleteLesson = () => {
       const { error } = await supabase.from("lessons").delete().eq("id", lessonId);
       if (error) {
         console.error("Error deleting lesson:", error);
+        if (error.message.includes("new row violates row-level security policy")) {
+          throw new Error("You don't have permission to delete lessons. Please make sure you have the correct role.");
+        }
         throw error;
       }
       
@@ -262,6 +283,9 @@ export const useUpdateLessonOrder = () => {
         
         if (error) {
           console.error("Error updating lesson order:", error);
+          if (error.message.includes("new row violates row-level security policy")) {
+            throw new Error("You don't have permission to update lesson order. Please make sure you have the correct role.");
+          }
           throw error;
         }
       }
