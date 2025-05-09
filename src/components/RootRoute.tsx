@@ -1,27 +1,30 @@
 
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import Landing from '@/pages/Landing';
 
-interface RootRouteProps {
-  children: React.ReactNode;
-}
-
-const RootRoute: React.FC<RootRouteProps> = ({ children }) => {
+const RootRoute = () => {
   const { user, isLoading } = useAuth();
-  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, isLoading, navigate]);
+
+  // If loading, show a loading spinner
   if (isLoading) {
-    // You could return a loading component here
-    return <div>Loading...</div>;
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-music-primary"></div>
+      </div>
+    );
   }
-  
-  if (user) {
-    // Redirect to dashboard if user is already authenticated
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  // Render the component
-  return <>{children}</>;
+
+  // If not authenticated, show the landing page
+  return <Landing />;
 };
 
 export default RootRoute;

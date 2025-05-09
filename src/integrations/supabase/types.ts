@@ -9,30 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      ai_assistant_conversations: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          is_user: boolean
-          user_id: string | null
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          is_user: boolean
-          user_id?: string | null
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          is_user?: boolean
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       badges: {
         Row: {
           condition_type: string
