@@ -62,54 +62,51 @@ function App() {
           <Router>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/signin" element={<RootRoute component={SignIn} />} />
-              <Route path="/signup" element={<RootRoute component={SignUp} />} />
+              <Route path="/signin" element={<RootRoute><SignIn /></RootRoute>} />
+              <Route path="/signup" element={<RootRoute><SignUp /></RootRoute>} />
               
               {/* Protected Routes */}
-              <Route path="/dashboard" element={<ProtectedRoute component={Dashboard} />} />
-              <Route path="/practice" element={<ProtectedRoute component={Practice} />} />
-              <Route path="/routine-builder" element={<ProtectedRoute component={RoutineBuilder} />} />
-              <Route path="/routine-builder/:routineId" element={<ProtectedRoute component={RoutineBuilder} />} />
-              <Route path="/practice/:routineId" element={<ProtectedRoute component={RoutinePlayer} />} />
-              <Route path="/practice-history" element={<ProtectedRoute component={PracticeHistory} />} />
-              <Route path="/courses" element={<ProtectedRoute component={Courses} />} />
-              <Route path="/courses/:courseId" element={<ProtectedRoute component={CourseDetail} />} />
-              <Route path="/lessons/:lessonId" element={<ProtectedRoute component={LessonViewer} />} />
-              <Route path="/wellness" element={<ProtectedRoute component={Wellness} />} />
-              <Route path="/wellness/practice/:practiceId" element={<ProtectedRoute component={WellnessPractice} />} />
-              <Route path="/wellness/journal/:promptId?" element={<ProtectedRoute component={JournalingPage} />} />
-              <Route path="/calendar" element={<ProtectedRoute component={Calendar} />} />
-              <Route path="/community" element={<ProtectedRoute component={Community} />} />
-              <Route path="/shop" element={<ProtectedRoute component={Shop} />} />
-              <Route path="/profile" element={<ProtectedRoute component={Profile} />} />
-              <Route path="/settings" element={<ProtectedRoute component={Settings} />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+              <Route path="/routine-builder" element={<ProtectedRoute><RoutineBuilder /></ProtectedRoute>} />
+              <Route path="/routine-builder/:routineId" element={<ProtectedRoute><RoutineBuilder /></ProtectedRoute>} />
+              <Route path="/practice/:routineId" element={<ProtectedRoute><RoutinePlayer /></ProtectedRoute>} />
+              <Route path="/practice-history" element={<ProtectedRoute><PracticeHistory /></ProtectedRoute>} />
+              <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
+              <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+              <Route path="/lessons/:lessonId" element={<ProtectedRoute><LessonViewer /></ProtectedRoute>} />
+              <Route path="/wellness" element={<ProtectedRoute><Wellness /></ProtectedRoute>} />
+              <Route path="/wellness/practice/:practiceId" element={<ProtectedRoute><WellnessPractice /></ProtectedRoute>} />
+              <Route path="/wellness/journal/:promptId?" element={<ProtectedRoute><JournalingPage /></ProtectedRoute>} />
+              <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+              <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+              <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               
               {/* Team/Admin Routes */}
               <Route
                 path="/team"
                 element={
-                  <PermissionRoute
-                    component={TeamDashboard}
-                    requiredPermission="access_team_dashboard"
-                  />
+                  <PermissionRoute requiredPermission="access_team_dashboard">
+                    <TeamDashboard />
+                  </PermissionRoute>
                 }
               />
               <Route
                 path="/admin"
                 element={
-                  <PermissionRoute
-                    component={AdminPanel}
-                    requiredPermission="access_admin"
-                  />
+                  <PermissionRoute requiredPermission="access_admin">
+                    <AdminPanel />
+                  </PermissionRoute>
                 }
               />
               <Route
                 path="/courses/manage/:courseId?"
                 element={
-                  <PermissionRoute
-                    component={CourseManagement}
-                    requiredPermission="manage_courses"
-                  />
+                  <PermissionRoute requiredPermission="manage_courses">
+                    <CourseManagement />
+                  </PermissionRoute>
                 }
               />
               
