@@ -90,6 +90,7 @@ export const useCommunityChat = () => {
           
           try {
             // When we get a new message, fetch the complete message with profile information
+            // Use a more explicit join to ensure we get the profile data
             const { data, error } = await supabase
               .from('community_messages')
               .select(`
@@ -97,7 +98,7 @@ export const useCommunityChat = () => {
                 content,
                 created_at,
                 user_id,
-                profiles(
+                profiles!inner(
                   username,
                   first_name,
                   last_name,
@@ -107,7 +108,53 @@ export const useCommunityChat = () => {
               .eq('id', payload.new.id)
               .single();
 
-            if (error) throw error;
+            if (error) {
+              // If the inner join fails, try without it
+              console.warn('Inner join failed, trying regular join:', error);
+              
+              const fallbackQuery = await supabase
+                .from('community_messages')
+                .select(`
+                  id,
+                  content,
+                  created_at,
+                  user_id,
+                  profiles(
+                    username,
+                    first_name,
+                    last_name,
+                    avatar_url
+                  )
+                `)
+                .eq('id', payload.new.id)
+                .single();
+                
+              if (fallbackQuery.error) throw fallbackQuery.error;
+              
+              if (!fallbackQuery.data) throw new Error('No message data found');
+              
+              // Use the fallback query data instead
+              const newMsg: ChatMessage = {
+                id: fallbackQuery.data.id,
+                user_id: fallbackQuery.data.user_id,
+                content: fallbackQuery.data.content,
+                created_at: fallbackQuery.data.created_at,
+                username: fallbackQuery.data.profiles?.username || null,
+                first_name: fallbackQuery.data.profiles?.first_name || null,
+                last_name: fallbackQuery.data.profiles?.last_name || null,
+                avatar_url: fallbackQuery.data.profiles?.avatar_url || null,
+              };
+  
+              console.log('Processed message with fallback query:', newMsg);
+              setMessages((prev) => [...prev, newMsg]);
+              
+              // Scroll to bottom on new message
+              setTimeout(() => {
+                scrollToBottom();
+              }, 100);
+              
+              return;
+            }
 
             console.log('Complete message data with profile:', data);
             
@@ -123,6 +170,7 @@ export const useCommunityChat = () => {
               avatar_url: data.profiles?.avatar_url || null,
             };
 
+            console.log('Processed message:', newMsg);
             setMessages((prev) => [...prev, newMsg]);
             
             // Scroll to bottom on new message
@@ -132,20 +180,47 @@ export const useCommunityChat = () => {
           } catch (error) {
             console.error('Error processing new message:', error);
             
-            // As a last resort, add the message with minimal information
-            const basicMsg: ChatMessage = {
-              id: payload.new.id,
-              user_id: payload.new.user_id,
-              content: payload.new.content,
-              created_at: payload.new.created_at,
-              username: 'Unknown User', // Provide a fallback name
-              first_name: null,
-              last_name: null,
-              avatar_url: null,
-            };
-            
-            setMessages((prev) => [...prev, basicMsg]);
-            toast.error('Error loading user information');
+            // As a last resort, fetch user profile separately
+            try {
+              const userProfile = await supabase
+                .from('profiles')
+                .select('username, first_name, last_name, avatar_url')
+                .eq('id', payload.new.user_id)
+                .single();
+                
+              console.log('Separately fetched user profile:', userProfile);
+              
+              const backupMsg: ChatMessage = {
+                id: payload.new.id,
+                user_id: payload.new.user_id,
+                content: payload.new.content,
+                created_at: payload.new.created_at,
+                username: userProfile.data?.username || null,
+                first_name: userProfile.data?.first_name || null,
+                last_name: userProfile.data?.last_name || null,
+                avatar_url: userProfile.data?.avatar_url || null,
+              };
+              
+              setMessages((prev) => [...prev, backupMsg]);
+            } catch (profileError) {
+              console.error('Failed to fetch profile separately:', profileError);
+              
+              // Final fallback - add message with minimal information
+              const basicMsg: ChatMessage = {
+                id: payload.new.id,
+                user_id: payload.new.user_id,
+                content: payload.new.content,
+                created_at: payload.new.created_at,
+                // Don't hardcode "Unknown User" here - ChatMessage component will handle fallbacks
+                username: null,
+                first_name: null,
+                last_name: null,
+                avatar_url: null,
+              };
+              
+              setMessages((prev) => [...prev, basicMsg]);
+              toast.error('Error loading user information');
+            }
             
             // Scroll to bottom on new message
             setTimeout(() => {
