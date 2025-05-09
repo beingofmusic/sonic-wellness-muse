@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Lesson } from "@/types/course";
+import { Badge } from "@/components/ui/badge";
 
 interface LessonItemProps {
   lesson: Lesson;
@@ -15,8 +16,8 @@ const LessonItem: React.FC<LessonItemProps> = ({ lesson, courseId }) => {
     <Link 
       to={`/courses/${courseId}/lessons/${lesson.id}`}
       className={cn(
-        "flex items-center p-3 rounded-lg border border-white/10 mb-2 gap-3 hover:bg-white/5 transition-colors",
-        lesson.completed ? "bg-white/5" : ""
+        "flex items-center p-3 rounded-lg border mb-2 gap-3 hover:bg-white/5 transition-colors",
+        lesson.completed ? "border-green-500/30 bg-green-500/5" : "border-white/10"
       )}
       aria-label={`${lesson.title} - ${lesson.completed ? 'Completed' : 'Not started'}`}
     >

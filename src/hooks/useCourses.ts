@@ -7,6 +7,7 @@ import {
   fetchLessonById,
   markLessonAsCompleted 
 } from "@/services/courseService";
+import { useNavigate } from "react-router-dom";
 
 export const useCourses = () => {
   return useQuery({
@@ -41,6 +42,7 @@ export const useLesson = (lessonId: string) => {
 
 export const useMarkLessonCompleted = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   
   return useMutation({
     mutationFn: (lessonId: string) => {
@@ -57,10 +59,11 @@ export const useMarkLessonCompleted = () => {
       }).then(lesson => {
         if (lesson) {
           console.log("Lesson fetched for invalidation:", lesson);
+          const courseId = lesson.course_id;
           
           // Invalidate the course's lessons to refresh completion status
           queryClient.invalidateQueries({ 
-            queryKey: ["course-lessons", lesson.course_id] 
+            queryKey: ["course-lessons", courseId] 
           });
           
           // Invalidate the courses list to refresh progress bars
@@ -77,8 +80,14 @@ export const useMarkLessonCompleted = () => {
           queryClient.invalidateQueries({ 
             queryKey: ["lesson", lessonId] 
           });
+          
+          // Navigate back to the course page
+          navigate(`/courses/${courseId}`);
         }
       });
+    },
+    onError: (error) => {
+      console.error("Error in mark lesson completed mutation:", error);
     }
   });
 };

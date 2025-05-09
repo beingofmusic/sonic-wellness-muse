@@ -6,7 +6,7 @@ import { useLesson, useMarkLessonCompleted } from "@/hooks/useCourses";
 import VideoPlayer from "@/components/course/VideoPlayer";
 import PdfViewer from "@/components/course/PdfViewer";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, BookOpen } from "lucide-react";
+import { ArrowLeft, Check, Loader2, BookOpen } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const LessonViewer: React.FC = () => {
@@ -29,6 +29,7 @@ const LessonViewer: React.FC = () => {
           title: "Lesson completed!",
           description: "Your progress has been updated.",
         });
+        // Note: Navigation to course page is now handled in the mutation hook
       },
       onError: (error) => {
         console.error("Error marking lesson as completed:", error);
@@ -39,6 +40,11 @@ const LessonViewer: React.FC = () => {
         });
       }
     });
+  };
+
+  // Handle manual return to course
+  const handleReturnToCourse = () => {
+    navigate(`/courses/${courseId}`);
   };
 
   // Debug output for the lesson data
@@ -123,7 +129,10 @@ const LessonViewer: React.FC = () => {
               className="flex items-center gap-2"
             >
               {markCompleted.isPending ? (
-                <span className="animate-pulse">Processing...</span>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing...
+                </>
               ) : (
                 <>
                   <Check className="h-4 w-4" />
@@ -142,9 +151,9 @@ const LessonViewer: React.FC = () => {
             </Button>
           )}
 
-          <Link to={`/courses/${courseId}`}>
-            <Button variant="outline">Return to Course</Button>
-          </Link>
+          <Button variant="outline" onClick={handleReturnToCourse}>
+            Return to Course
+          </Button>
         </div>
       </div>
     </Layout>
