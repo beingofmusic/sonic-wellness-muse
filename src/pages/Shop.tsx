@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useShop } from "@/hooks/useShop";
 import { useAuth } from "@/context/AuthContext";
@@ -13,10 +13,12 @@ import ProductsManagement from "@/components/shop/admin/ProductsManagement";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
 import { Product } from "@/types/shop";
+import { useSearchParams } from "react-router-dom";
 
 const Shop: React.FC = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const [searchParams] = useSearchParams();
   
   const [showAdmin, setShowAdmin] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -38,6 +40,14 @@ const Shop: React.FC = () => {
     removeItemFromCart,
     checkout
   } = useShop();
+
+  // Check URL parameters to see if we should show admin panel
+  useEffect(() => {
+    const adminParam = searchParams.get('admin');
+    if (adminParam === 'true' && isAdmin) {
+      setShowAdmin(true);
+    }
+  }, [searchParams, isAdmin]);
 
   const handleCheckout = () => {
     setCheckoutOpen(true);
