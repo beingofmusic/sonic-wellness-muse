@@ -28,3 +28,15 @@ export interface CalendarEventFormData {
   description?: string;
   routine_id?: string;
 }
+
+export interface CalendarEventInput {
+  title: string;
+  event_type: EventType;
+  event_date: string;
+  event_time: string;
+  duration_minutes: number;
+  location?: string;
+  description?: string;
+  routine_id?: string;
+  user_id: string;
+}

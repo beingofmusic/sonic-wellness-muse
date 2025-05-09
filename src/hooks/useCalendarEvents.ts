@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarEvent } from "@/types/calendar";
+import { CalendarEvent, CalendarEventInput, EventType } from "@/types/calendar";
 import { useAuth } from "@/context/AuthContext";
 
 export const useCalendarEvents = () => {
@@ -41,12 +41,23 @@ export const useCalendarEvents = () => {
     }
   };
 
-  const createEvent = async (eventData: Partial<CalendarEvent>) => {
+  const createEvent = async (eventData: Omit<CalendarEventInput, "user_id">) => {
     if (!user) throw new Error("User not authenticated");
+    
+    const eventToCreate: CalendarEventInput = {
+      ...eventData,
+      user_id: user.id,
+      // Ensure required fields are present
+      title: eventData.title,
+      event_type: eventData.event_type,
+      event_date: eventData.event_date,
+      event_time: eventData.event_time,
+      duration_minutes: eventData.duration_minutes
+    };
     
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert({ ...eventData, user_id: user.id })
+      .insert(eventToCreate)
       .select()
       .single();
 
@@ -56,7 +67,7 @@ export const useCalendarEvents = () => {
     return data;
   };
 
-  const updateEvent = async (id: string, eventData: Partial<CalendarEvent>) => {
+  const updateEvent = async (id: string, eventData: Partial<CalendarEventInput>) => {
     if (!user) throw new Error("User not authenticated");
     
     const { data, error } = await supabase

@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarEvent } from "@/types/calendar";
+import { CalendarEvent, CalendarEventInput } from "@/types/calendar";
 
 export const fetchUserCalendarEvents = async (userId: string): Promise<CalendarEvent[]> => {
   const { data, error } = await supabase
@@ -30,12 +30,23 @@ export const fetchAllCalendarEvents = async (): Promise<CalendarEvent[]> => {
 };
 
 export const createCalendarEvent = async (
-  eventData: Partial<CalendarEvent>,
+  eventData: Omit<CalendarEventInput, "user_id">,
   userId: string
 ): Promise<CalendarEvent> => {
+  const eventToCreate: CalendarEventInput = {
+    ...eventData,
+    user_id: userId,
+    // Ensure required fields are present
+    title: eventData.title,
+    event_type: eventData.event_type,
+    event_date: eventData.event_date,
+    event_time: eventData.event_time,
+    duration_minutes: eventData.duration_minutes
+  };
+
   const { data, error } = await supabase
     .from("calendar_events")
-    .insert({ ...eventData, user_id: userId })
+    .insert(eventToCreate)
     .select()
     .single();
 
@@ -49,7 +60,7 @@ export const createCalendarEvent = async (
 
 export const updateCalendarEvent = async (
   eventId: string,
-  updates: Partial<CalendarEvent>
+  updates: Partial<CalendarEventInput>
 ): Promise<CalendarEvent> => {
   const { data, error } = await supabase
     .from("calendar_events")

@@ -11,7 +11,7 @@ import { PracticeRoutine } from "@/types/practice";
 export const useUserRoutines = (limit?: number) => {
   const { user } = useAuth();
   
-  return useQuery({
+  const result = useQuery({
     queryKey: ["user-routines", limit],
     queryFn: async (): Promise<PracticeRoutine[]> => {
       if (!user) return [];
@@ -66,4 +66,12 @@ export const useUserRoutines = (limit?: number) => {
     },
     enabled: !!user,
   });
+
+  return {
+    routines: result.data || [],
+    isLoading: result.isLoading,
+    isError: result.isError,
+    error: result.error,
+    refetch: result.refetch
+  };
 };
