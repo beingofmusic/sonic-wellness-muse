@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,7 +65,9 @@ const CourseForm: React.FC<CourseFormProps> = ({ course, onClose, onSuccess }) =
   const onSubmit = async (data: FormValues) => {
     try {
       const courseData = {
-        ...data,
+        title: data.title, // Ensure title is included and not optional
+        description: data.description, // Ensure description is included and not optional
+        instructor: data.instructor, // Ensure instructor is included and not optional
         tags: data.tags ? data.tags.split(",").map(tag => tag.trim()) : [],
         thumbnail_url: data.thumbnail_url || null,
       };

@@ -70,8 +70,12 @@ const LessonForm: React.FC<LessonFormProps> = ({
   const onSubmit = async (data: FormValues) => {
     try {
       const lessonData = {
-        ...data,
+        title: data.title, // Ensure title is included and not optional
+        video_url: data.video_url, // Ensure video_url is included and not optional
+        summary: data.summary, // Ensure summary is included and not optional
+        order_index: data.order_index, // Ensure order_index is included and not optional
         pdf_url: data.pdf_url || null,
+        course_id: courseId,
       };
 
       if (isEditing && lesson) {
@@ -80,10 +84,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
           ...lessonData,
         });
       } else {
-        await createLesson.mutateAsync({
-          course_id: courseId,
-          ...lessonData,
-        });
+        await createLesson.mutateAsync(lessonData);
       }
 
       onSuccess();
