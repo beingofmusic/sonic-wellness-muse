@@ -88,7 +88,7 @@ export const fetchStreakLeaderboard = async (limit = 3): Promise<LeaderboardUser
       .limit(limit);
     
     if (error) {
-      console.error("Leaderboard error:", error);
+      console.error("Streak leaderboard error:", error);
       return [];
     }
     
