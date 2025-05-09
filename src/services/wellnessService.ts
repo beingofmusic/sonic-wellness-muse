@@ -45,7 +45,9 @@ export const fetchWellnessPractices = async (type?: string): Promise<WellnessPra
     let query = supabase.from('wellness_practices').select('*');
     
     if (type && type !== 'all') {
-      query = query.eq('type', type);
+      // Ensure type is one of the valid enum values
+      const validType = type as 'meditation' | 'breathwork' | 'yoga_fitness';
+      query = query.eq('type', validType);
     }
     
     const { data, error } = await query.order('title');
@@ -63,7 +65,9 @@ export const fetchJournalPrompts = async (type?: string): Promise<JournalPrompt[
     let query = supabase.from('journal_prompts').select('*');
     
     if (type && type !== 'all') {
-      query = query.eq('type', type);
+      // Ensure type is one of the valid enum values
+      const validType = type as 'self_composition' | 'values' | 'resistance' | 'learning';
+      query = query.eq('type', validType);
     }
     
     const { data, error } = await query.order('title');
