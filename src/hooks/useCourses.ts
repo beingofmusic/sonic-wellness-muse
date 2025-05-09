@@ -8,6 +8,7 @@ import {
   markLessonAsCompleted 
 } from "@/services/courseService";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export const useCourses = () => {
   return useQuery({
@@ -43,6 +44,7 @@ export const useLesson = (lessonId: string) => {
 export const useMarkLessonCompleted = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   return useMutation({
     mutationFn: (lessonId: string) => {
@@ -60,6 +62,13 @@ export const useMarkLessonCompleted = () => {
         if (lesson) {
           console.log("Lesson fetched for invalidation:", lesson);
           const courseId = lesson.course_id;
+          
+          // Show success toast
+          toast({
+            title: "Lesson completed!",
+            description: "Your progress has been updated.",
+            duration: 3000,
+          });
           
           // Invalidate the course's lessons to refresh completion status
           queryClient.invalidateQueries({ 
@@ -88,6 +97,14 @@ export const useMarkLessonCompleted = () => {
     },
     onError: (error) => {
       console.error("Error in mark lesson completed mutation:", error);
+      
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "Failed to mark lesson as completed. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   });
 };

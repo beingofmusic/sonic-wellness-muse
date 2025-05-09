@@ -22,24 +22,8 @@ const LessonViewer: React.FC = () => {
     
     console.log("Marking lesson as completed:", lessonId);
     
-    markCompleted.mutate(lessonId, {
-      onSuccess: () => {
-        console.log("Lesson marked as completed successfully");
-        toast({
-          title: "Lesson completed!",
-          description: "Your progress has been updated.",
-        });
-        // Note: Navigation to course page is now handled in the mutation hook
-      },
-      onError: (error) => {
-        console.error("Error marking lesson as completed:", error);
-        toast({
-          title: "Error",
-          description: "Failed to mark lesson as completed. Please try again.",
-          variant: "destructive",
-        });
-      }
-    });
+    markCompleted.mutate(lessonId);
+    // Note: Success and error notifications are now handled in the useMutation hook
   };
 
   // Handle manual return to course
