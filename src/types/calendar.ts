@@ -16,6 +16,11 @@ export interface CalendarEvent {
   user_id: string;
   created_at: string;
   updated_at: string;
+  // For join with routines table
+  routines?: {
+    title: string;
+    [key: string]: any;
+  };
 }
 
 export interface CalendarEventFormData {

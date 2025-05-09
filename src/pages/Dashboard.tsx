@@ -11,6 +11,7 @@ import CommunityPostCard from "@/components/CommunityPostCard";
 import PracticeStats from "@/components/practice/stats/PracticeStats";
 import PracticeLeaderboard from "@/components/practice/leaderboard/PracticeLeaderboard";
 import { useUserRoutines } from "@/hooks/useUserRoutines";
+import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 
 const Dashboard: React.FC = () => {
   const {
@@ -132,21 +133,9 @@ const Dashboard: React.FC = () => {
           <PracticeLeaderboard />
         </div>
         
-        {/* Upcoming Events */}
+        {/* Upcoming Events - Now using our new component */}
         <div className="dashboard-section">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Upcoming Events</h3>
-            <div className="flex gap-2">
-              <Button variant="ghost" className="text-xs bg-transparent border border-white/10 hover:bg-white/5 text-white/70">Add Event</Button>
-              <Button variant="ghost" className="text-xs bg-transparent border border-white/10 hover:bg-white/5 text-white/70">View All</Button>
-            </div>
-          </div>
-          
-          <div className="flex flex-col h-48 items-center justify-center text-center text-white/50">
-            <Calendar className="h-12 w-12 mb-2 opacity-30" />
-            <p>No upcoming events</p>
-            <p className="text-sm">Schedule a practice session</p>
-          </div>
+          <UpcomingEvents />
         </div>
       </div>
       

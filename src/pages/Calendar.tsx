@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import CalendarView from "@/components/calendar/CalendarView";
 import CalendarHeader from "@/components/calendar/CalendarHeader";
@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { CalendarEvent, CalendarEventFormData, ViewType, CalendarEventInput } from "@/types/calendar";
+import { useLocation } from "react-router-dom";
 
 const Calendar: React.FC = () => {
   const [viewType, setViewType] = useState<ViewType>("month");
@@ -16,6 +17,7 @@ const Calendar: React.FC = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const { user } = useAuth();
+  const location = useLocation();
   
   const {
     events,
@@ -25,8 +27,35 @@ const Calendar: React.FC = () => {
     deleteEvent
   } = useCalendarEvents();
 
-  const handleAddEvent = () => {
+  // Check URL parameters for actions to perform
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    
+    // Handle action=create parameter to open the create event modal
+    if (params.get('action') === 'create') {
+      handleAddEvent();
+    }
+    
+    // Handle routine parameter to pre-select a routine
+    const routineId = params.get('routine');
+    if (routineId) {
+      handleAddEvent(routineId);
+    }
+    
+    // Handle event parameter to open a specific event
+    const eventId = params.get('event');
+    if (eventId) {
+      const event = events.find(e => e.id === eventId);
+      if (event) {
+        handleEditEvent(event);
+      }
+    }
+  }, [location.search, events]);
+
+  const handleAddEvent = (routineId?: string) => {
     setSelectedEvent(null);
+    // If routineId is provided, we'll pass it through state to the modal
+    // The modal will need to be updated to handle this preselection
     setIsEventModalOpen(true);
   };
 
