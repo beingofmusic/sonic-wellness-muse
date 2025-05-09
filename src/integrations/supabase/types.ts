@@ -39,6 +39,59 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          event_date: string
+          event_time: string
+          event_type: string
+          id: string
+          location: string | null
+          routine_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_minutes: number
+          event_date: string
+          event_time: string
+          event_type: string
+          id?: string
+          location?: string | null
+          routine_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          event_date?: string
+          event_time?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          routine_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_messages: {
         Row: {
           content: string
