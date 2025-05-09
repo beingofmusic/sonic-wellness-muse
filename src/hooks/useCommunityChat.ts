@@ -26,6 +26,7 @@ export const useCommunityChat = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
+        console.log('Fetching messages...');
         const { data, error } = await supabase
           .from('community_messages')
           .select(`
@@ -44,19 +45,25 @@ export const useCommunityChat = () => {
           .limit(100);
 
         if (error) throw error;
+        
+        console.log('Raw message data:', JSON.stringify(data, null, 2));
 
         // Transform data to include profile info directly in each message
-        const formattedMessages = data.map((msg: any) => ({
-          id: msg.id,
-          user_id: msg.user_id,
-          content: msg.content,
-          created_at: msg.created_at,
-          username: msg.profiles?.username || null,
-          first_name: msg.profiles?.first_name || null,
-          last_name: msg.profiles?.last_name || null,
-          avatar_url: msg.profiles?.avatar_url || null,
-        }));
+        const formattedMessages = data.map((msg: any) => {
+          // Extract profile data from the nested object
+          return {
+            id: msg.id,
+            user_id: msg.user_id,
+            content: msg.content,
+            created_at: msg.created_at,
+            username: msg.profiles?.username || null,
+            first_name: msg.profiles?.first_name || null,
+            last_name: msg.profiles?.last_name || null,
+            avatar_url: msg.profiles?.avatar_url || null,
+          };
+        });
 
+        console.log('Formatted messages:', JSON.stringify(formattedMessages, null, 2));
         setMessages(formattedMessages);
       } catch (error) {
         console.error('Error fetching messages:', error);
@@ -79,12 +86,15 @@ export const useCommunityChat = () => {
           table: 'community_messages',
         },
         async (payload) => {
+          console.log('New message received:', payload);
           // When we get a new message, fetch the profile information
           const { data, error } = await supabase
             .from('profiles')
             .select('username, first_name, last_name, avatar_url')
             .eq('id', payload.new.user_id)
             .single();
+
+          console.log('Profile data for new message:', data, error);
 
           if (!error && data) {
             const newMsg: ChatMessage = {
