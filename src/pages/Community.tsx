@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
@@ -7,18 +6,19 @@ import ChatInput from "@/components/community/ChatInput";
 import { useCommunityChat } from "@/hooks/useCommunityChat";
 import { toast } from "sonner";
 import { users } from "lucide-react";
-
 const Community: React.FC = () => {
-  const { user } = useAuth();
-  const { 
-    messages, 
-    loading, 
-    newMessage, 
-    setNewMessage, 
+  const {
+    user
+  } = useAuth();
+  const {
+    messages,
+    loading,
+    newMessage,
+    setNewMessage,
     sendMessage,
     scrollRef
   } = useCommunityChat();
-  
+
   // If user is not logged in, show a message
   const handleSend = () => {
     if (!user) {
@@ -27,15 +27,11 @@ const Community: React.FC = () => {
     }
     sendMessage();
   };
-
-  return (
-    <Layout>
+  return <Layout>
       <div className="max-w-4xl mx-auto">
         <header className="mb-4">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">M.U.S.E. Community</h1>
-          <p className="text-white/70">
-            Connect with fellow musicians, share insights, and celebrate your musical journey together.
-          </p>
+          <p className="text-white/70">Connect with fellow Musicians United in Striving for Excellence!</p>
         </header>
         
         {/* Chat Container */}
@@ -44,7 +40,7 @@ const Community: React.FC = () => {
           <div className="p-3 border-b border-white/10 bg-card/80 backdrop-blur-sm flex items-center justify-between">
             <div className="flex items-center gap-2">
               <users className="h-5 w-5 text-music-primary" />
-              <h2 className="font-medium">Global Chat</h2>
+              <h2 className="font-medium">MUSEchat</h2>
             </div>
             <div className="text-xs text-white/50">
               Be kind and supportive to fellow musicians
@@ -52,41 +48,23 @@ const Community: React.FC = () => {
           </div>
           
           {/* Messages Area */}
-          <div 
-            ref={scrollRef}
-            className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin"
-          >
-            {loading ? (
-              <div className="flex justify-center items-center h-full">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
+            {loading ? <div className="flex justify-center items-center h-full">
                 <div className="animate-pulse text-white/50">Loading messages...</div>
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="flex flex-col justify-center items-center h-full text-center p-6">
+              </div> : messages.length === 0 ? <div className="flex flex-col justify-center items-center h-full text-center p-6">
                 <users className="h-12 w-12 text-white/20 mb-2" />
                 <h3 className="text-lg font-medium mb-2">Welcome to the community!</h3>
                 <p className="text-white/50 mb-4">
                   Be the first to start a conversation with fellow musicians.
                 </p>
-                {!user && (
-                  <p className="text-white/70 text-sm">
+                {!user && <p className="text-white/70 text-sm">
                     Sign in to join the conversation
-                  </p>
-                )}
-              </div>
-            ) : (
-              messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))
-            )}
+                  </p>}
+              </div> : messages.map(message => <ChatMessage key={message.id} message={message} />)}
           </div>
           
           {/* Chat Input */}
-          <ChatInput
-            value={newMessage}
-            onChange={setNewMessage}
-            onSubmit={handleSend}
-            disabled={!user}
-          />
+          <ChatInput value={newMessage} onChange={setNewMessage} onSubmit={handleSend} disabled={!user} />
         </div>
         
         {/* Instructions and Guidelines */}
@@ -100,8 +78,6 @@ const Community: React.FC = () => {
           </ul>
         </div>
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Community;
