@@ -11,13 +11,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   // Format the timestamp to be more readable
   const formattedTime = formatDistanceToNow(new Date(message.created_at), { addSuffix: true });
   
-  // Get display name (username or first name + last initial)
-  const getDisplayName = () => {
-    if (message.username) return message.username;
+  // Get full name display (first + last name)
+  const getFullName = () => {
     if (message.first_name) {
-      const lastInitial = message.last_name ? ` ${message.last_name.charAt(0)}.` : '';
-      return `${message.first_name}${lastInitial}`;
+      const lastName = message.last_name ? ` ${message.last_name}` : '';
+      return `${message.first_name}${lastName}`;
     }
+    if (message.username) return message.username;
     return "User";
   };
 
@@ -39,7 +39,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           {message.avatar_url ? (
             <img 
               src={message.avatar_url} 
-              alt={getDisplayName()} 
+              alt={getFullName()} 
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
@@ -48,7 +48,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline mb-1">
-            <span className="font-medium text-white mr-2 truncate">{getDisplayName()}</span>
+            <span className="font-medium text-white mr-2 truncate">{getFullName()}</span>
             <span className="text-xs text-white/50">{formattedTime}</span>
           </div>
           <p className="text-sm text-white/90 break-words">{message.content}</p>
