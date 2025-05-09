@@ -45,7 +45,7 @@ const UserCourseProgress: React.FC = () => {
             <Link to={`/courses/${course.id}`} key={course.id}>
               <CourseProgressCard
                 title={course.title}
-                progress={course.completion_percentage || 0}
+                progress={course.completion_percentage}
                 color={getColorForIndex(index)}
               />
             </Link>

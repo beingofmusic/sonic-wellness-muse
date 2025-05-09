@@ -17,15 +17,16 @@ export const useUserCourseProgress = () => {
       if (!user) return [];
       
       try {
-        // Fetch courses with user's completion data
-        const { data: coursesWithProgress, error } = await supabase
+        // Use our custom SQL function to fetch courses with progress data
+        const { data, error } = await supabase
           .rpc('get_user_courses_with_progress', { 
             user_uuid: user.id 
           });
 
         if (error) throw error;
         
-        return coursesWithProgress || [];
+        // The function returns data in the format we need
+        return data || [];
       } catch (error) {
         console.error("Error fetching user course progress:", error);
         return [];

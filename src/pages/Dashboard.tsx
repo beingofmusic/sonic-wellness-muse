@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
         </div>
       </section>
       
-      {/* Course Progress - Using our new component */}
+      {/* Course Progress - Our updated component will now use real data */}
       <UserCourseProgress />
       
       {/* Split Row */}

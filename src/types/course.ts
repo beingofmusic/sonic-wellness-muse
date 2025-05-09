@@ -25,4 +25,5 @@ export interface CourseWithProgress extends Course {
   total_lessons: number;
   completed_lessons: number;
   completion_percentage: number;
+  last_interaction?: string;
 }

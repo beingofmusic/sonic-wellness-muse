@@ -351,6 +351,22 @@ export type Database = {
           current_streak: number
         }[]
       }
+      get_user_courses_with_progress: {
+        Args: { user_uuid: string }
+        Returns: {
+          id: string
+          title: string
+          description: string
+          instructor: string
+          thumbnail_url: string
+          tags: string[]
+          created_at: string
+          total_lessons: number
+          completed_lessons: number
+          completion_percentage: number
+          last_interaction: string
+        }[]
+      }
       get_weekly_practice_leaderboard: {
         Args: { week_start: string; week_end: string }
         Returns: {
