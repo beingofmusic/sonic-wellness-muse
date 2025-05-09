@@ -37,32 +37,16 @@ const LessonItem: React.FC<LessonItemProps> = ({ lesson, courseId }) => {
       </div>
       
       {lesson.completed ? (
-        <Badge variant="success">Completed</Badge>
+        <Badge variant="default" className="bg-green-500/20 text-green-500 hover:bg-green-500/30 border-0">
+          Completed
+        </Badge>
       ) : (
-        <Badge variant="outline" className="bg-white/5">Not Started</Badge>
+        <Badge variant="outline" className="bg-white/5">
+          Not Started
+        </Badge>
       )}
     </Link>
   );
 };
 
 export default LessonItem;
-
-// Add this Badge component variant for the "success" type
-interface BadgeProps {
-  variant?: "outline" | "success";
-  children: React.ReactNode;
-  className?: string;
-}
-
-const Badge: React.FC<BadgeProps> = ({ variant = "outline", children, className }) => {
-  return (
-    <span className={cn(
-      "px-2 py-0.5 text-xs rounded-full",
-      variant === "outline" ? "border border-white/10" : "",
-      variant === "success" ? "bg-green-500/20 text-green-500" : "",
-      className
-    )}>
-      {children}
-    </span>
-  );
-};
