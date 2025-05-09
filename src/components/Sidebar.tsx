@@ -39,6 +39,7 @@ const Sidebar: React.FC = () => {
   
   const teamLinks = [
     { name: "Team Dashboard", path: "/team", icon: <FileEdit className="h-5 w-5" />, permission: "contribute_content" },
+    { name: "Manage Courses", path: "/courses/manage", icon: <BookOpen className="h-5 w-5" />, permission: "manage_courses" },
   ];
   
   const settingsLink = { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" />, permission: "access_dashboard" };
@@ -122,18 +123,23 @@ const Sidebar: React.FC = () => {
         )}
         
         {/* Team Links (if user has team permissions) */}
-        {filteredTeamLinks.length > 0 && !filteredAdminLinks.length && (
+        {filteredTeamLinks.length > 0 && (
           <>
             <div className="pt-4 my-2 border-t border-white/10">
               <p className="px-3 text-xs font-medium text-white/40 uppercase tracking-wider">
-                Team
+                Content Management
               </p>
             </div>
             {filteredTeamLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`sidebar-link ${location.pathname === link.path ? "active" : ""}`}
+                className={`sidebar-link ${
+                  location.pathname === link.path ||
+                  (link.path === "/courses/manage" && location.pathname.startsWith("/courses/manage"))
+                    ? "active"
+                    : ""
+                }`}
               >
                 {link.icon}
                 <span>{link.name}</span>

@@ -21,6 +21,7 @@ import RoutinePlayer from "./pages/RoutinePlayer";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import LessonViewer from "./pages/LessonViewer";
+import CourseManagement from "./pages/CourseManagement";
 import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
@@ -111,6 +112,16 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Courses />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/courses/manage" 
+              element={
+                <ProtectedRoute>
+                  <PermissionRoute permission="manage_courses">
+                    <CourseManagement />
+                  </PermissionRoute>
                 </ProtectedRoute>
               } 
             />

@@ -3,15 +3,31 @@ import React from "react";
 import { Layout } from "@/components/Layout";
 import { useCourses } from "@/hooks/useCourses";
 import CourseCard from "@/components/course/CourseCard";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Settings } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const Courses: React.FC = () => {
   const { data: courses = [], isLoading, error } = useCourses();
+  const { hasPermission } = useAuth();
+  const canManageCourses = hasPermission("manage_courses");
 
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">Courses</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">Courses</h1>
+          {canManageCourses && (
+            <Link to="/courses/manage">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Manage Courses
+              </Button>
+            </Link>
+          )}
+        </div>
+        
         <p className="text-white/70 mb-8">
           Browse and access educational courses to enhance your musical skills.
         </p>
