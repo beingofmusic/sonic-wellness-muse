@@ -186,6 +186,74 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          prompt_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          prompt_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          prompt_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "journal_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journal_prompts: {
+        Row: {
+          created_at: string
+          description: string
+          duration_minutes: number
+          id: string
+          prompt_text: string
+          title: string
+          type: Database["public"]["Enums"]["journal_prompt_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          duration_minutes: number
+          id?: string
+          prompt_text: string
+          title: string
+          type: Database["public"]["Enums"]["journal_prompt_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          id?: string
+          prompt_text?: string
+          title?: string
+          type?: Database["public"]["Enums"]["journal_prompt_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_progress: {
         Row: {
           completed_at: string
@@ -596,12 +664,108 @@ export type Database = {
           },
         ]
       }
+      wellness_goals: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          weekly_minutes_goal: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          weekly_minutes_goal?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          weekly_minutes_goal?: number
+        }
+        Relationships: []
+      }
+      wellness_practices: {
+        Row: {
+          content: string
+          created_at: string
+          description: string
+          duration_minutes: number
+          id: string
+          image_url: string | null
+          title: string
+          type: Database["public"]["Enums"]["wellness_practice_type"]
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          description: string
+          duration_minutes: number
+          id?: string
+          image_url?: string | null
+          title: string
+          type: Database["public"]["Enums"]["wellness_practice_type"]
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          description?: string
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["wellness_practice_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      wellness_sessions: {
+        Row: {
+          completed_at: string
+          duration_minutes: number
+          id: string
+          practice_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          duration_minutes: number
+          id?: string
+          practice_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          duration_minutes?: number
+          id?: string
+          practice_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wellness_sessions_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "wellness_practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       check_and_award_badges: {
+        Args: { user_uuid: string }
+        Returns: undefined
+      }
+      check_and_award_wellness_badges: {
         Args: { user_uuid: string }
         Returns: undefined
       }
@@ -663,9 +827,25 @@ export type Database = {
           total_minutes: number
         }[]
       }
+      get_wellness_stats: {
+        Args: { user_uuid: string }
+        Returns: {
+          total_sessions: number
+          total_minutes: number
+          current_streak: number
+          total_journal_entries: number
+          weekly_minutes_goal: number
+        }[]
+      }
     }
     Enums: {
+      journal_prompt_type:
+        | "self_composition"
+        | "values"
+        | "resistance"
+        | "learning"
       user_role: "admin" | "team" | "user"
+      wellness_practice_type: "meditation" | "breathwork" | "yoga_fitness"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -781,7 +961,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      journal_prompt_type: [
+        "self_composition",
+        "values",
+        "resistance",
+        "learning",
+      ],
       user_role: ["admin", "team", "user"],
+      wellness_practice_type: ["meditation", "breathwork", "yoga_fitness"],
     },
   },
 } as const
