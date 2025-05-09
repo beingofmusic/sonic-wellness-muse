@@ -19,7 +19,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       return `${message.first_name}${lastName}`;
     }
     if (message.username) return message.username;
-    return "User";
+    return "Unknown User";
   };
 
   // Get initials for the avatar
@@ -30,7 +30,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       return `${firstInitial}${lastInitial}`;
     }
     if (message.username) return message.username.charAt(0).toUpperCase();
-    return "U";
+    return "?";
   };
 
   return (

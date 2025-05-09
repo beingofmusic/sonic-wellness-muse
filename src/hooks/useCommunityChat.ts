@@ -87,41 +87,65 @@ export const useCommunityChat = () => {
         },
         async (payload) => {
           console.log('New message received:', payload);
-          // When we get a new message, fetch the profile information
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('username, first_name, last_name, avatar_url')
-            .eq('id', payload.new.user_id)
-            .single();
+          
+          try {
+            // When we get a new message, fetch the complete message with profile information
+            const { data, error } = await supabase
+              .from('community_messages')
+              .select(`
+                id,
+                content,
+                created_at,
+                user_id,
+                profiles(
+                  username,
+                  first_name,
+                  last_name,
+                  avatar_url
+                )
+              `)
+              .eq('id', payload.new.id)
+              .single();
 
-          console.log('Profile data for new message:', data, error);
+            if (error) throw error;
 
-          if (!error && data) {
+            console.log('Complete message data with profile:', data);
+            
+            // Format the message to match our ChatMessage type
             const newMsg: ChatMessage = {
-              id: payload.new.id,
-              user_id: payload.new.user_id,
-              content: payload.new.content,
-              created_at: payload.new.created_at,
-              username: data.username || null,
-              first_name: data.first_name || null,
-              last_name: data.last_name || null,
-              avatar_url: data.avatar_url || null,
+              id: data.id,
+              user_id: data.user_id,
+              content: data.content,
+              created_at: data.created_at,
+              username: data.profiles?.username || null,
+              first_name: data.profiles?.first_name || null,
+              last_name: data.profiles?.last_name || null,
+              avatar_url: data.profiles?.avatar_url || null,
             };
+
             setMessages((prev) => [...prev, newMsg]);
             
             // Scroll to bottom on new message
             setTimeout(() => {
               scrollToBottom();
             }, 100);
-          } else {
-            // Even if we can't fetch the profile, still add the message
-            const newMsg: ChatMessage = {
+          } catch (error) {
+            console.error('Error processing new message:', error);
+            
+            // As a last resort, add the message with minimal information
+            const basicMsg: ChatMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
               content: payload.new.content,
-              created_at: payload.new.created_at
+              created_at: payload.new.created_at,
+              username: 'Unknown User', // Provide a fallback name
+              first_name: null,
+              last_name: null,
+              avatar_url: null,
             };
-            setMessages((prev) => [...prev, newMsg]);
+            
+            setMessages((prev) => [...prev, basicMsg]);
+            toast.error('Error loading user information');
             
             // Scroll to bottom on new message
             setTimeout(() => {
