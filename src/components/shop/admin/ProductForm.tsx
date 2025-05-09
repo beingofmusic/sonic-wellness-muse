@@ -182,6 +182,23 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     <Input placeholder="https://..." {...field} />
                   </FormControl>
                   <FormMessage />
+                  
+                  {field.value && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium mb-2">Image Preview</p>
+                      <div className="border border-white/10 rounded-md overflow-hidden h-36 bg-black/20">
+                        <img
+                          src={field.value}
+                          alt="Product image preview"
+                          className="h-full w-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "https://placehold.co/300x300?text=Invalid+Image";
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </FormItem>
               )}
             />
@@ -203,23 +220,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                 </FormItem>
               )}
             />
-
-            {field.value && (
-              <div className="mt-4">
-                <p className="text-sm font-medium mb-2">Image Preview</p>
-                <div className="border border-white/10 rounded-md overflow-hidden h-36 bg-black/20">
-                  <img
-                    src={field.value}
-                    alt="Product image preview"
-                    className="h-full w-full object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://placehold.co/300x300?text=Invalid+Image";
-                    }}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
