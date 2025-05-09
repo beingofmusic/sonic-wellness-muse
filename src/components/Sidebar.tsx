@@ -1,8 +1,9 @@
+
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home, Music, BookOpen, MessagesSquare, Heart, Calendar, 
-  ShoppingBag, Settings, Users, Shield, FileEdit, User, LogOut, PackageOpen
+  ShoppingBag, Settings, Users, Shield, FileEdit, User, LogOut
 } from "lucide-react";
 import MusicLogo from "./MusicLogo";
 import { useAuth } from "@/context/AuthContext";
@@ -34,7 +35,6 @@ const Sidebar: React.FC = () => {
   
   const adminLinks = [
     { name: "Admin Panel", path: "/admin", icon: <Shield className="h-5 w-5" />, permission: "manage_users" },
-    { name: "Merch Admin", path: "/shop?admin=true", icon: <PackageOpen className="h-5 w-5" />, permission: "manage_users" }, // Added Merch Admin link
   ];
   
   const teamLinks = [
@@ -113,11 +113,7 @@ const Sidebar: React.FC = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`sidebar-link ${
-                  link.path === "/shop?admin=true" 
-                    ? (location.pathname === "/shop" && location.search.includes("admin=true")) ? "active" : ""
-                    : location.pathname === link.path ? "active" : ""
-                }`}
+                className={`sidebar-link ${location.pathname === link.path ? "active" : ""}`}
               >
                 {link.icon}
                 <span>{link.name}</span>
