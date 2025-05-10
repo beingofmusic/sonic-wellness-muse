@@ -20,11 +20,6 @@ const MobileTopBar: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Don't render if we're not on mobile
-  if (isMobile === false) {
-    return null;
-  }
-  
   // Get user initials for avatar fallback
   const getInitials = () => {
     if (profile?.first_name) {

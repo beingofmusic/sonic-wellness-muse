@@ -13,22 +13,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Use the hook safely
   const isMobile = useIsMobile();
 
-  // Only render sidebar when we're sure we're not on mobile
-  const showSidebar = isMobile === false;
-  
   return (
     <div className="flex min-h-screen">
-      {/* Show sidebar only on desktop */}
-      {showSidebar && <Sidebar />}
+      {/* Show sidebar only on desktop - safely handle initial undefined state */}
+      {isMobile === false && <Sidebar />}
       
-      {/* Mobile top bar */}
+      {/* Mobile top bar - Will render itself only on mobile */}
       <MobileTopBar />
       
       <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6 w-full mt-16 md:mt-0">
         {children}
       </main>
       
-      {/* Mobile navigation */}
+      {/* Mobile navigation - Will render itself only on mobile */}
       <MobileNavbar />
     </div>
   );

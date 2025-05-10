@@ -15,11 +15,6 @@ const MobileNavbar: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   
-  // Don't render if we're sure we're on desktop
-  if (isMobile === false) {
-    return null;
-  }
-  
   const navItems = [
     { label: "Home", icon: <Home size={20} />, path: "/dashboard" },
     { label: "Practice", icon: <Music size={20} />, path: "/practice" },

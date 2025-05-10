@@ -22,8 +22,8 @@ const MusicLogo: React.FC<MusicLogoProps> = ({ size = "md", withText = true }) =
 
   return (
     <div className="flex items-center gap-2">
-      <div className={`rounded-full bg-music-primary/20 p-2 ${withText ? logoSizes[size] : ""}`}>
-        <Music className={`text-music-primary ${!withText ? logoSizes[size] : "h-full w-full"}`} />
+      <div className={`rounded-full bg-music-primary/20 p-2 ${logoSizes[size]}`}>
+        <Music className={`text-music-primary h-full w-full`} />
       </div>
       {withText && (
         <span className={`font-serif font-medium ${textSizes[size]}`}>
