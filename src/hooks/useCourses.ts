@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   fetchCoursesWithProgress, 
@@ -12,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useBadgeNotificationContext } from "@/context/BadgeNotificationContext";
 import { Badge } from "@/hooks/useUserProfile";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCourses = () => {
   return useQuery({

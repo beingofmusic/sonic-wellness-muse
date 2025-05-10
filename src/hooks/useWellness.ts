@@ -1,21 +1,88 @@
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { WellnessStats, WellnessPractice, JournalPrompt } from "@/types/wellness";
+import { 
+  fetchWellnessStats, 
+  fetchWellnessPractices, 
+  fetchJournalPrompts, 
+  saveJournalEntry,
+  updateWellnessGoal,
+  saveWellnessSession
+} from "@/services/wellnessService";
 import { checkForNewBadges } from "@/services/courseService";
 import { useBadgeNotificationContext } from "@/context/BadgeNotificationContext";
 
-interface CompleteWellnessSessionParams {
-  practiceId: string;
-  durationMinutes: number;
-}
+// Hook to fetch wellness stats
+export const useWellnessStats = () => {
+  return useQuery({
+    queryKey: ["wellness-stats"],
+    queryFn: fetchWellnessStats
+  });
+};
 
+// Hook to fetch wellness practices
+export const useWellnessPractices = (type?: string) => {
+  return useQuery({
+    queryKey: ["wellness-practices", type],
+    queryFn: () => fetchWellnessPractices(type)
+  });
+};
+
+// Hook to fetch journal prompts
+export const useJournalPrompts = (type?: string) => {
+  return useQuery({
+    queryKey: ["journal-prompts", type],
+    queryFn: () => fetchJournalPrompts(type)
+  });
+};
+
+// Hook to save journal entries
+export const useSaveJournalEntry = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ promptId, content }: { promptId: string | null, content: string }) => {
+      return saveJournalEntry(promptId || null, content);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
+      queryClient.invalidateQueries({ queryKey: ["wellness-stats"] });
+    },
+    onError: (error) => {
+      console.error("Error saving journal entry:", error);
+      toast.error("Failed to save journal entry");
+    }
+  });
+};
+
+// Hook to update wellness goal
+export const useUpdateWellnessGoal = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (weeklyMinutesGoal: number) => {
+      return updateWellnessGoal(weeklyMinutesGoal);
+    },
+    onSuccess: () => {
+      toast.success("Wellness goal updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["wellness-stats"] });
+    },
+    onError: (error) => {
+      console.error("Error updating wellness goal:", error);
+      toast.error("Failed to update goal");
+    }
+  });
+};
+
+// Hook to complete wellness sessions
 export const useCompleteWellnessSession = () => {
   const queryClient = useQueryClient();
   const { showBadgeNotification } = useBadgeNotificationContext();
   
   return useMutation({
-    mutationFn: async (params: CompleteWellnessSessionParams) => {
+    mutationFn: async (params: { practiceId: string, durationMinutes: number }) => {
       const { practiceId, durationMinutes } = params;
 
       // Get current user
@@ -25,17 +92,9 @@ export const useCompleteWellnessSession = () => {
       }
 
       // Log wellness session completion
-      const { error } = await supabase
-        .from("wellness_completions")
-        .insert({
-          practice_id: practiceId,
-          user_id: userData.user.id,
-          duration_minutes: durationMinutes
-        });
-
-      if (error) {
-        console.error("Error completing wellness session:", error);
-        throw error;
+      const success = await saveWellnessSession(practiceId, durationMinutes);
+      if (!success) {
+        throw new Error("Failed to save wellness session");
       }
 
       // Check for new badges
