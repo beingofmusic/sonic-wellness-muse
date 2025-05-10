@@ -180,7 +180,7 @@ export const fetchJournalSectionProgress = async (section?: JournalSectionType):
     // First get all prompts by section to calculate total
     const promptsResult = await supabase
       .from('journal_section_prompts')
-      .select('section, count(*)', { count: 'exact', groupBy: 'section' })
+      .select('section, count()', { count: 'exact' })
       .order('section');
 
     // Then get user's completed entries by section
@@ -197,9 +197,19 @@ export const fetchJournalSectionProgress = async (section?: JournalSectionType):
       throw promptsResult.error || entriesResult.error;
 
     // Count prompts by section
-    const totalBySection: Record<string, number> = {};
-    for (const row of (promptsResult.data || [])) {
-      totalBySection[row.section] = row.count;
+    const sections = ['past', 'present', 'future'] as JournalSectionType[];
+    const sectionCounts: Record<string, number> = {};
+    
+    // Calculate totals for each section
+    if (promptsResult.data) {
+      for (const sectionType of sections) {
+        const sectionData = promptsResult.data.filter(row => row.section === sectionType);
+        if (sectionData.length > 0) {
+          sectionCounts[sectionType] = sectionData.length;
+        } else {
+          sectionCounts[sectionType] = 0;
+        }
+      }
     }
     
     // Count completed entries by section
@@ -212,14 +222,14 @@ export const fetchJournalSectionProgress = async (section?: JournalSectionType):
     }
     
     // Create final progress array
-    const progress: SectionProgress[] = (Object.keys(totalBySection) as JournalSectionType[])
+    const progress: SectionProgress[] = sections
       .filter(s => !section || s === section)
       .map(s => ({
         section: s,
-        total_prompts: totalBySection[s] || 0,
+        total_prompts: sectionCounts[s] || 0,
         completed_prompts: completedBySection[s] || 0,
-        completion_percentage: totalBySection[s] 
-          ? Math.round((completedBySection[s] || 0) * 100 / totalBySection[s]) 
+        completion_percentage: sectionCounts[s] 
+          ? Math.round((completedBySection[s] || 0) * 100 / sectionCounts[s]) 
           : 0
       }));
       

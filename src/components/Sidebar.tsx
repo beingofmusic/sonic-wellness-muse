@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MusicLogo } from "@/components/MusicLogo";
+import MusicLogo from "@/components/MusicLogo";
 import {
   LayoutDashboard,
   Music,
@@ -44,7 +44,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, to }) => {
 };
 
 const Sidebar = () => {
-  const { user, profile, permissions } = useAuth();
+  const { user, profile } = useAuth();
   const email = user?.email || "";
 
   const getInitials = () => {
@@ -65,7 +65,7 @@ const Sidebar = () => {
     <aside className="fixed top-0 left-0 z-30 h-full w-64 hidden md:block bg-background shadow-xl border-r border-white/10">
       <div className="flex h-full flex-col overflow-y-auto">
         <div className="flex items-center justify-center h-16 border-b border-white/10">
-          <MusicLogo className="h-8 w-auto" />
+          <MusicLogo size="md" withText={true} />
         </div>
 
         <div className="flex-1 py-4 px-3 space-y-1">
@@ -80,11 +80,11 @@ const Sidebar = () => {
           {/* Add new link to the Journal feature */}
           <SidebarItem icon={<BookText size={18} />} label="Journal" to="/journal" />
           
-          {permissions.includes('team') && (
+          {user?.role === 'team' && (
             <SidebarItem icon={<LineChart size={18} />} label="Team Dashboard" to="/team" />
           )}
           
-          {permissions.includes('admin') && (
+          {user?.role === 'admin' && (
             <SidebarItem icon={<ShieldAlert size={18} />} label="Admin Panel" to="/admin" />
           )}
         </div>

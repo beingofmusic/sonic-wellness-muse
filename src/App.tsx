@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
 import Practice from './pages/Practice';
@@ -58,45 +59,126 @@ function App() {
           <Route path="/login" element={<SignIn />} />
           <Route path="/register" element={<SignUp />} />
           
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/practice" element={<Practice />} />
-            <Route path="/practice/history" element={<PracticeHistory />} />
-            <Route path="/practice/routine/:id" element={<RoutineBuilder />} />
-            <Route path="/practice/play/:id" element={<RoutinePlayer />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/courses/:id" element={<CourseDetail />} />
-            <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonViewer />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/wellness" element={<Wellness />} />
-            <Route path="/wellness/practice/:id" element={<WellnessPractice />} />
-            <Route path="/wellness/journal/:id" element={<JournalingPage />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
-            
-            {/* Add new routes for the Musical Self-Composition Suite */}
-            <Route path="/journal" element={<Journal />} />
-            <Route path="/journal/:section" element={<JournalSection />} />
-            <Route path="/journal/prompt/:id" element={<JournalPrompt />} />
-            
-            <Route element={<PermissionRoute permission="manage_courses" />}>
-              <Route path="/admin/courses" element={<CourseManagement />} />
-            </Route>
-
-            <Route element={<PermissionRoute permission="admin" />}>
-              <Route path="/admin" element={<AdminPanel />} />
-            </Route>
-
-            <Route element={<PermissionRoute permission="team" />}>
-              <Route path="/team" element={<TeamDashboard />} />
-            </Route>
-          </Route>
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/practice" element={
+            <ProtectedRoute>
+              <Practice />
+            </ProtectedRoute>
+          } />
+          <Route path="/practice/history" element={
+            <ProtectedRoute>
+              <PracticeHistory />
+            </ProtectedRoute>
+          } />
+          <Route path="/practice/routine/:id" element={
+            <ProtectedRoute>
+              <RoutineBuilder />
+            </ProtectedRoute>
+          } />
+          <Route path="/practice/play/:id" element={
+            <ProtectedRoute>
+              <RoutinePlayer />
+            </ProtectedRoute>
+          } />
+          <Route path="/community" element={
+            <ProtectedRoute>
+              <Community />
+            </ProtectedRoute>
+          } />
+          <Route path="/courses" element={
+            <ProtectedRoute>
+              <Courses />
+            </ProtectedRoute>
+          } />
+          <Route path="/courses/:id" element={
+            <ProtectedRoute>
+              <CourseDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/courses/:courseId/lessons/:lessonId" element={
+            <ProtectedRoute>
+              <LessonViewer />
+            </ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <Calendar />
+            </ProtectedRoute>
+          } />
+          <Route path="/shop" element={
+            <ProtectedRoute>
+              <Shop />
+            </ProtectedRoute>
+          } />
+          <Route path="/wellness" element={
+            <ProtectedRoute>
+              <Wellness />
+            </ProtectedRoute>
+          } />
+          <Route path="/wellness/practice/:id" element={
+            <ProtectedRoute>
+              <WellnessPractice />
+            </ProtectedRoute>
+          } />
+          <Route path="/wellness/journal/:id" element={
+            <ProtectedRoute>
+              <JournalingPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
+          
+          {/* Add new routes for the Musical Self-Composition Suite */}
+          <Route path="/journal" element={
+            <ProtectedRoute>
+              <Journal />
+            </ProtectedRoute>
+          } />
+          <Route path="/journal/:section" element={
+            <ProtectedRoute>
+              <JournalSection />
+            </ProtectedRoute>
+          } />
+          <Route path="/journal/prompt/:id" element={
+            <ProtectedRoute>
+              <JournalPrompt />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin/courses" element={
+            <PermissionRoute permission="manage_courses">
+              <CourseManagement />
+            </PermissionRoute>
+          } />
+          
+          <Route path="/admin" element={
+            <PermissionRoute permission="admin">
+              <AdminPanel />
+            </PermissionRoute>
+          } />
+          
+          <Route path="/team" element={
+            <PermissionRoute permission="team">
+              <TeamDashboard />
+            </PermissionRoute>
+          } />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
         
-        <Toaster position="bottom-right" />
+        <Toaster />
       </ThemeProvider>
     </QueryClientProvider>
   );
