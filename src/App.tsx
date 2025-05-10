@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
@@ -30,8 +30,6 @@ import RootRoute from './components/RootRoute';
 import Wellness from './pages/Wellness';
 import WellnessPractice from './pages/wellness/WellnessPractice';
 import JournalingPage from './pages/wellness/JournalingPage';
-
-// Import our new journal pages
 import Journal from './pages/Journal';
 import JournalSection from './pages/JournalSection';
 import JournalPrompt from './pages/JournalPrompt';
@@ -46,8 +44,6 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const [isInitialized, setIsInitialized] = useState(false);
-
   return (
     <Router>
       <QueryClientProvider client={queryClient}>
@@ -141,7 +137,7 @@ function App() {
               </ProtectedRoute>
             } />
             
-            {/* Add new routes for the Musical Self-Composition Suite */}
+            {/* Journal routes */}
             <Route path="/journal" element={
               <ProtectedRoute>
                 <Journal />
