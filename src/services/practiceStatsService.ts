@@ -1,7 +1,7 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
 import { startOfDay, isYesterday, differenceInCalendarDays } from "date-fns";
+import { checkForNewBadges } from "@/services/courseService";
 
 export interface PracticeSession {
   id: string;
@@ -25,11 +25,11 @@ export const logPracticeSession = async (
   routineId: string,
   totalDuration: number,
   blocks: RoutineBlock[]
-): Promise<boolean> => {
+): Promise<{ success: boolean, newBadges: any[] }> => {
   try {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData?.user) {
-      return false;
+      return { success: false, newBadges: [] };
     }
 
     // Create block breakdown data
@@ -50,13 +50,16 @@ export const logPracticeSession = async (
 
     if (error) {
       console.error("Error logging practice session:", error);
-      return false;
+      return { success: false, newBadges: [] };
     }
 
-    return true;
+    // Check for newly earned badges after logging the practice session
+    const newBadges = await checkForNewBadges(userData.user.id);
+    
+    return { success: true, newBadges };
   } catch (err) {
     console.error("Failed to log practice session:", err);
-    return false;
+    return { success: false, newBadges: [] };
   }
 };
 

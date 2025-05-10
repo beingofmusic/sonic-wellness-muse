@@ -5,10 +5,13 @@ import {
   fetchCourseById,
   fetchLessonsForCourse, 
   fetchLessonById,
-  markLessonAsCompleted 
+  markLessonAsCompleted,
+  checkForNewBadges
 } from "@/services/courseService";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useBadgeNotificationContext } from "@/context/BadgeNotificationContext";
+import { Badge } from "@/hooks/useUserProfile";
 
 export const useCourses = () => {
   return useQuery({
@@ -45,13 +48,24 @@ export const useMarkLessonCompleted = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { showBadgeNotification } = useBadgeNotificationContext();
   
   return useMutation({
-    mutationFn: (lessonId: string) => {
+    mutationFn: async (lessonId: string) => {
       console.log("Starting mutation to mark lesson completed:", lessonId);
-      return markLessonAsCompleted(lessonId);
+      await markLessonAsCompleted(lessonId);
+      
+      // Get the user's ID
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+      
+      // Check for any new badges that were just earned
+      const newBadges = await checkForNewBadges(session.user.id);
+      
+      // Return the first new badge (if any) to be shown in the notification
+      return newBadges.length > 0 ? newBadges[0] : null;
     },
-    onSuccess: (_, lessonId) => {
+    onSuccess: async (newBadge: Badge | null, lessonId) => {
       console.log("Mutation successful, now invalidating queries");
       
       // First get the lesson details to find its course_id
@@ -69,6 +83,11 @@ export const useMarkLessonCompleted = () => {
             description: "Your progress has been updated.",
             duration: 3000,
           });
+          
+          // Display badge notification if a new badge was earned
+          if (newBadge) {
+            showBadgeNotification(newBadge);
+          }
           
           // Invalidate the course's lessons to refresh completion status
           queryClient.invalidateQueries({ 

@@ -1,118 +1,66 @@
 
-import { useState, useEffect } from "react";
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { 
-  fetchWellnessStats, 
-  fetchWellnessPractices, 
-  fetchJournalPrompts,
-  saveWellnessSession,
-  saveJournalEntry,
-  updateJournalEntry,
-  fetchJournalEntries,
-  updateWellnessGoal
-} from "@/services/wellnessService";
+import { checkForNewBadges } from "@/services/courseService";
+import { useBadgeNotificationContext } from "@/context/BadgeNotificationContext";
 
-export const useWellnessStats = () => {
-  return useQuery({
-    queryKey: ["wellness-stats"],
-    queryFn: fetchWellnessStats,
-    refetchOnWindowFocus: false,
-  });
-};
-
-export const useWellnessPractices = (type: string = 'all') => {
-  return useQuery({
-    queryKey: ["wellness-practices", type],
-    queryFn: () => fetchWellnessPractices(type),
-    refetchOnWindowFocus: false,
-  });
-};
-
-export const useJournalPrompts = (type: string = 'all') => {
-  return useQuery({
-    queryKey: ["journal-prompts", type],
-    queryFn: () => fetchJournalPrompts(type),
-    refetchOnWindowFocus: false,
-  });
-};
-
-export const useJournalEntries = () => {
-  return useQuery({
-    queryKey: ["journal-entries"],
-    queryFn: fetchJournalEntries,
-    refetchOnWindowFocus: false,
-  });
-};
+interface CompleteWellnessSessionParams {
+  practiceId: string;
+  durationMinutes: number;
+}
 
 export const useCompleteWellnessSession = () => {
   const queryClient = useQueryClient();
+  const { showBadgeNotification } = useBadgeNotificationContext();
   
   return useMutation({
-    mutationFn: ({ practiceId, durationMinutes }: 
-      { practiceId: string, durationMinutes: number }) => {
-      return saveWellnessSession(practiceId, durationMinutes);
-    },
-    onSuccess: () => {
-      toast.success("Wellness session completed");
-      queryClient.invalidateQueries({ queryKey: ["wellness-stats"] });
-    },
-    onError: () => {
-      toast.error("Failed to save wellness session");
-    },
-  });
-};
+    mutationFn: async (params: CompleteWellnessSessionParams) => {
+      const { practiceId, durationMinutes } = params;
 
-export const useSaveJournalEntry = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ promptId, content }: 
-      { promptId: string | null, content: string }) => {
-      return saveJournalEntry(promptId, content);
-    },
-    onSuccess: () => {
-      toast.success("Journal entry saved");
-      queryClient.invalidateQueries({ queryKey: ["wellness-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
-    },
-    onError: () => {
-      toast.error("Failed to save journal entry");
-    },
-  });
-};
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        throw new Error("User not authenticated");
+      }
 
-export const useUpdateJournalEntry = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ entryId, content }: 
-      { entryId: string, content: string }) => {
-      return updateJournalEntry(entryId, content);
-    },
-    onSuccess: () => {
-      toast.success("Journal entry updated");
-      queryClient.invalidateQueries({ queryKey: ["journal-entries"] });
-    },
-    onError: () => {
-      toast.error("Failed to update journal entry");
-    },
-  });
-};
+      // Log wellness session completion
+      const { error } = await supabase
+        .from("wellness_completions")
+        .insert({
+          practice_id: practiceId,
+          user_id: userData.user.id,
+          duration_minutes: durationMinutes
+        });
 
-export const useUpdateWellnessGoal = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (weeklyMinutesGoal: number) => {
-      return updateWellnessGoal(weeklyMinutesGoal);
+      if (error) {
+        console.error("Error completing wellness session:", error);
+        throw error;
+      }
+
+      // Check for new badges
+      const newBadges = await checkForNewBadges(userData.user.id);
+      
+      return { success: true, newBadges };
     },
-    onSuccess: () => {
-      toast.success("Wellness goal updated");
+    onSuccess: (data) => {
+      // Show success message
+      toast.success("Wellness practice completed!");
+      
+      // Show badge notification if a new badge was earned
+      if (data.newBadges && data.newBadges.length > 0) {
+        showBadgeNotification(data.newBadges[0]);
+      }
+      
+      // Invalidate wellness stats query to refresh data
       queryClient.invalidateQueries({ queryKey: ["wellness-stats"] });
+      
+      // Invalidate recent completions
+      queryClient.invalidateQueries({ queryKey: ["wellness-recent"] });
     },
-    onError: () => {
-      toast.error("Failed to update wellness goal");
-    },
+    onError: (error) => {
+      console.error("Failed to complete wellness session:", error);
+      toast.error("Failed to save your progress");
+    }
   });
 };

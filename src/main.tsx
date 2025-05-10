@@ -5,12 +5,15 @@ import './index.css'
 import { AuthProvider } from './context/AuthContext'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
+import { BadgeNotificationProvider } from './context/BadgeNotificationContext'
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AuthProvider>
-      <App />
-      <Toaster position="top-center" />
+      <BadgeNotificationProvider>
+        <App />
+        <Toaster position="top-center" />
+      </BadgeNotificationProvider>
     </AuthProvider>
   </BrowserRouter>
 );

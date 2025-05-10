@@ -223,9 +223,55 @@ export async function markLessonAsCompleted(lessonId: string): Promise<boolean> 
     }
     
     console.log("Lesson marked as completed successfully:", data);
+    
+    // Check for newly earned badges
+    await checkForNewBadges(session.user.id);
+    
     return true;
   } catch (error) {
     console.error("Error in markLessonAsCompleted:", error);
     throw error; // Re-throw to be handled by the mutation's onError
+  }
+}
+
+// Function to check for new badges
+export async function checkForNewBadges(userId: string): Promise<any[]> {
+  try {
+    // First, trigger badge check in the database
+    await supabase.rpc('check_and_award_badges', { user_uuid: userId });
+    
+    // Then fetch newly earned badges (get badges awarded in the last minute)
+    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+    
+    const { data: newBadges, error } = await supabase
+      .from('user_badges')
+      .select(`
+        earned_at,
+        badges (
+          id, 
+          title,
+          description,
+          icon,
+          condition_type,
+          threshold
+        )
+      `)
+      .eq('user_id', userId)
+      .gt('earned_at', oneMinuteAgo)
+      .order('earned_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching new badges:", error);
+      return [];
+    }
+    
+    // Format badges data
+    return newBadges.map((item: any) => ({
+      ...item.badges,
+      earned_at: item.earned_at
+    }));
+  } catch (error) {
+    console.error("Error checking for new badges:", error);
+    return [];
   }
 }
