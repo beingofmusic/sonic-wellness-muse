@@ -6,6 +6,8 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStats from "@/components/profile/ProfileStats";
 import BadgeCollection from "@/components/profile/BadgeCollection";
 import ProfileEditor from "@/components/profile/ProfileEditor";
+import BadgeNotification from "@/components/profile/BadgeNotification";
+import { useBadgeNotifications } from "@/hooks/useBadgeNotifications";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
@@ -15,6 +17,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const { profileData, isLoading, updateProfile } = useUserProfile();
+  
+  // Use the badge notification hook to detect new badges
+  const { 
+    showNotification, 
+    currentBadge, 
+    closeNotification 
+  } = useBadgeNotifications(profileData?.earned_badges || []);
 
   if (!user) {
     return (
@@ -85,6 +94,17 @@ const Profile: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Badge Notification Dialog */}
+        {currentBadge && (
+          <BadgeNotification
+            badge={currentBadge}
+            open={showNotification}
+            onOpenChange={(open) => {
+              if (!open) closeNotification();
+            }}
+          />
+        )}
       </div>
     </Layout>
   );
