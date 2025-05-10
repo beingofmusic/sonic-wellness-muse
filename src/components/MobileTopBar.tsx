@@ -42,12 +42,11 @@ const MobileTopBar: React.FC = () => {
     navigate("/");
   };
   
-  // Only show top bar when isMobile is true
-  // If it's null (initial state), we don't render yet
+  // Don't render anything until we know if we're on mobile
   if (isMobile !== true) return null;
   
   return (
-    <div className="fixed top-0 left-0 right-0 h-16 border-b border-white/10 bg-card/90 backdrop-blur-lg md:hidden z-50">
+    <div className="fixed top-0 left-0 right-0 h-16 border-b border-white/10 bg-card/90 backdrop-blur-lg z-50">
       <div className="flex items-center justify-between px-4 h-full">
         <div className="flex items-center">
           <MusicLogo size="sm" />

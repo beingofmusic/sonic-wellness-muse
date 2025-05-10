@@ -33,12 +33,11 @@ const MobileNavbar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
   
-  // Only show navbar when isMobile is true
-  // If it's null (initial state), we don't render yet
+  // Don't render anything until we know if we're on mobile
   if (isMobile !== true) return null;
   
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-card/90 backdrop-blur-lg md:hidden z-50">
+    <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-card/90 backdrop-blur-lg z-50">
       <div className="grid grid-cols-6 h-16">
         {navItems.map((item) => (
           <Link 

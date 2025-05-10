@@ -7,23 +7,28 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
-    // Safe check for window to ensure we're in browser environment
-    if (typeof window === "undefined") return;
+    // Check if window is defined (browser environment)
+    if (typeof window === "undefined") {
+      return;
+    }
     
-    // Initial check
+    // Create the check function
     const checkMobile = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
     
-    // Run initial check
+    // Call it immediately
     checkMobile();
     
-    // Create event listener
+    // Set up the event listener
     window.addEventListener("resize", checkMobile);
     
-    // Clean up
-    return () => window.removeEventListener("resize", checkMobile);
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", checkMobile);
+    };
   }, []);
 
+  // Return the state
   return isMobile;
 }
