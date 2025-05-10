@@ -1,205 +1,113 @@
-
 import React from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { 
-  Home, Music, BookOpen, MessagesSquare, Heart, Calendar, 
-  ShoppingBag, Settings, Users, Shield, FileEdit, User, LogOut
-} from "lucide-react";
-import MusicLogo from "./MusicLogo";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MusicLogo } from "@/components/MusicLogo";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  LayoutDashboard,
+  Music,
+  GraduationCap,
+  Users,
+  CalendarDays,
+  ShoppingBag,
+  Flame,
+  LineChart,
+  ShieldAlert,
+  BookText
+} from "lucide-react";
 
-const Sidebar: React.FC = () => {
+interface SidebarItemProps {
+  icon: React.ReactNode;
+  label: string;
+  to: string;
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, to }) => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { hasPermission, profile, signOut } = useAuth();
-  
-  // Define basic permissions for standard users
-  const defaultPermissions = ["access_dashboard", "access_practice", "access_courses", "access_community", "access_wellness"];
-  
-  const commonLinks = [
-    { name: "Dashboard", path: "/dashboard", icon: <Home className="h-5 w-5" />, permission: "access_dashboard" },
-    { name: "Practice", path: "/practice", icon: <Music className="h-5 w-5" />, permission: "access_practice" },
-    { name: "Courses", path: "/courses", icon: <BookOpen className="h-5 w-5" />, permission: "access_courses" },
-    { name: "Community", path: "/community", icon: <MessagesSquare className="h-5 w-5" />, permission: "access_community" },
-    { name: "Wellness", path: "/wellness", icon: <Heart className="h-5 w-5" />, permission: "access_wellness" },
-    { name: "Calendar", path: "/calendar", icon: <Calendar className="h-5 w-5" />, permission: "access_dashboard" },
-    { name: "Shop", path: "/shop", icon: <ShoppingBag className="h-5 w-5" />, permission: "access_dashboard" },
-  ];
-  
-  const adminLinks = [
-    { name: "Admin Panel", path: "/admin", icon: <Shield className="h-5 w-5" />, permission: "manage_users" },
-  ];
-  
-  const teamLinks = [
-    { name: "Team Dashboard", path: "/team", icon: <FileEdit className="h-5 w-5" />, permission: "contribute_content" },
-    { name: "Manage Courses", path: "/courses/manage", icon: <BookOpen className="h-5 w-5" />, permission: "manage_courses" },
-  ];
-  
-  const settingsLink = { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" />, permission: "access_dashboard" };
-
-  // Enhanced hasPermission check that also considers default permissions for all users
-  const checkPermission = (permission: string): boolean => {
-    if (defaultPermissions.includes(permission)) {
-      return true; // Grant access to default permissions for all authenticated users
-    }
-    return hasPermission(permission);
-  };
-
-  // Filter links based on enhanced permission check
-  const filteredCommonLinks = commonLinks.filter(link => checkPermission(link.permission));
-  const filteredAdminLinks = adminLinks.filter(link => checkPermission(link.permission));
-  const filteredTeamLinks = teamLinks.filter(link => checkPermission(link.permission));
-  
-  // Function to get user's display name
-  const getDisplayName = () => {
-    if (profile?.first_name) {
-      return profile.first_name;
-    } else if (profile?.username) {
-      return profile.username;
-    }
-    return 'User';
-  };
-  
-  // Function to get user's initials
-  const getUserInitials = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return profile.first_name.charAt(0).toUpperCase();
-    } else if (profile?.username) {
-      return profile.username.charAt(0).toUpperCase();
-    }
-    return 'U';
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
+  const isActive = location.pathname === to || location.pathname.startsWith(`${to}/`);
 
   return (
-    <aside className="w-64 h-screen sticky top-0 bg-card/30 backdrop-blur-md border-r border-white/10 p-4 flex flex-col">
-      <div className="py-4 px-2 mb-8">
-        <MusicLogo withText />
-      </div>
-      
-      <nav className="flex-1 space-y-1.5">
-        {/* Common Links */}
-        {filteredCommonLinks.map((link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            className={`sidebar-link ${location.pathname === link.path ? "active" : ""}`}
-          >
-            {link.icon}
-            <span>{link.name}</span>
-          </Link>
-        ))}
-        
-        {/* Admin Links (if user has admin permissions) */}
-        {filteredAdminLinks.length > 0 && (
-          <>
-            <div className="pt-4 my-2 border-t border-white/10">
-              <p className="px-3 text-xs font-medium text-white/40 uppercase tracking-wider">
-                Administration
-              </p>
-            </div>
-            {filteredAdminLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`sidebar-link ${location.pathname === link.path ? "active" : ""}`}
-              >
-                {link.icon}
-                <span>{link.name}</span>
-              </Link>
-            ))}
-          </>
-        )}
-        
-        {/* Team Links (if user has team permissions) */}
-        {filteredTeamLinks.length > 0 && (
-          <>
-            <div className="pt-4 my-2 border-t border-white/10">
-              <p className="px-3 text-xs font-medium text-white/40 uppercase tracking-wider">
-                Content Management
-              </p>
-            </div>
-            {filteredTeamLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`sidebar-link ${
-                  location.pathname === link.path ||
-                  (link.path === "/courses/manage" && location.pathname.startsWith("/courses/manage"))
-                    ? "active"
-                    : ""
-                }`}
-              >
-                {link.icon}
-                <span>{link.name}</span>
-              </Link>
-            ))}
-          </>
-        )}
-        
-        {/* Settings is always available */}
-        <div className="pt-4 my-2 border-t border-white/10">
-          <Link
-            to={settingsLink.path}
-            className={`sidebar-link ${location.pathname === settingsLink.path ? "active" : ""}`}
-          >
-            {settingsLink.icon}
-            <span>{settingsLink.name}</span>
-          </Link>
+    <Link
+      to={to}
+      className={cn(
+        "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+        isActive
+          ? "bg-music-primary/20 text-white"
+          : "text-white/70 hover:text-white hover:bg-white/10"
+      )}
+    >
+      <span className="mr-3 text-white/80">{icon}</span>
+      {label}
+    </Link>
+  );
+};
+
+const Sidebar = () => {
+  const { user, profile, permissions } = useAuth();
+  const email = user?.email || "";
+
+  const getInitials = () => {
+    if (profile?.first_name) {
+      const firstInitial = profile.first_name.charAt(0).toUpperCase();
+      const lastInitial = profile.last_name ? profile.last_name.charAt(0).toUpperCase() : '';
+      return `${firstInitial}${lastInitial}`;
+    }
+    if (email) return email.charAt(0).toUpperCase();
+    return "U";
+  };
+
+  const displayName = profile?.first_name
+    ? `${profile.first_name} ${profile.last_name || ""}`
+    : email.split("@")[0];
+
+  return (
+    <aside className="fixed top-0 left-0 z-30 h-full w-64 hidden md:block bg-background shadow-xl border-r border-white/10">
+      <div className="flex h-full flex-col overflow-y-auto">
+        <div className="flex items-center justify-center h-16 border-b border-white/10">
+          <MusicLogo className="h-8 w-auto" />
         </div>
-      </nav>
-      
-      <div className="mt-auto pt-4 border-t border-white/10">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="sidebar-link w-full hover:bg-white/5 transition-colors">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center">
-                <span className="text-sm font-medium text-music-primary">
-                  {getUserInitials()}
-                </span>
-              </div>
-              <span>{getDisplayName()}</span>
-              <span className="ml-auto text-xs px-2 py-1 rounded bg-white/10 text-white/70">
-                {profile?.role || 'user'}
-              </span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56 bg-card/95 backdrop-blur-md border-white/10 text-white">
-            <DropdownMenuItem 
-              className="flex items-center cursor-pointer"
-              onClick={() => navigate('/profile')}
-            >
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center cursor-pointer"
-              onClick={() => navigate('/settings')}
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem
-              className="flex items-center cursor-pointer text-red-400"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+
+        <div className="flex-1 py-4 px-3 space-y-1">
+          <SidebarItem icon={<LayoutDashboard size={18} />} label="Dashboard" to="/dashboard" />
+          <SidebarItem icon={<Music size={18} />} label="Practice" to="/practice" />
+          <SidebarItem icon={<GraduationCap size={18} />} label="Courses" to="/courses" />
+          <SidebarItem icon={<Users size={18} />} label="Community" to="/community" />
+          <SidebarItem icon={<CalendarDays size={18} />} label="Calendar" to="/calendar" />
+          <SidebarItem icon={<ShoppingBag size={18} />} label="Shop" to="/shop" />
+          <SidebarItem icon={<Flame size={18} />} label="Wellness" to="/wellness" />
+          
+          {/* Add new link to the Journal feature */}
+          <SidebarItem icon={<BookText size={18} />} label="Journal" to="/journal" />
+          
+          {permissions.includes('team') && (
+            <SidebarItem icon={<LineChart size={18} />} label="Team Dashboard" to="/team" />
+          )}
+          
+          {permissions.includes('admin') && (
+            <SidebarItem icon={<ShieldAlert size={18} />} label="Admin Panel" to="/admin" />
+          )}
+        </div>
+
+        <div className="p-4 border-t border-white/10">
+          <div className="flex items-center">
+            <Avatar className="h-10 w-10">
+              {profile?.avatar_url ? (
+                <AvatarImage src={profile.avatar_url} alt={profile?.first_name || 'User'} />
+              ) : (
+                <AvatarFallback className="bg-music-primary/20 text-music-primary">
+                  {getInitials()}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="ml-3">
+              <p className="text-sm font-medium">{displayName}</p>
+              <p className="text-xs text-white/50 truncate max-w-[10rem]">
+                {email}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </aside>
   );
