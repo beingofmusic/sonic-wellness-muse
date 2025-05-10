@@ -25,6 +25,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       return message.username;
     }
     
+    // If we have a user_id but no name info, indicate this more clearly
+    if (message.user_id) {
+      return "User";
+    }
+    
     // Fallback: Anonymous user
     return "Anonymous User";
   };
@@ -37,8 +42,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       return `${firstInitial}${lastInitial}`;
     }
     if (message.username) return message.username.charAt(0).toUpperCase();
+    if (message.user_id) return "U"; // For users with ID but no name
     return "?";
   };
+
+  // Log any messages with missing profile data to help debugging
+  if (!message.first_name && !message.username && message.user_id) {
+    console.log('Message with missing profile data:', message);
+  }
 
   return (
     <div className="p-3 hover:bg-white/5 transition-colors">
