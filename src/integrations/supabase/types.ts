@@ -488,6 +488,39 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_goals: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          progress: number
+          target_date: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          target_date?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          target_date?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       practice_reflections: {
         Row: {
           created_at: string

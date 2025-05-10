@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/hooks/useGoals";
 import { PracticeGoal, GoalCategory, CreateGoalData } from "@/types/goals";
@@ -19,7 +18,7 @@ export default function PracticeGoals() {
   const [activeCategory, setActiveCategory] = useState<GoalCategory | "All Goals">("All Goals");
 
   // Hooks for CRUD operations
-  const { goals, isLoading } = useGoals(activeCategory === "All Goals" ? undefined : activeCategory);
+  const { goals, isLoading } = useGoals(activeCategory);
   const createGoalMutation = useCreateGoal();
   const updateGoalMutation = useUpdateGoal();
   const deleteGoalMutation = useDeleteGoal();

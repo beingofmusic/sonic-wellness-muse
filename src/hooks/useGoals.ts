@@ -6,7 +6,7 @@ import { CreateGoalData, GoalCategory } from "@/types/goals";
 import { useAuth } from "@/context/AuthContext";
 
 // Hook to fetch user's practice goals
-export const useGoals = (category?: GoalCategory) => {
+export const useGoals = (category?: GoalCategory | "All Goals") => {
   const { user } = useAuth();
   
   const query = useQuery({
