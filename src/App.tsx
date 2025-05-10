@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Calendar from './pages/Calendar';
 import Practice from './pages/Practice';
@@ -49,138 +49,140 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-      >
-        <Routes>
-          <Route path="/" element={<RootRoute />} />
-          <Route path="/login" element={<SignIn />} />
-          <Route path="/register" element={<SignUp />} />
+    <Router>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+        >
+          <Routes>
+            <Route path="/" element={<RootRoute />} />
+            <Route path="/login" element={<SignIn />} />
+            <Route path="/register" element={<SignUp />} />
+            
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/practice" element={
+              <ProtectedRoute>
+                <Practice />
+              </ProtectedRoute>
+            } />
+            <Route path="/practice/history" element={
+              <ProtectedRoute>
+                <PracticeHistory />
+              </ProtectedRoute>
+            } />
+            <Route path="/practice/routine/:id" element={
+              <ProtectedRoute>
+                <RoutineBuilder />
+              </ProtectedRoute>
+            } />
+            <Route path="/practice/play/:id" element={
+              <ProtectedRoute>
+                <RoutinePlayer />
+              </ProtectedRoute>
+            } />
+            <Route path="/community" element={
+              <ProtectedRoute>
+                <Community />
+              </ProtectedRoute>
+            } />
+            <Route path="/courses" element={
+              <ProtectedRoute>
+                <Courses />
+              </ProtectedRoute>
+            } />
+            <Route path="/courses/:id" element={
+              <ProtectedRoute>
+                <CourseDetail />
+              </ProtectedRoute>
+            } />
+            <Route path="/courses/:courseId/lessons/:lessonId" element={
+              <ProtectedRoute>
+                <LessonViewer />
+              </ProtectedRoute>
+            } />
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+            } />
+            <Route path="/shop" element={
+              <ProtectedRoute>
+                <Shop />
+              </ProtectedRoute>
+            } />
+            <Route path="/wellness" element={
+              <ProtectedRoute>
+                <Wellness />
+              </ProtectedRoute>
+            } />
+            <Route path="/wellness/practice/:id" element={
+              <ProtectedRoute>
+                <WellnessPractice />
+              </ProtectedRoute>
+            } />
+            <Route path="/wellness/journal/:id" element={
+              <ProtectedRoute>
+                <JournalingPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
+            
+            {/* Add new routes for the Musical Self-Composition Suite */}
+            <Route path="/journal" element={
+              <ProtectedRoute>
+                <Journal />
+              </ProtectedRoute>
+            } />
+            <Route path="/journal/:section" element={
+              <ProtectedRoute>
+                <JournalSection />
+              </ProtectedRoute>
+            } />
+            <Route path="/journal/prompt/:id" element={
+              <ProtectedRoute>
+                <JournalPrompt />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/admin/courses" element={
+              <PermissionRoute permission="manage_courses">
+                <CourseManagement />
+              </PermissionRoute>
+            } />
+            
+            <Route path="/admin" element={
+              <PermissionRoute permission="admin">
+                <AdminPanel />
+              </PermissionRoute>
+            } />
+            
+            <Route path="/team" element={
+              <PermissionRoute permission="team">
+                <TeamDashboard />
+              </PermissionRoute>
+            } />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
           
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/practice" element={
-            <ProtectedRoute>
-              <Practice />
-            </ProtectedRoute>
-          } />
-          <Route path="/practice/history" element={
-            <ProtectedRoute>
-              <PracticeHistory />
-            </ProtectedRoute>
-          } />
-          <Route path="/practice/routine/:id" element={
-            <ProtectedRoute>
-              <RoutineBuilder />
-            </ProtectedRoute>
-          } />
-          <Route path="/practice/play/:id" element={
-            <ProtectedRoute>
-              <RoutinePlayer />
-            </ProtectedRoute>
-          } />
-          <Route path="/community" element={
-            <ProtectedRoute>
-              <Community />
-            </ProtectedRoute>
-          } />
-          <Route path="/courses" element={
-            <ProtectedRoute>
-              <Courses />
-            </ProtectedRoute>
-          } />
-          <Route path="/courses/:id" element={
-            <ProtectedRoute>
-              <CourseDetail />
-            </ProtectedRoute>
-          } />
-          <Route path="/courses/:courseId/lessons/:lessonId" element={
-            <ProtectedRoute>
-              <LessonViewer />
-            </ProtectedRoute>
-          } />
-          <Route path="/calendar" element={
-            <ProtectedRoute>
-              <Calendar />
-            </ProtectedRoute>
-          } />
-          <Route path="/shop" element={
-            <ProtectedRoute>
-              <Shop />
-            </ProtectedRoute>
-          } />
-          <Route path="/wellness" element={
-            <ProtectedRoute>
-              <Wellness />
-            </ProtectedRoute>
-          } />
-          <Route path="/wellness/practice/:id" element={
-            <ProtectedRoute>
-              <WellnessPractice />
-            </ProtectedRoute>
-          } />
-          <Route path="/wellness/journal/:id" element={
-            <ProtectedRoute>
-              <JournalingPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } />
-          
-          {/* Add new routes for the Musical Self-Composition Suite */}
-          <Route path="/journal" element={
-            <ProtectedRoute>
-              <Journal />
-            </ProtectedRoute>
-          } />
-          <Route path="/journal/:section" element={
-            <ProtectedRoute>
-              <JournalSection />
-            </ProtectedRoute>
-          } />
-          <Route path="/journal/prompt/:id" element={
-            <ProtectedRoute>
-              <JournalPrompt />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin/courses" element={
-            <PermissionRoute permission="manage_courses">
-              <CourseManagement />
-            </PermissionRoute>
-          } />
-          
-          <Route path="/admin" element={
-            <PermissionRoute permission="admin">
-              <AdminPanel />
-            </PermissionRoute>
-          } />
-          
-          <Route path="/team" element={
-            <PermissionRoute permission="team">
-              <TeamDashboard />
-            </PermissionRoute>
-          } />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        
-        <Toaster />
-      </ThemeProvider>
-    </QueryClientProvider>
+          <Toaster />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </Router>
   );
 }
 

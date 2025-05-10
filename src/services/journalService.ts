@@ -178,13 +178,14 @@ export const fetchJournalSectionProgress = async (section?: JournalSectionType):
     }
 
     // First get all prompts by section to calculate total
-    const promptsResult = await supabase
+    const { data: promptsData, error: promptsError } = await supabase
       .from('journal_section_prompts')
-      .select('section, count()', { count: 'exact' })
-      .order('section');
+      .select('section, id');
+      
+    if (promptsError) throw promptsError;
 
     // Then get user's completed entries by section
-    const entriesResult = await supabase
+    const { data: entriesData, error: entriesError } = await supabase
       .from('musical_journal_entries')
       .select(`
         prompt_id,
@@ -193,30 +194,26 @@ export const fetchJournalSectionProgress = async (section?: JournalSectionType):
       .eq('user_id', session.user.id)
       .eq('is_completed', true);
 
-    if (promptsResult.error || entriesResult.error) 
-      throw promptsResult.error || entriesResult.error;
+    if (entriesError) throw entriesError;
 
     // Count prompts by section
     const sections = ['past', 'present', 'future'] as JournalSectionType[];
     const sectionCounts: Record<string, number> = {};
     
     // Calculate totals for each section
-    if (promptsResult.data) {
+    if (promptsData) {
       for (const sectionType of sections) {
-        const sectionData = promptsResult.data.filter(row => row.section === sectionType);
-        if (sectionData.length > 0) {
-          sectionCounts[sectionType] = sectionData.length;
-        } else {
-          sectionCounts[sectionType] = 0;
-        }
+        const sectionData = promptsData.filter(row => row.section === sectionType);
+        sectionCounts[sectionType] = sectionData.length;
       }
     }
     
     // Count completed entries by section
     const completedBySection: Record<string, number> = {};
-    for (const entry of (entriesResult.data || [])) {
-      const section = entry.journal_section_prompts?.section;
-      if (section) {
+    for (const entry of (entriesData || [])) {
+      const sectionInfo = entry.journal_section_prompts as any;
+      if (sectionInfo && sectionInfo.section) {
+        const section = sectionInfo.section;
         completedBySection[section] = (completedBySection[section] || 0) + 1;
       }
     }
