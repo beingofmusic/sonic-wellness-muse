@@ -278,39 +278,6 @@ export type Database = {
         }
         Relationships: []
       }
-      journal_section_prompts: {
-        Row: {
-          created_at: string
-          description: string
-          id: string
-          order_index: number
-          prompt_text: string
-          section: Database["public"]["Enums"]["journal_section_type"]
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description: string
-          id?: string
-          order_index: number
-          prompt_text: string
-          section: Database["public"]["Enums"]["journal_section_type"]
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string
-          id?: string
-          order_index?: number
-          prompt_text?: string
-          section?: Database["public"]["Enums"]["journal_section_type"]
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       lesson_progress: {
         Row: {
           completed_at: string
@@ -377,44 +344,6 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      musical_journal_entries: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          is_completed: boolean
-          prompt_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          is_completed?: boolean
-          prompt_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          is_completed?: boolean
-          prompt_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "musical_journal_entries_prompt_id_fkey"
-            columns: ["prompt_id"]
-            isOneToOne: false
-            referencedRelation: "journal_section_prompts"
             referencedColumns: ["id"]
           },
         ]
@@ -853,15 +782,7 @@ export type Database = {
       }
     }
     Views: {
-      user_journal_progress: {
-        Row: {
-          completed_prompts: number | null
-          section: Database["public"]["Enums"]["journal_section_type"] | null
-          total_prompts: number | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       check_and_award_badges: {
@@ -947,7 +868,6 @@ export type Database = {
         | "values"
         | "resistance"
         | "learning"
-      journal_section_type: "past" | "present" | "future"
       user_role: "admin" | "team" | "user"
       wellness_practice_type: "meditation" | "breathwork" | "yoga_fitness"
     }
@@ -1071,7 +991,6 @@ export const Constants = {
         "resistance",
         "learning",
       ],
-      journal_section_type: ["past", "present", "future"],
       user_role: ["admin", "team", "user"],
       wellness_practice_type: ["meditation", "breathwork", "yoga_fitness"],
     },

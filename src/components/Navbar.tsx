@@ -106,7 +106,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
 
-                  {/* Profile link */}
+                  {/* Profile link - added this new item */}
                   <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/profile')}>
                     Profile
                   </DropdownMenuItem>

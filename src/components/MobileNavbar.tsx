@@ -1,141 +1,95 @@
+
 import React from "react";
-import {
-  LayoutDashboard,
-  Music,
-  Flame,
-  Users,
-  ShoppingBag,
-  Settings,
-  BookText
-} from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/context/AuthContext";
+import { Link, useLocation } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Home, Music, Calendar, Heart, MessagesSquare, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const NavItem: React.FC<{
-  icon: React.ReactNode;
-  label: string;
-  to: string;
-  isActive: boolean;
-}> = ({ icon, label, to, isActive }) => (
-  <NavLink
-    to={to}
-    className={`relative flex flex-col items-center justify-center h-full text-sm transition-colors group ${
-      isActive
-        ? "text-music-primary"
-        : "text-white/50 hover:text-white/80"
-    }`}
-  >
-    {icon}
-    <span className="absolute bottom-1.5 opacity-0 group-hover:opacity-100 transition-opacity">{label}</span>
-    {isActive && (
-      <span className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-1 bg-music-primary rounded-full"></span>
-    )}
-  </NavLink>
-);
-
-const SheetNavigation: React.FC = () => {
-  const { user, profile, signOut } = useAuth();
-  const location = useLocation();
-
-  const displayName = profile?.first_name || user?.email || "User";
-  const email = user?.email || "No Email";
-
-  const getInitials = () => {
-    if (profile?.first_name) {
-      return profile.first_name.charAt(0).toUpperCase() + (profile.last_name ? profile.last_name.charAt(0).toUpperCase() : '');
-    }
-    return "U";
-  };
-
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" className="h-full w-full text-white/50 hover:text-white/80">
-          <Users size={20} />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="bg-background border-t border-white/10">
-        <SheetHeader className="text-left">
-          <SheetTitle>Account</SheetTitle>
-          <SheetDescription>
-            Manage your account settings and set preferences.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="grid gap-4 py-4">
-          <div className="flex items-center gap-2">
-            <Avatar>
-              {profile?.avatar_url ? (
-                <AvatarImage src={profile.avatar_url} alt={profile?.first_name || 'User'} />
-              ) : (
-                <AvatarFallback className="bg-music-primary/20 text-music-primary">
-                  {getInitials()}
-                </AvatarFallback>
-              )}
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">{displayName}</p>
-              <p className="text-xs text-white/50 truncate max-w-[10rem]">
-                {email}
-              </p>
-            </div>
-          </div>
-          <NavItem
-            icon={<Settings size={18} />}
-            label="Settings"
-            to="/settings"
-            isActive={location.pathname === "/settings"}
-          />
-          <Button variant="destructive" onClick={() => signOut()}>Sign Out</Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-};
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const MobileNavbar: React.FC = () => {
   const location = useLocation();
-
+  const isMobile = useIsMobile();
+  
+  // Don't render if we're sure we're on desktop
+  if (isMobile === false) {
+    return null;
+  }
+  
+  const navItems = [
+    { label: "Home", icon: <Home size={20} />, path: "/dashboard" },
+    { label: "Practice", icon: <Music size={20} />, path: "/practice" },
+    { label: "Calendar", icon: <Calendar size={20} />, path: "/calendar" },
+    { label: "Wellness", icon: <Heart size={20} />, path: "/wellness" },
+    { label: "Community", icon: <MessagesSquare size={20} />, path: "/community" },
+  ];
+  
+  const moreItems = [
+    { label: "Courses", path: "/courses" },
+    { label: "Shop", path: "/shop" },
+    { label: "Settings", path: "/settings" },
+  ];
+  
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+  
+  // Only show navbar when isMobile is true
+  // If it's null (initial state), we don't render yet
+  if (isMobile !== true) return null;
+  
   return (
-    <nav className="fixed bottom-0 left-0 z-40 w-full h-16 bg-background border-t border-white/10 md:hidden">
-      <div className="grid h-full grid-cols-5">
-        <NavItem
-          icon={<LayoutDashboard size={20} />}
-          label="Dashboard"
-          to="/dashboard"
-          isActive={location.pathname === "/dashboard"}
-        />
-        <NavItem
-          icon={<Music size={20} />}
-          label="Practice"
-          to="/practice"
-          isActive={location.pathname.startsWith("/practice")}
-        />
-        <NavItem
-          icon={<Flame size={20} />}
-          label="Wellness"
-          to="/wellness"
-          isActive={location.pathname.startsWith("/wellness")}
-        />
-        <NavItem
-          icon={<BookText size={20} />}
-          label="Journal"
-          to="/journal"
-          isActive={location.pathname.startsWith("/journal")}
-        />
-        <SheetNavigation />
+    <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-card/90 backdrop-blur-lg md:hidden z-50">
+      <div className="grid grid-cols-6 h-16">
+        {navItems.map((item) => (
+          <Link 
+            key={item.path}
+            to={item.path}
+            className={`flex flex-col items-center justify-center text-xs gap-1 ${
+              isActive(item.path)
+                ? "text-music-primary"
+                : "text-white/70 hover:text-white"
+            }`}
+          >
+            <span className={isActive(item.path) ? "text-music-primary" : "text-white/70"}>
+              {item.icon}
+            </span>
+            <span>{item.label}</span>
+          </Link>
+        ))}
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost"
+              className="flex flex-col items-center justify-center text-xs gap-1 h-full w-full rounded-none bg-transparent hover:bg-white/5 text-white/70 hover:text-white"
+            >
+              <MoreHorizontal size={20} />
+              <span>More</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="bg-card/95 backdrop-blur-md border-white/10 w-40"
+          >
+            {moreItems.map((item) => (
+              <DropdownMenuItem key={item.path} asChild>
+                <Link 
+                  to={item.path}
+                  className={isActive(item.path) ? "text-music-primary" : ""}
+                >
+                  {item.label}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-    </nav>
+    </div>
   );
 };
 

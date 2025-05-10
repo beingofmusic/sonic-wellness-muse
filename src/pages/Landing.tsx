@@ -1,85 +1,107 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Music, BookOpen, Heart, MessagesSquare, Check, ArrowRight } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import FeatureCard from "@/components/FeatureCard";
 
 const Landing: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-24 px-6 flex flex-col items-center justify-center text-center bg-gradient-to-b from-background to-background/50">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-music-primary to-purple-500">
-              Elevate Your Musical Journey
-            </h1>
-            <p className="text-xl md:text-2xl text-white/80 mb-8 max-w-2xl mx-auto">
-              Structured practice, guided wellness, and a supportive community for musicians at every stage of development.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/register">
-                <Button className="music-button px-8 py-6 text-lg">
-                  Start Free Trial
-                </Button>
-              </Link>
-              <Link to="/signin">
-                <Button variant="outline" className="px-8 py-6 text-lg border-white/10 bg-white/5 hover:bg-white/10">
-                  Sign In
-                </Button>
-              </Link>
+        <section className="py-16 md:py-24">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto animate-fade-in">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold bg-gradient-to-r from-music-light via-white to-white/80 bg-clip-text text-transparent mb-6">
+                Enhance Your Musical Journey
+              </h1>
+              <p className="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+                A holistic platform designed for music students to practice effectively,
+                nurture wellbeing, and connect with a community of passionate musicians.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/signup">
+                  <Button className="music-button px-6 py-6 text-lg">
+                    Start Free Trial
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link to="/about">
+                  <Button variant="outline" className="music-button-secondary px-6 py-6 text-lg">
+                    Learn More
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
-        
+
         {/* Features Section */}
-        <section className="py-20 px-6 bg-card/30">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
-              Designed for Your Musical Growth
-            </h2>
+        <section className="py-16 md:py-24 bg-black/20">
+          <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+                Your All-in-One Musical Companion
+              </h2>
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Feature 1 */}
-              <div className="p-6 bg-card/50 rounded-xl border border-white/10 backdrop-blur-sm">
-                <div className="bg-music-primary/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-music-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Structured Practice</h3>
-                <p className="text-white/70">
-                  Create personalized practice routines with our drag-and-drop builder and track your progress over time.
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <FeatureCard
+                icon={<Music className="h-6 w-6 text-music-primary" />}
+                title="Interactive Practice Builder"
+                description="Create a customized practice routine with our intuitive drag and drop interface. Organize your musical growth efficiently."
+              />
+              <FeatureCard
+                icon={<BookOpen className="h-6 w-6 text-music-primary" />}
+                title="Comprehensive Learning"
+                description="Access a library of courses, challenges, and educational resources designed to enhance your musical skills."
+              />
+              <FeatureCard
+                icon={<Heart className="h-6 w-6 text-music-primary" />}
+                title="Musician's Wellness Hub"
+                description="Techniques for physical and mental wellbeing specifically designed for musicians, from breathing exercises to mindfulness practices."
+              />
+              <FeatureCard
+                icon={<MessagesSquare className="h-6 w-6 text-music-primary" />}
+                title="M.U.S.E. Community"
+                description="Connect with fellow musicians in our vibrant community forum to share experiences, seek advice, and grow together."
+              />
+              <FeatureCard
+                icon={<Check className="h-6 w-6 text-music-primary" />}
+                title="Progress Tracking"
+                description="Monitor your practice streaks, total hours, and skill development with visual analytics and achievement badges."
+              />
+              <FeatureCard
+                icon={<Music className="h-6 w-6 text-music-primary" />}
+                title="Personalized Coaching"
+                description="Book one-on-one sessions with experienced music coaches for personalized guidance and feedback."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 md:py-24">
+          <div className="container mx-auto px-4">
+            <div className="bg-card/50 backdrop-blur-sm border border-white/10 rounded-2xl p-8 md:p-12">
+              <div className="max-w-3xl mx-auto text-center">
+                <h2 className="text-2xl md:text-3xl font-semibold mb-4">
+                  Ready to Transform Your Musical Practice?
+                </h2>
+                <p className="text-white/80 mb-8">
+                  Join thousands of students who have improved their skills and wellbeing with Being of Music.
+                  Start your 7-day free trial today.
                 </p>
-              </div>
-              
-              {/* Feature 2 */}
-              <div className="p-6 bg-card/50 rounded-xl border border-white/10 backdrop-blur-sm">
-                <div className="bg-purple-500/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Wellness Hub</h3>
-                <p className="text-white/70">
-                  Access guided meditations, stretching routines, and mental performance techniques designed for musicians.
-                </p>
-              </div>
-              
-              {/* Feature 3 */}
-              <div className="p-6 bg-card/50 rounded-xl border border-white/10 backdrop-blur-sm">
-                <div className="bg-pink-500/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold mb-2">M.U.S.E Community</h3>
-                <p className="text-white/70">
-                  Connect with fellow musicians, share your progress, and get support from a community that understands your journey.
-                </p>
+                <Link to="/signup">
+                  <Button className="music-button px-8 py-6 text-lg">
+                    Start Your Free Trial
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
