@@ -49,7 +49,7 @@ const Shop: React.FC = () => {
   };
 
   const handleSelectProduct = (product: Product) => {
-    // Ensure we always set the selected product and never navigate away
+    // Set the selected product to show in the modal
     setSelectedProduct(product);
   };
 
@@ -134,12 +134,15 @@ const Shop: React.FC = () => {
           total={cartTotal}
         />
 
-        <ProductDetailModal
-          product={selectedProduct}
-          isOpen={selectedProduct !== null}
-          onClose={handleCloseProductDetail}
-          onAddToCart={addItemToCart}
-        />
+        {/* Only render the modal when there's a selected product */}
+        {selectedProduct && (
+          <ProductDetailModal
+            product={selectedProduct}
+            isOpen={selectedProduct !== null}
+            onClose={handleCloseProductDetail}
+            onAddToCart={addItemToCart}
+          />
+        )}
       </div>
     </Layout>
   );

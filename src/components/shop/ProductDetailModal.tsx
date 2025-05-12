@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, X, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { ShoppingCart, X, Maximize2 } from 'lucide-react';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -27,41 +27,39 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 }) => {
   const [isImageZoomed, setIsImageZoomed] = useState(false);
   
+  // Reset zoom state when modal closes or product changes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsImageZoomed(false);
+    }
+  }, [isOpen, product]);
+  
   if (!product) return null;
   
   const isOutOfStock = product.stock_count <= 0;
   
   const toggleImageZoom = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation();
+    e.preventDefault();
     setIsImageZoomed(!isImageZoomed);
   };
 
   const handleCloseZoom = (e: React.MouseEvent) => {
-    // Close the zoom view if clicking the backdrop (not the image)
     if ((e.target as HTMLElement).classList.contains('zoom-backdrop')) {
       setIsImageZoomed(false);
     }
   };
   
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation();
+    e.preventDefault();
     onAddToCart(product.id);
   };
-
-  // Force dialog to close when component unmounts
-  React.useEffect(() => {
-    return () => {
-      // Cleanup function to ensure modal state is reset
-      setIsImageZoomed(false);
-    };
-  }, []);
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-2xl" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">{product.name}</DialogTitle>
             <DialogDescription>
@@ -156,7 +154,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/40 hover:bg-black/60 text-white"
               onClick={() => setIsImageZoomed(false)}
             >
-              <ZoomOut className="h-5 w-5 mr-2" />
+              <X className="h-5 w-5 mr-2" />
               Close
             </Button>
           </div>
