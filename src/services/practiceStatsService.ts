@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
 import { startOfDay, isYesterday, differenceInCalendarDays } from "date-fns";
@@ -86,7 +87,7 @@ export const getTotalPracticeTime = async (): Promise<number> => {
   }
 };
 
-// Get user's current practice streak (improved version)
+// Get user's current practice streak (fixed version)
 export const getCurrentStreak = async (): Promise<number> => {
   try {
     const { data: userData } = await supabase.auth.getUser();
@@ -106,7 +107,6 @@ export const getCurrentStreak = async (): Promise<number> => {
     // Current date at start of day (UTC)
     const today = startOfDay(new Date());
     let streak = 0;
-    let lastCheckedDate: Date | null = null;
     
     // Get all unique practice dates (multiple sessions in one day count as one)
     const practiceDates = data.map(session => {
@@ -129,26 +129,26 @@ export const getCurrentStreak = async (): Promise<number> => {
     const daysSinceLastPractice = differenceInCalendarDays(today, mostRecentPractice);
     
     // If last practice was more than a day ago (not today, not yesterday)
-    // And not the current day, the streak is broken
+    // the streak is broken - return 0 instead of 1
     if (daysSinceLastPractice > 1) {
-      return 1; // Return 1 for the most recent practice day
+      return 0; // Streak is broken, return 0
     }
     
     // Calculate streak by checking for consecutive days
     streak = 1; // Start with 1 for the most recent day
-    lastCheckedDate = mostRecentPractice;
+    let lastCheckedDate = mostRecentPractice;
     
     // Loop through dates starting from the second most recent
     for (let i = 1; i < uniqueDates.length; i++) {
       const currentDate = uniqueDates[i];
       
       // If this date is exactly one day before the last checked date
-      if (lastCheckedDate && differenceInCalendarDays(lastCheckedDate, currentDate) === 1) {
+      if (differenceInCalendarDays(lastCheckedDate, currentDate) === 1) {
         streak++;
         lastCheckedDate = currentDate;
       } 
       // If this is the same day we already counted, just update lastCheckedDate
-      else if (lastCheckedDate && differenceInCalendarDays(lastCheckedDate, currentDate) === 0) {
+      else if (differenceInCalendarDays(lastCheckedDate, currentDate) === 0) {
         lastCheckedDate = currentDate;
       }
       // If we found a gap, stop counting
