@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -30,7 +29,7 @@ const Sidebar: React.FC = () => {
     { name: "Community", path: "/community", icon: <MessagesSquare className="h-5 w-5" />, permission: "access_community" },
     { name: "Wellness", path: "/wellness", icon: <Heart className="h-5 w-5" />, permission: "access_wellness" },
     { name: "Calendar", path: "/calendar", icon: <Calendar className="h-5 w-5" />, permission: "access_dashboard" },
-    { name: "Shop", path: "/shop", icon: <ShoppingBag className="h-5 w-5" />, permission: "access_dashboard" },
+    { name: "Merch", path: "/shop", icon: <ShoppingBag className="h-5 w-5" />, permission: "access_dashboard" },
   ];
   
   const adminLinks = [

@@ -61,7 +61,7 @@ const Shop: React.FC = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Music Shop</h1>
+            <h1 className="text-3xl font-bold">Music Merch</h1>
             <p className="text-white/70 mb-4">
               Browse and purchase musical merchandise and resources.
             </p>
@@ -73,7 +73,7 @@ const Shop: React.FC = () => {
                 variant={showAdmin ? "default" : "outline"}
                 onClick={() => setShowAdmin(!showAdmin)}
               >
-                {showAdmin ? "View Shop" : "Manage Products"}
+                {showAdmin ? "View Merch" : "Manage Products"}
               </Button>
             )}
             {!showAdmin && (

@@ -25,7 +25,7 @@ const MobileNavbar: React.FC = () => {
   
   const moreItems = [
     { label: "Courses", path: "/courses" },
-    { label: "Shop", path: "/shop" },
+    { label: "Merch", path: "/shop" },
     { label: "Settings", path: "/settings" },
   ];
   
