@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Product } from '@/types/shop';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, X, Maximize2 } from 'lucide-react';
+import { ShoppingCart, X, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -27,32 +27,22 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 }) => {
   const [isImageZoomed, setIsImageZoomed] = useState(false);
   
-  // Reset zoom state when modal closes or product changes
-  useEffect(() => {
-    if (!isOpen) {
-      setIsImageZoomed(false);
-    }
-  }, [isOpen, product]);
-  
   if (!product) return null;
   
   const isOutOfStock = product.stock_count <= 0;
   
-  const toggleImageZoom = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const toggleImageZoom = () => {
     setIsImageZoomed(!isImageZoomed);
   };
 
   const handleCloseZoom = (e: React.MouseEvent) => {
+    // Close the zoom view if clicking the backdrop (not the image)
     if ((e.target as HTMLElement).classList.contains('zoom-backdrop')) {
       setIsImageZoomed(false);
     }
   };
   
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const handleAddToCart = () => {
     onAddToCart(product.id);
   };
 
@@ -154,7 +144,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/40 hover:bg-black/60 text-white"
               onClick={() => setIsImageZoomed(false)}
             >
-              <X className="h-5 w-5 mr-2" />
+              <ZoomOut className="h-5 w-5 mr-2" />
               Close
             </Button>
           </div>

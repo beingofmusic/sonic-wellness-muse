@@ -49,7 +49,6 @@ const Shop: React.FC = () => {
   };
 
   const handleSelectProduct = (product: Product) => {
-    // Set the selected product to show in the modal
     setSelectedProduct(product);
   };
 
@@ -134,15 +133,12 @@ const Shop: React.FC = () => {
           total={cartTotal}
         />
 
-        {/* Only render the modal when there's a selected product */}
-        {selectedProduct && (
-          <ProductDetailModal
-            product={selectedProduct}
-            isOpen={selectedProduct !== null}
-            onClose={handleCloseProductDetail}
-            onAddToCart={addItemToCart}
-          />
-        )}
+        <ProductDetailModal
+          product={selectedProduct}
+          isOpen={selectedProduct !== null}
+          onClose={handleCloseProductDetail}
+          onAddToCart={addItemToCart}
+        />
       </div>
     </Layout>
   );
