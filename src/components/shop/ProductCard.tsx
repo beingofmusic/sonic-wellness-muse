@@ -15,11 +15,14 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onSelectProduct }) => {
   const isOutOfStock = product.stock_count <= 0;
   
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent any default navigation
+    e.stopPropagation(); // Stop event propagation
     onSelectProduct(product);
   };
   
   const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent any default navigation
     e.stopPropagation(); // Prevent opening product detail when clicking add to cart
     onAddToCart(product.id);
   };

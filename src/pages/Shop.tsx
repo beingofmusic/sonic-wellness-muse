@@ -49,6 +49,7 @@ const Shop: React.FC = () => {
   };
 
   const handleSelectProduct = (product: Product) => {
+    // Ensure we always set the selected product and never navigate away
     setSelectedProduct(product);
   };
 

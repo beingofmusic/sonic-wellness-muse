@@ -31,7 +31,9 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   
   const isOutOfStock = product.stock_count <= 0;
   
-  const toggleImageZoom = () => {
+  const toggleImageZoom = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    e.preventDefault(); // Prevent default behavior
     setIsImageZoomed(!isImageZoomed);
   };
 
@@ -42,14 +44,24 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }
   };
   
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    e.preventDefault(); // Prevent default behavior
     onAddToCart(product.id);
   };
+
+  // Force dialog to close when component unmounts
+  React.useEffect(() => {
+    return () => {
+      // Cleanup function to ensure modal state is reset
+      setIsImageZoomed(false);
+    };
+  }, []);
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">{product.name}</DialogTitle>
             <DialogDescription>
