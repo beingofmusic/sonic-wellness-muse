@@ -14,6 +14,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProfileEditor from "@/components/profile/ProfileEditor";
+import { toast } from "sonner";
 
 const UserProfile: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -22,6 +23,7 @@ const UserProfile: React.FC = () => {
   const { profileData: ownProfileData, isLoading: isOwnProfileLoading, updateProfile } = useUserProfile();
   const [otherProfileData, setOtherProfileData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   const isOwnProfile = !userId || (user && userId === user.id);
   
@@ -30,7 +32,11 @@ const UserProfile: React.FC = () => {
     if (!isOwnProfile && userId) {
       const fetchUserProfile = async () => {
         setIsLoading(true);
+        setError(null);
+        
         try {
+          console.log("Fetching profile for user ID:", userId);
+          
           // Fetch user profile
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
@@ -38,10 +44,19 @@ const UserProfile: React.FC = () => {
             .eq("id", userId)
             .single();
             
-          if (profileError) throw profileError;
+          if (profileError) {
+            console.error("Error fetching profile data:", profileError);
+            setError(`Error fetching profile: ${profileError.message}`);
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log("Profile data received:", profileData);
           
           if (!profileData) {
-            navigate("/not-found");
+            console.error("No profile found for user ID:", userId);
+            setError("User profile not found");
+            setIsLoading(false);
             return;
           }
           
@@ -61,23 +76,27 @@ const UserProfile: React.FC = () => {
             `)
             .eq("user_id", userId);
             
-          if (badgesError) throw badgesError;
+          if (badgesError) {
+            console.error("Error fetching badges:", badgesError);
+            // Continue even if badges fail to load
+          }
           
           // Format badges data
-          const earnedBadges = badgesData.map((item: any) => ({
+          const earnedBadges = (badgesData || []).map((item: any) => ({
             ...item.badges,
             earned_at: item.earned_at
           }));
           
           setOtherProfileData({
             ...profileData,
-            earned_badges: earnedBadges
+            earned_badges: earnedBadges || []
           });
-        } catch (error) {
-          console.error("Error fetching profile data:", error);
-          navigate("/not-found");
-        } finally {
           setIsLoading(false);
+        } catch (error) {
+          console.error("Error in fetchUserProfile:", error);
+          setError("Failed to load user profile");
+          setIsLoading(false);
+          toast.error("Failed to load user profile");
         }
       };
       
@@ -89,12 +108,26 @@ const UserProfile: React.FC = () => {
   
   // Use the appropriate profile data based on whether viewing own or other profile
   const profileData = isOwnProfile ? ownProfileData : otherProfileData;
-  
+
   if (!user && isOwnProfile) {
     return (
       <Layout>
         <div className="p-6 text-center">
           <p>Please sign in to view your profile.</p>
+        </div>
+      </Layout>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto">
+          <div className="p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">Error Loading Profile</h2>
+            <p className="text-white/70 mb-4">{error}</p>
+            <Button onClick={() => navigate('/dashboard')}>Return to Dashboard</Button>
+          </div>
         </div>
       </Layout>
     );

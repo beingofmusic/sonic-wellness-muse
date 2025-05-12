@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 interface UserProfileLinkProps {
   userId: string;
@@ -27,6 +28,14 @@ const UserProfileLink: React.FC<UserProfileLinkProps> = ({
     if (username) return username;
     return "User";
   };
+  
+  const handleClick = (e: React.MouseEvent) => {
+    if (!userId) {
+      e.preventDefault();
+      toast.error("Cannot view profile: User ID is missing");
+      return;
+    }
+  };
 
   const hoverClass = withHoverEffect ? "hover:text-music-primary hover:underline transition-colors" : "";
   
@@ -34,6 +43,8 @@ const UserProfileLink: React.FC<UserProfileLinkProps> = ({
     <Link 
       to={`/users/${userId}`} 
       className={`${hoverClass} ${className}`}
+      onClick={handleClick}
+      title={`View ${getDisplayName()}'s profile`}
     >
       {getDisplayName()}
     </Link>

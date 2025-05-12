@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
 import { formatMinutes } from "@/lib/formatters";
+import { toast } from "sonner";
 
 interface ProfileStatsProps {
   isLoading: boolean;
@@ -27,6 +28,7 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
   const { stats: currentUserStats, formattedTotalTime: currentUserTime } = usePracticeStats();
   const [otherUserStats, setOtherUserStats] = useState<any>(null);
   const [isLoadingOtherStats, setIsLoadingOtherStats] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Determine if we're showing current user stats or another user's stats
   const isCurrentUser = !userId || (user && userId === user.id);
@@ -36,16 +38,25 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
     if (!isCurrentUser && userId) {
       const fetchUserStats = async () => {
         setIsLoadingOtherStats(true);
+        setErrorMessage(null);
+        
         try {
+          console.log("Fetching stats for user ID:", userId);
+          
           // Get total practice minutes
           const { data: practiceData, error: practiceError } = await supabase
             .from("practice_sessions")
             .select("total_duration")
             .eq("user_id", userId);
             
-          if (practiceError) throw practiceError;
+          if (practiceError) {
+            console.error("Error fetching practice sessions:", practiceError);
+            setErrorMessage("Failed to load practice data");
+            throw practiceError;
+          }
           
           const totalMinutes = practiceData?.reduce((sum, session) => sum + (session.total_duration || 0), 0) || 0;
+          console.log("Total practice minutes:", totalMinutes);
           
           // Get session count
           const { count: sessionCount, error: countError } = await supabase
@@ -53,17 +64,26 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
             .select("*", { count: "exact", head: true })
             .eq("user_id", userId);
             
-          if (countError) throw countError;
+          if (countError) {
+            console.error("Error fetching session count:", countError);
+            throw countError;
+          }
+          
+          console.log("Session count:", sessionCount);
           
           // Get streak information from leaderboard function
           const { data: streakData, error: streakError } = await supabase
             .rpc("get_streak_leaderboard");
             
-          if (streakError) throw streakError;
+          if (streakError) {
+            console.error("Error fetching streak data:", streakError);
+            throw streakError;
+          }
           
           // Find user in streak data
           const userStreakInfo = streakData?.find((item: any) => item.user_id === userId);
           const currentStreak = userStreakInfo?.current_streak || 0;
+          console.log("Current streak:", currentStreak);
           
           setOtherUserStats({
             totalPracticeMinutes: totalMinutes,
@@ -77,6 +97,7 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
             sessionCount: 0,
             currentStreak: 0
           });
+          // Don't show toast for stats errors to avoid cluttering the UI
         } finally {
           setIsLoadingOtherStats(false);
         }
@@ -124,6 +145,14 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (errorMessage) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-white/70">{errorMessage}</p>
       </div>
     );
   }
