@@ -143,6 +143,25 @@ export const useShop = () => {
     }
   };
 
+  const clearCartItems = async () => {
+    try {
+      await clearCart();
+      setCartItems([]);
+      
+      toast({
+        title: "Cart Cleared",
+        description: "Your cart has been cleared.",
+      });
+    } catch (error) {
+      console.error("Failed to clear cart:", error);
+      toast({
+        title: "Error",
+        description: "Failed to clear cart. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const checkout = async () => {
     if (!user) {
       toast({
@@ -163,26 +182,16 @@ export const useShop = () => {
     }
     
     try {
-      const order = await createOrder(cartItems);
-      if (order) {
-        setCartItems([]);
-        setIsCartOpen(false);
-        
-        toast({
-          title: "Order Placed",
-          description: "Your order has been successfully placed!",
-        });
-        
-        return order;
-      }
+      await createOrder(cartItems);
+      // Note: The redirect to Stripe happens in createOrder, 
+      // so we don't need to handle success here
     } catch (error) {
       console.error("Failed to checkout:", error);
       toast({
         title: "Checkout Failed",
-        description: "Failed to place order. Please try again.",
+        description: "Failed to process checkout. Please try again.",
         variant: "destructive",
       });
-      return null;
     }
   };
 
@@ -208,6 +217,7 @@ export const useShop = () => {
     addItemToCart,
     updateItemQuantity,
     removeItemFromCart,
+    clearCart: clearCartItems,
     checkout
   };
 };

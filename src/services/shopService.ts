@@ -219,54 +219,41 @@ export const clearCart = async (): Promise<boolean> => {
   }
 };
 
+// Stripe checkout
+export const createStripeCheckout = async (cartItems: CartItem[]): Promise<{ sessionId: string, url: string } | null> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('create-checkout', {
+      body: { 
+        cartItems: cartItems.map(item => ({
+          product: item.product,
+          quantity: item.quantity
+        })),
+      }
+    });
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    return null;
+  }
+};
+
 // Order functions (MVP, to be expanded with Stripe)
 export const createOrder = async (cartItems: CartItem[]): Promise<Order | null> => {
   try {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user) return null;
+    // First create Stripe checkout session
+    const checkoutSession = await createStripeCheckout(cartItems);
     
-    // Calculate total amount
-    const totalAmount = cartItems.reduce((total, item) => {
-      const price = item.product?.price || 0;
-      return total + (price * item.quantity);
-    }, 0);
-
-    // Create order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        user_id: userData.user.id,
-        total_amount: totalAmount,
-        status: 'pending' as const // Explicitly set as a literal type
-      })
-      .select()
-      .single();
+    if (!checkoutSession) {
+      throw new Error("Failed to create checkout session");
+    }
     
-    if (orderError) throw orderError;
-
-    // Insert order items
-    const orderItems = cartItems.map(item => ({
-      order_id: order.id,
-      product_id: item.product_id,
-      quantity: item.quantity,
-      price_at_purchase: item.product?.price || 0
-    }));
-
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
+    // Redirect to Stripe Checkout
+    window.location.href = checkoutSession.url;
     
-    if (itemsError) throw itemsError;
-
-    // Clear cart after successful order
-    await clearCart();
-
-    // Type assertion to ensure compatibility with Order type
-    return {
-      ...order,
-      status: order.status as "pending" | "completed" | "cancelled",
-      items: []
-    };
+    // This will not execute as the user will be redirected
+    return null;
   } catch (error) {
     console.error("Error creating order:", error);
     return null;

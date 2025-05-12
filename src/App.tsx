@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +25,7 @@ import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
 import Shop from "./pages/Shop";
+import CheckoutSuccess from "./pages/checkout/CheckoutSuccess";
 import Settings from "./pages/Settings";
 import PracticeHistory from "./pages/PracticeHistory";
 import Profile from "./pages/Profile";
@@ -187,6 +189,15 @@ const App = () => (
           element={
             <ProtectedRoute>
               <Shop />
+            </ProtectedRoute>
+          } 
+        />
+        {/* New checkout success route */}
+        <Route 
+          path="/checkout/success" 
+          element={
+            <ProtectedRoute>
+              <CheckoutSuccess />
             </ProtectedRoute>
           } 
         />
