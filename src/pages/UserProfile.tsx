@@ -7,10 +7,10 @@ import ProfileStats from "@/components/profile/ProfileStats";
 import BadgeCollection from "@/components/profile/BadgeCollection";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Pencil, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProfileEditor from "@/components/profile/ProfileEditor";
@@ -37,12 +37,12 @@ const UserProfile: React.FC = () => {
         try {
           console.log("Fetching profile for user ID:", userId);
           
-          // Fetch user profile
+          // Fetch user profile using maybeSingle() instead of single() to avoid errors
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
             .select("*")
             .eq("id", userId)
-            .single();
+            .maybeSingle();
             
           if (profileError) {
             console.error("Error fetching profile data:", profileError);
@@ -124,8 +124,12 @@ const UserProfile: React.FC = () => {
       <Layout>
         <div className="max-w-4xl mx-auto">
           <div className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Error Loading Profile</h2>
+            <h2 className="text-2xl font-bold mb-4">User Not Found</h2>
             <p className="text-white/70 mb-4">{error}</p>
+            <Button onClick={() => navigate(-1)} className="mr-2">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Go Back
+            </Button>
             <Button onClick={() => navigate('/dashboard')}>Return to Dashboard</Button>
           </div>
         </div>

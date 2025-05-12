@@ -30,9 +30,10 @@ const UserProfileLink: React.FC<UserProfileLinkProps> = ({
   };
   
   const handleClick = (e: React.MouseEvent) => {
-    if (!userId) {
+    // Ensure userId is a valid, non-empty string
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
       e.preventDefault();
-      toast.error("Cannot view profile: User ID is missing");
+      toast.error("Cannot view profile: Invalid user ID");
       return;
     }
   };

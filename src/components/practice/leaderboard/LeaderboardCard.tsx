@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LeaderboardEntry } from '@/services/leaderboardService';
@@ -118,7 +117,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
       <div className="space-y-2">
         {entries.map((entry) => {
           // Ensure user_id is a valid string before passing it to UserProfileLink
-          const userId = entry.user_id || '';
+          const userId = entry.user_id ? String(entry.user_id) : '';
           
           return (
             <div 

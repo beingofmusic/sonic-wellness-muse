@@ -52,7 +52,12 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
           if (practiceError) {
             console.error("Error fetching practice sessions:", practiceError);
             setErrorMessage("Failed to load practice data");
-            throw practiceError;
+            setOtherUserStats({
+              totalPracticeMinutes: 0,
+              sessionCount: 0,
+              currentStreak: 0
+            });
+            return;
           }
           
           const totalMinutes = practiceData?.reduce((sum, session) => sum + (session.total_duration || 0), 0) || 0;
@@ -66,7 +71,12 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
             
           if (countError) {
             console.error("Error fetching session count:", countError);
-            throw countError;
+            setOtherUserStats({
+              totalPracticeMinutes: totalMinutes,
+              sessionCount: 0,
+              currentStreak: 0
+            });
+            return;
           }
           
           console.log("Session count:", sessionCount);
@@ -77,7 +87,12 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
             
           if (streakError) {
             console.error("Error fetching streak data:", streakError);
-            throw streakError;
+            setOtherUserStats({
+              totalPracticeMinutes: totalMinutes,
+              sessionCount: sessionCount || 0,
+              currentStreak: 0
+            });
+            return;
           }
           
           // Find user in streak data
