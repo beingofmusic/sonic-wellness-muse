@@ -19,7 +19,7 @@ const CheckoutSuccess = () => {
     toast({
       title: "Payment Successful!",
       description: "Thank you for your purchase.",
-      variant: "success",
+      variant: "default", // Changed from "success" to "default"
     });
   }, [clearCart, toast]);
 
