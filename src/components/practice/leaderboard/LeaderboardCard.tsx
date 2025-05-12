@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LeaderboardEntry } from '@/services/leaderboardService';
 import { formatMinutes } from '@/lib/formatters';
+import UserProfileLink from '@/components/profile/UserProfileLink';
 
 interface LeaderboardCardProps {
   title: string;
@@ -130,7 +130,12 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
             </Avatar>
             
             <span className="text-sm truncate mr-auto">
-              {getDisplayName(entry)}
+              <UserProfileLink 
+                userId={entry.user_id} 
+                firstName={entry.first_name}
+                lastName={entry.last_name}
+                username={entry.username}
+              />
               {entry.isCurrentUser && <span className="text-xs ml-1.5 text-music-primary">(You)</span>}
             </span>
             

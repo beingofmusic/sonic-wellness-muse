@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,6 +28,7 @@ import CheckoutSuccess from "./pages/checkout/CheckoutSuccess";
 import Settings from "./pages/Settings";
 import PracticeHistory from "./pages/PracticeHistory";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 // Import wellness pages
 import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
@@ -214,6 +214,15 @@ const App = () => (
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        {/* New route for viewing user profiles */}
+        <Route 
+          path="/users/:userId" 
+          element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           } 
         />
