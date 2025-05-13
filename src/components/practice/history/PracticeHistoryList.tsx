@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PracticeSessionWithRoutine } from '@/services/practiceHistoryService';
+import { PracticeSessionWithRoutine, formatSessionDate } from '@/services/practiceHistoryService';
 import PracticeHistoryItem from './PracticeHistoryItem';
 
 interface PracticeHistoryListProps {
@@ -13,7 +13,8 @@ const PracticeHistoryList: React.FC<PracticeHistoryListProps> = ({ sessions }) =
     const groups: Record<string, PracticeSessionWithRoutine[]> = {};
     
     sessions.forEach(session => {
-      const date = session.formatted_date || 'Unknown Date';
+      // Format the date from the completed_at timestamp
+      const date = formatSessionDate(session.completed_at, true);
       if (!groups[date]) {
         groups[date] = [];
       }

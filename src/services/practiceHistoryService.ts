@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 
 export interface PracticeSessionWithRoutine {
   id: string;
@@ -80,21 +80,25 @@ export const fetchPracticeSessions = async ({
   }
 
   // Clone the query for pagination and total count
-  const countQuery = query;
   const paginatedQuery = query.range(page * pageSize, (page + 1) * pageSize - 1);
 
   // Execute queries in parallel
   const [sessionResult, countResult, totalTimeResult, routineSummary] = await Promise.all([
     paginatedQuery,
-    countQuery.count().single(),
+    // Use .select('count') instead of .count() for newer Supabase client
+    supabase
+      .from("practice_sessions")
+      .select("*", { count: 'exact', head: true })
+      .eq("user_id", userData.user.id)
+      .then(res => ({ data: { count: res.count } })),
     // Total practice time with applied filters
-    countQuery.select("total_duration"),
+    query.select("total_duration"),
     // Get summary of routine usage
     buildRoutineSummary(userData.user.id, dateRange),
   ]);
 
-  if (sessionResult.error || countResult.error || totalTimeResult.error) {
-    console.error("Error fetching sessions:", sessionResult.error || countResult.error || totalTimeResult.error);
+  if (sessionResult.error || totalTimeResult.error) {
+    console.error("Error fetching sessions:", sessionResult.error || totalTimeResult.error);
     throw new Error("Failed to load practice history");
   }
 
@@ -214,9 +218,16 @@ export const formatDuration = (minutes: number): string => {
 };
 
 // Format date in a human-readable way
-export const formatSessionDate = (dateString: string): string => {
+export const formatSessionDate = (dateString: string, forGrouping: boolean = false): string => {
   try {
     const date = new Date(dateString);
+    
+    if (forGrouping) {
+      // For grouping headers, use a consistent readable date format
+      return format(date, 'MMMM d, yyyy');
+    }
+    
+    // For individual items, use relative time
     return formatDistanceToNow(date, { addSuffix: true });
   } catch (error) {
     return "Unknown date";
