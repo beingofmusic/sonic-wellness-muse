@@ -107,7 +107,9 @@ export const fetchPracticeSessions = async ({
     const routineData = session.routines as { title: string } | null;
     
     // Check if this is a manual entry
-    const isManualEntry = session.block_breakdown && session.block_breakdown.isManualEntry === true;
+    // Need to safely check if block_breakdown exists and contains isManualEntry
+    const blockBreakdown = session.block_breakdown as Record<string, any> | null;
+    const isManualEntry = blockBreakdown && typeof blockBreakdown === 'object' && blockBreakdown.isManualEntry === true;
     
     // Determine routine title
     let routineTitle: string | null = null;
@@ -124,7 +126,7 @@ export const fetchPracticeSessions = async ({
       routine_title: routineTitle,
       total_duration: session.total_duration,
       completed_at: session.completed_at,
-      block_breakdown: session.block_breakdown,
+      block_breakdown: blockBreakdown,
       is_manual_entry: isManualEntry,
     };
   });
@@ -233,3 +235,4 @@ export const formatSessionDate = (dateString: string, forGrouping: boolean = fal
     return "Unknown date";
   }
 };
+
