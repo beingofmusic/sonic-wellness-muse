@@ -182,6 +182,11 @@ export const useShop = () => {
     }
     
     try {
+      toast({
+        title: "Processing Checkout",
+        description: "You'll be redirected to our secure payment page...",
+      });
+      
       await createOrder(cartItems);
       // Note: The redirect to Stripe happens in createOrder, 
       // so we don't need to handle success here

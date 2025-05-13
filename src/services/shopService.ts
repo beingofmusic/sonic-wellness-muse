@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Product, CartItem, Order, OrderItem } from "@/types/shop";
 
@@ -231,7 +230,15 @@ export const createStripeCheckout = async (cartItems: CartItem[]): Promise<{ ses
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Stripe checkout error:", error);
+      throw error;
+    }
+    
+    if (!data || !data.url) {
+      throw new Error("Invalid response from checkout service");
+    }
+    
     return data;
   } catch (error) {
     console.error("Error creating checkout session:", error);
@@ -239,7 +246,7 @@ export const createStripeCheckout = async (cartItems: CartItem[]): Promise<{ ses
   }
 };
 
-// Order functions (MVP, to be expanded with Stripe)
+// Order functions (with improved Stripe integration)
 export const createOrder = async (cartItems: CartItem[]): Promise<Order | null> => {
   try {
     // First create Stripe checkout session
@@ -248,6 +255,8 @@ export const createOrder = async (cartItems: CartItem[]): Promise<Order | null> 
     if (!checkoutSession) {
       throw new Error("Failed to create checkout session");
     }
+    
+    console.log("Redirecting to Stripe checkout:", checkoutSession.url);
     
     // Redirect to Stripe Checkout
     window.location.href = checkoutSession.url;
