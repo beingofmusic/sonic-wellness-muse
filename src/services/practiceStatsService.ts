@@ -64,47 +64,6 @@ export const logPracticeSession = async (
   }
 };
 
-// Log a manual practice session (external practice)
-export const logManualPracticeSession = async (
-  durationMinutes: number,
-  practiceDate: Date,
-  description: string = ""
-): Promise<{ success: boolean, newBadges: any[] }> => {
-  try {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user) {
-      return { success: false, newBadges: [] };
-    }
-
-    // Create metadata for manual log
-    const blockBreakdown = {
-      isManualEntry: true,
-      description: description || "External practice",
-    };
-
-    const { error } = await supabase.from("practice_sessions").insert({
-      user_id: userData.user.id,
-      routine_id: null, // Manual entries are not linked to routines
-      total_duration: durationMinutes,
-      block_breakdown: blockBreakdown,
-      completed_at: practiceDate.toISOString(), // Use the specified date
-    });
-
-    if (error) {
-      console.error("Error logging manual practice session:", error);
-      return { success: false, newBadges: [] };
-    }
-
-    // Check for newly earned badges after logging the practice session
-    const newBadges = await checkForNewBadges(userData.user.id);
-    
-    return { success: true, newBadges };
-  } catch (err) {
-    console.error("Failed to log manual practice session:", err);
-    return { success: false, newBadges: [] };
-  }
-};
-
 // Get user's total practice time (in minutes)
 export const getTotalPracticeTime = async (): Promise<number> => {
   try {

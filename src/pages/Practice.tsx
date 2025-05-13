@@ -8,7 +8,6 @@ import FeaturedTemplates from "@/components/practice/FeaturedTemplates";
 import CreateRoutineCta from "@/components/practice/CreateRoutineCta";
 import MyRoutines from "@/components/practice/MyRoutines";
 import PracticeGoals from "@/components/practice/goals/PracticeGoals";
-import ManualPracticeLog from "@/components/practice/ManualPracticeLog";
 
 const Practice: React.FC = () => {
   return (
@@ -32,7 +31,6 @@ const Practice: React.FC = () => {
         
         <FeaturedTemplates />
         <CreateRoutineCta />
-        <ManualPracticeLog />
         <MyRoutines />
         <PracticeGoals />
       </div>

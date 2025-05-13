@@ -1,79 +1,99 @@
 
-import React from "react";
-import { formatDuration, formatSessionDate } from "@/services/practiceHistoryService";
-import { PracticeSessionWithRoutine } from "@/services/practiceHistoryService";
-import { Clock, Calendar, FileText, ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { PracticeSessionWithRoutine } from '@/services/practiceHistoryService';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatMinutes } from '@/lib/formatters';
+import { Clock, Music, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 interface PracticeHistoryItemProps {
   session: PracticeSessionWithRoutine;
 }
 
 const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) => {
-  // Format the date for display
-  const formattedDate = formatSessionDate(session.completed_at);
-  const exactDate = new Date(session.completed_at).toLocaleDateString(undefined, {
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    hour: '2-digit', 
-    minute: '2-digit'
-  });
+  // Get block type breakdown if available
+  const blockTypes = React.useMemo(() => {
+    if (!session.block_breakdown?.blockTypes) return [];
+    
+    return Object.keys(session.block_breakdown.blockTypes);
+  }, [session]);
   
-  // Format the duration for display
-  const duration = formatDuration(session.total_duration);
+  // Function to get icon based on routine title or block types
+  const getRoutineIcon = () => {
+    const title = session.routine_title?.toLowerCase() || '';
+    
+    if (title.includes('technique') || title.includes('technical')) {
+      return <Music className="h-5 w-5 text-music-primary" />;
+    } else if (title.includes('mindfulness') || title.includes('meditation')) {
+      return <Clock className="h-5 w-5 text-music-secondary" />;
+    } else {
+      return <Music className="h-5 w-5 text-music-tertiary" />;
+    }
+  };
   
-  // Get description from manual entry if available
-  const description = session.is_manual_entry && session.block_breakdown?.description
-    ? session.block_breakdown.description
-    : null;
-
   return (
-    <div className="bg-card/70 backdrop-blur-sm border border-white/10 rounded-lg p-4 hover:bg-card/90 transition-colors">
-      <div className="flex flex-col sm:flex-row justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-medium">
-              {session.routine_title || "Unnamed Session"}
-            </h3>
-            {session.is_manual_entry && (
-              <span className="bg-music-tertiary/20 text-music-tertiary text-xs px-2 py-0.5 rounded-full">
-                Manual Entry
-              </span>
-            )}
-          </div>
-          
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-white/70">
-            <div className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{duration}</span>
-            </div>
-            <div className="flex items-center gap-1" title={exactDate}>
-              <Calendar className="h-3.5 w-3.5" />
-              <span>{formattedDate}</span>
-            </div>
-            {description && (
-              <div className="flex items-center gap-1">
-                <FileText className="h-3.5 w-3.5" />
-                <span className="truncate max-w-[280px]">{description}</span>
-              </div>
-            )}
-          </div>
+    <Card className="border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden hover:bg-white/8 transition-colors">
+      <CardContent className="p-4 flex items-center gap-4">
+        <div className="bg-music-primary/10 p-3 rounded-full">
+          {getRoutineIcon()}
         </div>
         
-        {session.routine_id && !session.is_manual_entry && (
-          <div className="mt-3 sm:mt-0">
-            <Link to={`/practice/routine/${session.routine_id}`}>
-              <Button variant="outline" size="sm" className="border-white/10 bg-white/5">
-                <span>View Routine</span>
-                <ExternalLink className="ml-1 h-3.5 w-3.5" />
-              </Button>
-            </Link>
+        <div className="flex-grow min-w-0">
+          <div className="flex items-start justify-between">
+            <div>
+              <h4 className="font-medium truncate">{session.routine_title}</h4>
+              <div className="flex items-center gap-2 text-sm text-white/60">
+                <span className="whitespace-nowrap">{session.formatted_time}</span>
+                <span className="h-1 w-1 bg-white/30 rounded-full"></span>
+                <span>{formatMinutes(session.total_duration)}</span>
+              </div>
+            </div>
+            
+            <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
           </div>
+          
+          {/* Tags or block types */}
+          {(session.routine_tags?.length > 0 || blockTypes.length > 0) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {session.routine_tags?.map((tag, index) => (
+                <Badge 
+                  key={index} 
+                  className="bg-music-primary/20 text-music-primary hover:bg-music-primary/30 text-xs"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              
+              {blockTypes.slice(0, 3).map((type, index) => (
+                <Badge 
+                  key={`block-${index}`} 
+                  variant="outline"
+                  className="border-music-secondary/30 text-music-secondary/90 text-xs"
+                >
+                  {type}
+                </Badge>
+              ))}
+              
+              {blockTypes.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{blockTypes.length - 3} more
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {session.routine_id && (
+          <Link 
+            to={`/practice/routine/${session.routine_id}`}
+            className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors whitespace-nowrap"
+          >
+            Practice Again
+          </Link>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
