@@ -38,7 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Link, Trash2 } from "lucide-react";
 
 interface EventModalProps {
   open: boolean;
@@ -58,7 +58,9 @@ const eventFormSchema = z.object({
   duration_minutes: z.number().min(1, { message: "Duration must be at least 1 minute." }),
   location: z.string().optional(),
   description: z.string().optional(),
-  routine_id: z.string().optional()
+  routine_id: z.string().optional(),
+  visibility: z.enum(["private", "public"]),
+  zoom_link: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal(''))
 });
 
 const EventModal: React.FC<EventModalProps> = ({ 
@@ -80,7 +82,9 @@ const EventModal: React.FC<EventModalProps> = ({
       duration_minutes: 30,
       location: "",
       description: "",
-      routine_id: undefined
+      routine_id: undefined,
+      visibility: "private",
+      zoom_link: ""
     }
   });
 
@@ -94,7 +98,9 @@ const EventModal: React.FC<EventModalProps> = ({
         duration_minutes: event.duration_minutes,
         location: event.location || "",
         description: event.description || "",
-        routine_id: event.routine_id
+        routine_id: event.routine_id,
+        visibility: event.visibility || "private",
+        zoom_link: event.zoom_link || ""
       });
     } else {
       form.reset({
@@ -105,7 +111,9 @@ const EventModal: React.FC<EventModalProps> = ({
         duration_minutes: 30,
         location: "",
         description: "",
-        routine_id: undefined
+        routine_id: undefined,
+        visibility: "private",
+        zoom_link: ""
       });
     }
   }, [event, form]);
@@ -281,18 +289,64 @@ const EventModal: React.FC<EventModalProps> = ({
 
               <FormField
                 control={form.control}
-                name="location"
+                name="visibility"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Location (optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Event location" {...field} />
-                    </FormControl>
+                    <FormLabel>Visibility</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select visibility" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="private">Private</SelectItem>
+                        <SelectItem value="public">Public</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location (optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Event location" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="zoom_link"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Zoom Link (optional)</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input 
+                        placeholder="https://zoom.us/j/123456789"
+                        className="pl-8" 
+                        {...field} 
+                      />
+                      <Link className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

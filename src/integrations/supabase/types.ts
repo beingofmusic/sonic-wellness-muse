@@ -77,6 +77,8 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          visibility: string
+          zoom_link: string | null
         }
         Insert: {
           created_at?: string
@@ -91,6 +93,8 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          visibility?: string
+          zoom_link?: string | null
         }
         Update: {
           created_at?: string
@@ -105,6 +109,8 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          visibility?: string
+          zoom_link?: string | null
         }
         Relationships: [
           {

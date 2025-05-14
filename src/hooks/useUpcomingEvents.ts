@@ -27,7 +27,7 @@ export const useUpcomingEvents = (limit: number = 3) => {
         const { data, error } = await supabase
           .from("calendar_events")
           .select("*, routines(title)")
-          .eq("user_id", user.id)
+          .or(`user_id.eq.${user.id},visibility.eq.public`)
           // Events from today onwards
           .gte("event_date", todayString)
           // Order by date then time

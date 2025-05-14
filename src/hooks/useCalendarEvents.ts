@@ -20,11 +20,11 @@ export const useCalendarEvents = () => {
     try {
       let query = supabase
         .from("calendar_events")
-        .select("*");
+        .select("*, routines(title)");
       
-      // If not admin, only fetch user's own events
+      // If not admin, only fetch user's own events and public events
       if (!isAdmin) {
-        query = query.eq("user_id", user.id);
+        query = query.or(`user_id.eq.${user.id},visibility.eq.public`);
       }
 
       const { data, error } = await query;
@@ -51,7 +51,8 @@ export const useCalendarEvents = () => {
       event_type: eventData.event_type,
       event_date: eventData.event_date,
       event_time: eventData.event_time,
-      duration_minutes: eventData.duration_minutes
+      duration_minutes: eventData.duration_minutes,
+      visibility: eventData.visibility || "private"
     };
     
     const { data, error } = await supabase

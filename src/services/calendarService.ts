@@ -6,7 +6,7 @@ export const fetchUserCalendarEvents = async (userId: string): Promise<CalendarE
   const { data, error } = await supabase
     .from("calendar_events")
     .select("*")
-    .eq("user_id", userId);
+    .or(`user_id.eq.${userId},visibility.eq.public`);
 
   if (error) {
     console.error("Error fetching calendar events:", error);
@@ -41,7 +41,8 @@ export const createCalendarEvent = async (
     event_type: eventData.event_type,
     event_date: eventData.event_date,
     event_time: eventData.event_time,
-    duration_minutes: eventData.duration_minutes
+    duration_minutes: eventData.duration_minutes,
+    visibility: eventData.visibility || "private"
   };
 
   const { data, error } = await supabase
