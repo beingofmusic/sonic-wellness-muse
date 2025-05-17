@@ -14,11 +14,12 @@ export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => 
       tags,
       created_by,
       is_template,
+      visibility,
       created_at,
       updated_at,
       profiles(first_name, last_name)
     `)
-    .eq("is_template", true)
+    .or('is_template.eq.true,visibility.eq.public')
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -113,6 +114,7 @@ export const createRoutine = async (
     description?: string;
     is_template: boolean;
     tags?: string[];
+    visibility: 'public' | 'private';
   },
   userId: string
 ): Promise<PracticeRoutine> => {
@@ -141,6 +143,7 @@ export const updateRoutine = async (
     description?: string;
     duration?: number;
     tags?: string[];
+    visibility?: 'public' | 'private';
   }
 ): Promise<void> => {
   const { error } = await supabase
