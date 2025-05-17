@@ -8,7 +8,8 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
-import { CalendarEvent, CalendarEventFormData, ViewType, CalendarEventInput } from "@/types/calendar";
+import { CalendarEvent, ViewType } from "@/types/calendar";
+import { EventFormData } from "@/schemas/calendarEventSchema";
 import { useLocation } from "react-router-dom";
 
 const Calendar: React.FC = () => {
@@ -64,13 +65,13 @@ const Calendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  const handleSaveEvent = async (formData: CalendarEventFormData) => {
+  const handleSaveEvent = async (formData: EventFormData) => {
     try {
       // Process routine_id - convert "none" to undefined/null
       const processedRoutineId = formData.routine_id === "none" ? null : formData.routine_id;
       
       // Convert the Date object to string format for the API
-      const eventData: Omit<CalendarEventInput, "user_id"> = {
+      const eventData = {
         ...formData,
         routine_id: processedRoutineId,
         event_date: format(formData.event_date, "yyyy-MM-dd"),

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarEvent, CalendarEventInput, EventType } from "@/types/calendar";
+import { CalendarEvent, CalendarEventInput } from "@/types/calendar";
 import { useAuth } from "@/context/AuthContext";
 
 export const useCalendarEvents = () => {
