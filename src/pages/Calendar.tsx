@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import CalendarView from "@/components/calendar/CalendarView";
@@ -72,10 +71,16 @@ const Calendar: React.FC = () => {
       
       // Convert the Date object to string format for the API
       const eventData = {
-        ...formData,
-        routine_id: processedRoutineId,
+        title: formData.title, // Ensure title is explicitly included
+        event_type: formData.event_type,
         event_date: format(formData.event_date, "yyyy-MM-dd"),
-        event_time: `${formData.event_time}:00` // Add seconds component
+        event_time: `${formData.event_time}:00`, // Add seconds component
+        duration_minutes: formData.duration_minutes,
+        location: formData.location,
+        description: formData.description,
+        routine_id: processedRoutineId,
+        visibility: formData.visibility || "private",
+        zoom_link: formData.zoom_link
       };
 
       if (selectedEvent) {

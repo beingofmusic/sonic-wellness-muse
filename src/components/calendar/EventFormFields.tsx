@@ -2,9 +2,9 @@
 import React from "react";
 import { format } from "date-fns";
 import { Link, CalendarIcon } from "lucide-react";
-import { useForm, UseFormReturn } from "react-hook-form";
+import { UseFormReturn } from "react-hook-form";
 import { EventFormData } from "@/schemas/calendarEventSchema";
-import { UserRoutine } from "@/types/practice";
+import { PracticeRoutine } from "@/types/practice";
 import { EventType } from "@/types/calendar";
 import {
   FormField,
@@ -32,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface EventFormFieldsProps {
   form: UseFormReturn<EventFormData>;
-  routines: UserRoutine[];
+  routines: PracticeRoutine[];
 }
 
 const EventFormFields: React.FC<EventFormFieldsProps> = ({ form, routines }) => {
