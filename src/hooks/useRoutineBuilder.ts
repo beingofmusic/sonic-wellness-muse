@@ -90,14 +90,20 @@ export const useRoutineBuilder = (routineId?: string) => {
           throw blocksError;
         }
 
-        setRoutine(routineData);
+        // Ensure visibility is properly typed when setting the routine
+        const typedRoutine = {
+          ...routineData,
+          visibility: (routineData.visibility || 'private') as 'public' | 'private'
+        };
+        
+        setRoutine(typedRoutine);
         setRoutineBlocks(blocksData);
 
         // Set form values
         form.reset({
           title: routineData.title,
           description: routineData.description || "",
-          visibility: routineData.visibility || "private",
+          visibility: (routineData.visibility || 'private') as 'public' | 'private',
           blocks: blocksData.map(block => ({
             id: block.id,
             type: block.type,

@@ -18,7 +18,8 @@ export const featuredTemplates: PracticeTemplate[] = [
       "1 technique exercise"
     ],
     usageCount: 324,
-    creator: "Staff"
+    creator: "Staff",
+    visibility: "public"
   },
   {
     id: "template-2",
@@ -36,7 +37,8 @@ export const featuredTemplates: PracticeTemplate[] = [
       "1 creative exercise"
     ],
     usageCount: 231,
-    creator: "Staff"
+    creator: "Staff",
+    visibility: "public"
   },
   {
     id: "template-3",
@@ -54,6 +56,7 @@ export const featuredTemplates: PracticeTemplate[] = [
       "2 technique exercises"
     ],
     usageCount: 203,
-    creator: "Staff"
+    creator: "Staff",
+    visibility: "public"
   }
 ];

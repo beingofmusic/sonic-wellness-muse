@@ -41,7 +41,11 @@ export const useUserRoutines = (limit?: number) => {
               
             if (blocksError) {
               console.error(`Error fetching blocks for routine ${routine.id}:`, blocksError);
-              return { ...routine, progress: 0 };
+              return { 
+                ...routine, 
+                progress: 0,
+                visibility: (routine.visibility || 'private') as 'public' | 'private'
+              };
             }
             
             // Calculate total duration
@@ -53,7 +57,8 @@ export const useUserRoutines = (limit?: number) => {
             return {
               ...routine,
               duration: totalDuration,
-              progress
+              progress,
+              visibility: (routine.visibility || 'private') as 'public' | 'private'
             };
           })
         );

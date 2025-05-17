@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
@@ -40,6 +39,8 @@ export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => 
     
     return {
       ...template,
+      // Ensure visibility is correctly typed
+      visibility: (template.visibility || 'private') as 'public' | 'private',
       creator: creatorName,
       usageCount: Math.floor(Math.random() * 500), // Placeholder until we track this
       includes
@@ -69,6 +70,8 @@ export const fetchUserRoutines = async (): Promise<PracticeRoutine[]> => {
   return data.map(routine => {
     return {
       ...routine,
+      // Ensure visibility is correctly typed
+      visibility: (routine.visibility || 'private') as 'public' | 'private',
       // Format the last updated time for display
       lastUpdated: formatDistanceToNow(new Date(routine.updated_at), { addSuffix: true })
     };
@@ -104,6 +107,8 @@ export const fetchRoutineById = async (routineId: string): Promise<PracticeRouti
 
   return {
     ...data,
+    // Ensure visibility is correctly typed
+    visibility: (data.visibility || 'private') as 'public' | 'private',
     lastUpdated: formatDistanceToNow(new Date(data.updated_at), { addSuffix: true })
   };
 };
@@ -133,7 +138,11 @@ export const createRoutine = async (
     throw error;
   }
 
-  return data;
+  return {
+    ...data,
+    // Ensure visibility is correctly typed
+    visibility: (data.visibility || 'private') as 'public' | 'private',
+  };
 };
 
 export const updateRoutine = async (
