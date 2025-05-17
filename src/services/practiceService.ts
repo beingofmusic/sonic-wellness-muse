@@ -1,10 +1,9 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
 
-export const fetchTemplates = async (limit = 3, templateId?: string): Promise<PracticeTemplate[]> => {
-  let query = supabase
+export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => {
+  const { data, error } = await supabase
     .from("routines")
     .select(`
       id, 
@@ -19,16 +18,9 @@ export const fetchTemplates = async (limit = 3, templateId?: string): Promise<Pr
       updated_at,
       profiles(first_name, last_name)
     `)
-    .or('is_template.eq.true,visibility.eq.public');
-  
-  // If a specific templateId is provided, filter by it
-  if (templateId) {
-    query = query.eq('id', templateId);
-  } else {
-    query = query.order("created_at", { ascending: false }).limit(limit);
-  }
-
-  const { data, error } = await query;
+    .or('is_template.eq.true,visibility.eq.public')
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("Error fetching templates:", error);
