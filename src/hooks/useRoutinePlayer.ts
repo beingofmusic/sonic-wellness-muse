@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
-import { fetchRoutineById, fetchRoutineBlocks } from "@/services/practiceService";
+import { fetchRoutineById, fetchRoutineBlocks, fetchTemplates } from "@/services/practiceService";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/formatters";
 
@@ -19,7 +19,11 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Determine if we're playing a template or a routine
+  const isTemplate = location.pathname.includes('/template/');
 
   // Clean up timer on unmount
   useEffect(() => {
@@ -40,7 +44,23 @@ export const useRoutinePlayer = (routineId?: string) => {
 
       try {
         setIsLoading(true);
-        const routineData = await fetchRoutineById(routineId);
+        
+        let routineData;
+        
+        // Fetch the correct data based on the route type
+        if (isTemplate) {
+          // For templates route
+          const templates = await fetchTemplates(1, routineId);
+          if (templates && templates.length > 0) {
+            routineData = templates[0];
+          } else {
+            throw new Error("Template not found");
+          }
+        } else {
+          // For regular routines route
+          routineData = await fetchRoutineById(routineId);
+        }
+        
         const blocksData = await fetchRoutineBlocks(routineId);
         
         setRoutine(routineData);
@@ -65,7 +85,7 @@ export const useRoutinePlayer = (routineId?: string) => {
     };
 
     fetchRoutineData();
-  }, [routineId, toast]);
+  }, [routineId, toast, isTemplate]);
 
   // Start countdown timer when blocks load and not paused
   useEffect(() => {
