@@ -83,7 +83,7 @@ const MyRoutineCard: React.FC<MyRoutineCardProps> = ({ routine }) => {
             className="flex-1 bg-music-primary"
             asChild
           >
-            <Link to={`/practice/play/${routine.id}`}>
+            <Link to={`/practice/routine/${routine.id}`}>
               <Play className="mr-2 h-4 w-4" />
               Practice
             </Link>
