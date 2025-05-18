@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
@@ -86,6 +85,42 @@ export const fetchUserRoutines = async (): Promise<PracticeRoutine[]> => {
   });
 };
 
+/**
+ * Check if a user has access to a specific routine
+ * Used by PublicResourceRoute to determine if access should be granted
+ */
+export const checkRoutineAccess = async (routineId: string): Promise<boolean> => {
+  try {
+    // Check if routine exists and is public
+    const { data: routine, error: routineError } = await supabase
+      .from("routines")
+      .select("visibility, created_by")
+      .eq("id", routineId)
+      .single();
+
+    if (routineError) {
+      console.error("Error checking routine access:", routineError);
+      return false;
+    }
+
+    // If routine is public, allow access
+    if (routine.visibility === 'public') {
+      return true;
+    }
+
+    // Otherwise, check if user is the creator
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) {
+      return false;
+    }
+
+    return routine.created_by === userData.user.id;
+  } catch (error) {
+    console.error("Error in checkRoutineAccess:", error);
+    return false;
+  }
+};
+
 export const fetchRoutineBlocks = async (routineId: string): Promise<RoutineBlock[]> => {
   const { data, error } = await supabase
     .from("routine_blocks")
@@ -121,7 +156,7 @@ export const fetchRoutineById = async (routineId: string): Promise<PracticeRouti
   const { data: userData } = await supabase.auth.getUser();
   const currentUserId = userData?.user?.id;
   
-  // Verify access permission - FIXED to allow access to public routines
+  // Verify access permission
   // Allow access if:
   // 1. The routine is public OR
   // 2. The user is the creator

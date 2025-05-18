@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
-import { fetchRoutineById, fetchRoutineBlocks, fetchTemplates } from "@/services/practiceService";
+import { fetchRoutineById, fetchRoutineBlocks } from "@/services/practiceService";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/formatters";
+import { useAuth } from "@/context/AuthContext";
 
 export const useRoutinePlayer = (routineId?: string) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,10 +17,12 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [focusMode, setFocusMode] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [accessError, setAccessError] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Determine if we're playing a template or a routine
   const isTemplate = location.pathname.includes('/template/');
@@ -43,6 +46,7 @@ export const useRoutinePlayer = (routineId?: string) => {
 
       try {
         setIsLoading(true);
+        setAccessError(null);
         
         // For all routines and public templates, use fetchRoutineById
         const routineData = await fetchRoutineById(routineId);
@@ -59,23 +63,44 @@ export const useRoutinePlayer = (routineId?: string) => {
         }
       } catch (error) {
         console.error("Error fetching routine data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load routine data or you don't have permission to access it",
-          variant: "destructive",
-        });
-        navigate("/practice"); // Redirect to practice page on error
+        
+        // Set specific error message based on the error
+        if (error instanceof Error && error.message.includes("permission")) {
+          setAccessError("You don't have permission to access this routine");
+          
+          // If user is not logged in, suggest signing in
+          if (!user) {
+            toast({
+              title: "Authentication required",
+              description: "Sign in to access private routines",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Access denied",
+              description: "You don't have permission to view this routine",
+              variant: "destructive",
+            });
+          }
+        } else {
+          setAccessError("Failed to load routine data");
+          toast({
+            title: "Error",
+            description: "Failed to load routine data",
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRoutineData();
-  }, [routineId, toast, navigate]);
+  }, [routineId, toast, user]);
 
   // Start countdown timer when blocks load and not paused
   useEffect(() => {
-    if (blocks.length === 0 || isLoading || isPaused) return;
+    if (blocks.length === 0 || isLoading || isPaused || accessError) return;
     
     // Start the timer
     startTimer();
@@ -85,7 +110,7 @@ export const useRoutinePlayer = (routineId?: string) => {
         clearInterval(timerRef.current);
       }
     };
-  }, [blocks, isLoading, isPaused]);
+  }, [blocks, isLoading, isPaused, accessError]);
 
   // Update session progress when current block changes
   useEffect(() => {
@@ -175,7 +200,6 @@ export const useRoutinePlayer = (routineId?: string) => {
     }
   }, [currentBlockIndex]);
 
-  // Handle timer controls
   const handleReset = useCallback(() => {
     // Stop the current timer
     if (timerRef.current) {
@@ -244,17 +268,49 @@ export const useRoutinePlayer = (routineId?: string) => {
     currentBlockIndex,
     sessionProgress,
     isCompleted,
+    accessError,
     setCurrentBlockIndex,
     handleNext,
-    handlePrevious,
-    handleReset,
-    handlePause,
+    handlePrevious: (prevDefined) => {
+      if (!prevDefined && currentBlockIndex > 0) {
+        setCurrentBlockIndex(prevIndex => prevIndex - 1);
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      }
+    },
+    handleReset: (resetDefined) => {
+      if (!resetDefined) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        const currentBlock = blocks[currentBlockIndex];
+        if (currentBlock) {
+          const blockDuration = currentBlock.duration * 60;
+          setSecondsLeft(blockDuration);
+          setTimeRemaining(formatTime(blockDuration));
+          if (!isPaused) startTimer();
+        }
+      }
+    },
+    handlePause: (pauseDefined) => {
+      if (!pauseDefined) {
+        setIsPaused(prev => {
+          const newPausedState = !prev;
+          if (!newPausedState) startTimer();
+          else if (timerRef.current) clearInterval(timerRef.current);
+          return newPausedState;
+        });
+      }
+    },
     handleStartNewSession,
     isPaused,
     timeRemaining,
     secondsLeft,
     focusMode,
-    toggleFocusMode,
+    toggleFocusMode: (toggleDefined) => {
+      if (!toggleDefined) {
+        setFocusMode(prev => !prev);
+      }
+    },
     handleExit
   };
 };

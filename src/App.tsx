@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -5,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PermissionRoute from "@/components/PermissionRoute";
 import RootRoute from "@/components/RootRoute";
+import PublicResourceRoute from "@/components/PublicResourceRoute";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
@@ -31,6 +33,7 @@ import UserProfile from "./pages/UserProfile";
 // Import wellness pages
 import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
+import { checkRoutineAccess } from "@/services/practiceService";
 
 // Placeholder page for templates list - will be implemented later
 const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
@@ -83,20 +86,22 @@ const App = () => (
             </ProtectedRoute>
           } 
         />
+        {/* Changed to PublicResourceRoute to allow access to public routines */}
         <Route 
           path="/practice/routine/:id" 
           element={
-            <ProtectedRoute>
+            <PublicResourceRoute checkAccess={checkRoutineAccess}>
               <RoutinePlayer />
-            </ProtectedRoute>
+            </PublicResourceRoute>
           } 
         />
+        {/* Also changed template routes to PublicResourceRoute */}
         <Route 
           path="/practice/template/:id" 
           element={
-            <ProtectedRoute>
+            <PublicResourceRoute checkAccess={checkRoutineAccess}>
               <RoutinePlayer />
-            </ProtectedRoute>
+            </PublicResourceRoute>
           } 
         />
         <Route 
