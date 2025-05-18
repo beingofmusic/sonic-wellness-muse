@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
@@ -101,10 +102,7 @@ export const fetchRoutineBlocks = async (routineId: string): Promise<RoutineBloc
 };
 
 export const fetchRoutineById = async (routineId: string): Promise<PracticeRoutine> => {
-  // First check if the current user is the creator or if routine is public
-  const { data: user } = await supabase.auth.getUser();
-  
-  // Query for the routine
+  // Query for the routine and join with profiles for creator info
   const { data, error } = await supabase
     .from("routines")
     .select(`
@@ -119,11 +117,18 @@ export const fetchRoutineById = async (routineId: string): Promise<PracticeRouti
     throw error;
   }
 
-  // Verify access permission
+  // Get current user for authorization check
+  const { data: userData } = await supabase.auth.getUser();
+  const currentUserId = userData?.user?.id;
+  
+  // Verify access permission - FIXED to allow access to public routines
   // Allow access if:
   // 1. The routine is public OR
   // 2. The user is the creator
-  if (data.visibility !== 'public' && (!user?.user || data.created_by !== user.user.id)) {
+  const isPublic = data.visibility === 'public';
+  const isCreator = currentUserId && data.created_by === currentUserId;
+  
+  if (!isPublic && !isCreator) {
     throw new Error("You don't have permission to access this routine");
   }
 
