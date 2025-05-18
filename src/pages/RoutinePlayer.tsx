@@ -98,14 +98,14 @@ const RoutinePlayer: React.FC = () => {
           sessionProgress={sessionProgress}
           setCurrentBlockIndex={setCurrentBlockIndex}
           onNext={handleNext}
-          onPrevious={handlePrevious}
-          onReset={handleReset}
-          onPause={handlePause}
+          onPrevious={() => handlePrevious()}
+          onReset={() => handleReset()}
+          onPause={() => handlePause()}
           isPaused={isPaused}
           timeRemaining={timeRemaining}
           secondsLeft={secondsLeft}
           focusMode={focusMode}
-          toggleFocusMode={toggleFocusMode}
+          toggleFocusMode={() => toggleFocusMode()}
           onExit={handleExit}
         />
       )}

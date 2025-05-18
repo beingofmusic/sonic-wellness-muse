@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
@@ -271,46 +272,15 @@ export const useRoutinePlayer = (routineId?: string) => {
     accessError,
     setCurrentBlockIndex,
     handleNext,
-    handlePrevious: (prevDefined) => {
-      if (!prevDefined && currentBlockIndex > 0) {
-        setCurrentBlockIndex(prevIndex => prevIndex - 1);
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
-      }
-    },
-    handleReset: (resetDefined) => {
-      if (!resetDefined) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        const currentBlock = blocks[currentBlockIndex];
-        if (currentBlock) {
-          const blockDuration = currentBlock.duration * 60;
-          setSecondsLeft(blockDuration);
-          setTimeRemaining(formatTime(blockDuration));
-          if (!isPaused) startTimer();
-        }
-      }
-    },
-    handlePause: (pauseDefined) => {
-      if (!pauseDefined) {
-        setIsPaused(prev => {
-          const newPausedState = !prev;
-          if (!newPausedState) startTimer();
-          else if (timerRef.current) clearInterval(timerRef.current);
-          return newPausedState;
-        });
-      }
-    },
+    handlePrevious,
+    handleReset,
+    handlePause,
     handleStartNewSession,
     isPaused,
     timeRemaining,
     secondsLeft,
     focusMode,
-    toggleFocusMode: (toggleDefined) => {
-      if (!toggleDefined) {
-        setFocusMode(prev => !prev);
-      }
-    },
+    toggleFocusMode,
     handleExit
   };
 };
