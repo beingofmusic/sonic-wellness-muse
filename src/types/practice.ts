@@ -29,9 +29,10 @@ export interface PracticeRoutine {
   updated_at: string;
   visibility: 'public' | 'private';
   
-  // UI display field
+  // UI display fields
   lastUpdated?: string; // Formatted time for UI display
   progress?: number; // Progress through the routine (0-100%)
+  creator?: string; // Creator name for display
 }
 
 export interface RoutineBlock {
