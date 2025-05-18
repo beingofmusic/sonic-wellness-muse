@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
@@ -102,9 +101,16 @@ export const fetchRoutineBlocks = async (routineId: string): Promise<RoutineBloc
 };
 
 export const fetchRoutineById = async (routineId: string): Promise<PracticeRoutine> => {
+  // First check if the current user is the creator or if routine is public
+  const { data: user } = await supabase.auth.getUser();
+  
+  // Query for the routine
   const { data, error } = await supabase
     .from("routines")
-    .select("*")
+    .select(`
+      *,
+      profiles(first_name, last_name)
+    `)
     .eq("id", routineId)
     .single();
 
@@ -113,11 +119,26 @@ export const fetchRoutineById = async (routineId: string): Promise<PracticeRouti
     throw error;
   }
 
+  // Verify access permission
+  // Allow access if:
+  // 1. The routine is public OR
+  // 2. The user is the creator
+  if (data.visibility !== 'public' && (!user?.user || data.created_by !== user.user.id)) {
+    throw new Error("You don't have permission to access this routine");
+  }
+
+  // Get creator name from the profiles join
+  const profile = data.profiles as { first_name: string | null, last_name: string | null } | null;
+  const creatorName = profile
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Team member'
+    : 'Team member';
+
   return {
     ...data,
     // Ensure visibility is correctly typed
     visibility: (data.visibility || 'private') as 'public' | 'private',
-    lastUpdated: formatDistanceToNow(new Date(data.updated_at), { addSuffix: true })
+    lastUpdated: formatDistanceToNow(new Date(data.updated_at), { addSuffix: true }),
+    creator: creatorName
   };
 };
 

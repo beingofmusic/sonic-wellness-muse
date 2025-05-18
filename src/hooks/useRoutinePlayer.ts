@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
@@ -45,22 +44,8 @@ export const useRoutinePlayer = (routineId?: string) => {
       try {
         setIsLoading(true);
         
-        let routineData;
-        
-        // Fetch the correct data based on the route type
-        if (isTemplate) {
-          // For templates route
-          const templates = await fetchTemplates(1, routineId);
-          if (templates && templates.length > 0) {
-            routineData = templates[0];
-          } else {
-            throw new Error("Template not found");
-          }
-        } else {
-          // For regular routines route
-          routineData = await fetchRoutineById(routineId);
-        }
-        
+        // For all routines and public templates, use fetchRoutineById
+        const routineData = await fetchRoutineById(routineId);
         const blocksData = await fetchRoutineBlocks(routineId);
         
         setRoutine(routineData);
@@ -76,16 +61,17 @@ export const useRoutinePlayer = (routineId?: string) => {
         console.error("Error fetching routine data:", error);
         toast({
           title: "Error",
-          description: "Failed to load routine data",
+          description: "Failed to load routine data or you don't have permission to access it",
           variant: "destructive",
         });
+        navigate("/practice"); // Redirect to practice page on error
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRoutineData();
-  }, [routineId, toast, isTemplate]);
+  }, [routineId, toast, navigate]);
 
   // Start countdown timer when blocks load and not paused
   useEffect(() => {

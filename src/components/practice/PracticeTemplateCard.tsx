@@ -87,7 +87,7 @@ const PracticeTemplateCard: React.FC<PracticeTemplateCardProps> = ({ template })
             className="bg-music-primary"
             asChild
           >
-            <Link to={`/practice/template/${template.id}`}>
+            <Link to={`/practice/routine/${template.id}`}>
               <Play className="mr-2 h-4 w-4" />
               Start
             </Link>
