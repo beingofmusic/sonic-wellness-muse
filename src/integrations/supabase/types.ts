@@ -77,8 +77,6 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
-          visibility: string
-          zoom_link: string | null
         }
         Insert: {
           created_at?: string
@@ -93,8 +91,6 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
-          visibility?: string
-          zoom_link?: string | null
         }
         Update: {
           created_at?: string
@@ -109,8 +105,6 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
-          visibility?: string
-          zoom_link?: string | null
         }
         Relationships: [
           {
@@ -736,7 +730,6 @@ export type Database = {
           tags: string[] | null
           title: string
           updated_at: string
-          visibility: string
         }
         Insert: {
           created_at?: string
@@ -748,7 +741,6 @@ export type Database = {
           tags?: string[] | null
           title: string
           updated_at?: string
-          visibility?: string
         }
         Update: {
           created_at?: string
@@ -760,7 +752,6 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
-          visibility?: string
         }
         Relationships: [
           {
@@ -932,24 +923,6 @@ export type Database = {
           total_lessons: number
           completed_lessons: number
           completion_percentage: number
-        }[]
-      }
-      get_featured_templates: {
-        Args: { limit_count?: number }
-        Returns: {
-          id: string
-          title: string
-          description: string
-          duration: number
-          tags: string[]
-          created_by: string
-          is_template: boolean
-          created_at: string
-          updated_at: string
-          visibility: string
-          creator_name: string
-          includes: string[]
-          usage_count: number
         }[]
       }
       get_streak_leaderboard: {

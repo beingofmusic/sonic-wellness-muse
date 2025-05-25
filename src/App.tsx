@@ -1,12 +1,11 @@
-
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PermissionRoute from "@/components/PermissionRoute";
 import RootRoute from "@/components/RootRoute";
-import PublicResourceRoute from "@/components/PublicResourceRoute";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
@@ -25,15 +24,12 @@ import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
 import Shop from "./pages/Shop";
-import CheckoutSuccess from "./pages/checkout/CheckoutSuccess";
 import Settings from "./pages/Settings";
 import PracticeHistory from "./pages/PracticeHistory";
 import Profile from "./pages/Profile";
-import UserProfile from "./pages/UserProfile";
 // Import wellness pages
 import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
-import { checkRoutineAccess } from "@/services/practiceService";
 
 // Placeholder page for templates list - will be implemented later
 const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
@@ -44,6 +40,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
+      <Sonner />
       <Routes>
         <Route path="/" element={<RootRoute />} />
         <Route 
@@ -86,22 +83,20 @@ const App = () => (
             </ProtectedRoute>
           } 
         />
-        {/* Changed to PublicResourceRoute to allow access to public routines */}
         <Route 
           path="/practice/routine/:id" 
           element={
-            <PublicResourceRoute checkAccess={checkRoutineAccess}>
+            <ProtectedRoute>
               <RoutinePlayer />
-            </PublicResourceRoute>
+            </ProtectedRoute>
           } 
         />
-        {/* Also changed template routes to PublicResourceRoute */}
         <Route 
           path="/practice/template/:id" 
           element={
-            <PublicResourceRoute checkAccess={checkRoutineAccess}>
+            <ProtectedRoute>
               <RoutinePlayer />
-            </PublicResourceRoute>
+            </ProtectedRoute>
           } 
         />
         <Route 
@@ -195,15 +190,6 @@ const App = () => (
             </ProtectedRoute>
           } 
         />
-        {/* New checkout success route */}
-        <Route 
-          path="/checkout/success" 
-          element={
-            <ProtectedRoute>
-              <CheckoutSuccess />
-            </ProtectedRoute>
-          } 
-        />
         <Route 
           path="/settings" 
           element={
@@ -217,15 +203,6 @@ const App = () => (
           element={
             <ProtectedRoute>
               <Profile />
-            </ProtectedRoute>
-          } 
-        />
-        {/* New route for viewing user profiles */}
-        <Route 
-          path="/users/:userId" 
-          element={
-            <ProtectedRoute>
-              <UserProfile />
             </ProtectedRoute>
           } 
         />

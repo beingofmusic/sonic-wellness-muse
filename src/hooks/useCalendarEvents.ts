@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarEvent, CalendarEventInput } from "@/types/calendar";
+import { CalendarEvent, CalendarEventInput, EventType } from "@/types/calendar";
 import { useAuth } from "@/context/AuthContext";
 
 export const useCalendarEvents = () => {
@@ -20,11 +20,11 @@ export const useCalendarEvents = () => {
     try {
       let query = supabase
         .from("calendar_events")
-        .select("*, routines(title)");
+        .select("*");
       
-      // If not admin, only fetch user's own events and public events
+      // If not admin, only fetch user's own events
       if (!isAdmin) {
-        query = query.or(`user_id.eq.${user.id},visibility.eq.public`);
+        query = query.eq("user_id", user.id);
       }
 
       const { data, error } = await query;
@@ -51,8 +51,7 @@ export const useCalendarEvents = () => {
       event_type: eventData.event_type,
       event_date: eventData.event_date,
       event_time: eventData.event_time,
-      duration_minutes: eventData.duration_minutes,
-      visibility: eventData.visibility || "private"
+      duration_minutes: eventData.duration_minutes
     };
     
     const { data, error } = await supabase

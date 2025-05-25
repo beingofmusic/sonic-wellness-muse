@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Product, CartItem, Order, OrderItem } from "@/types/shop";
 
@@ -218,51 +219,54 @@ export const clearCart = async (): Promise<boolean> => {
   }
 };
 
-// Stripe checkout
-export const createStripeCheckout = async (cartItems: CartItem[]): Promise<{ sessionId: string, url: string } | null> => {
-  try {
-    const { data, error } = await supabase.functions.invoke('create-checkout', {
-      body: { 
-        cartItems: cartItems.map(item => ({
-          product: item.product,
-          quantity: item.quantity
-        })),
-      }
-    });
-
-    if (error) {
-      console.error("Stripe checkout error:", error);
-      throw error;
-    }
-    
-    if (!data || !data.url) {
-      throw new Error("Invalid response from checkout service");
-    }
-    
-    return data;
-  } catch (error) {
-    console.error("Error creating checkout session:", error);
-    return null;
-  }
-};
-
-// Order functions (with improved Stripe integration)
+// Order functions (MVP, to be expanded with Stripe)
 export const createOrder = async (cartItems: CartItem[]): Promise<Order | null> => {
   try {
-    // First create Stripe checkout session
-    const checkoutSession = await createStripeCheckout(cartItems);
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) return null;
     
-    if (!checkoutSession) {
-      throw new Error("Failed to create checkout session");
-    }
+    // Calculate total amount
+    const totalAmount = cartItems.reduce((total, item) => {
+      const price = item.product?.price || 0;
+      return total + (price * item.quantity);
+    }, 0);
+
+    // Create order
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        user_id: userData.user.id,
+        total_amount: totalAmount,
+        status: 'pending' as const // Explicitly set as a literal type
+      })
+      .select()
+      .single();
     
-    console.log("Redirecting to Stripe checkout:", checkoutSession.url);
+    if (orderError) throw orderError;
+
+    // Insert order items
+    const orderItems = cartItems.map(item => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price_at_purchase: item.product?.price || 0
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
     
-    // Redirect to Stripe Checkout
-    window.location.href = checkoutSession.url;
-    
-    // This will not execute as the user will be redirected
-    return null;
+    if (itemsError) throw itemsError;
+
+    // Clear cart after successful order
+    await clearCart();
+
+    // Type assertion to ensure compatibility with Order type
+    return {
+      ...order,
+      status: order.status as "pending" | "completed" | "cancelled",
+      items: []
+    };
   } catch (error) {
     console.error("Error creating order:", error);
     return null;

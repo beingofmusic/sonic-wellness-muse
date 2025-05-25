@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import CalendarView from "@/components/calendar/CalendarView";
@@ -7,8 +8,7 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
-import { CalendarEvent, ViewType } from "@/types/calendar";
-import { EventFormData } from "@/schemas/calendarEventSchema";
+import { CalendarEvent, CalendarEventFormData, ViewType, CalendarEventInput } from "@/types/calendar";
 import { useLocation } from "react-router-dom";
 
 const Calendar: React.FC = () => {
@@ -64,23 +64,17 @@ const Calendar: React.FC = () => {
     setIsEventModalOpen(true);
   };
 
-  const handleSaveEvent = async (formData: EventFormData) => {
+  const handleSaveEvent = async (formData: CalendarEventFormData) => {
     try {
       // Process routine_id - convert "none" to undefined/null
       const processedRoutineId = formData.routine_id === "none" ? null : formData.routine_id;
       
       // Convert the Date object to string format for the API
-      const eventData = {
-        title: formData.title, // Ensure title is explicitly included
-        event_type: formData.event_type,
-        event_date: format(formData.event_date, "yyyy-MM-dd"),
-        event_time: `${formData.event_time}:00`, // Add seconds component
-        duration_minutes: formData.duration_minutes,
-        location: formData.location,
-        description: formData.description,
+      const eventData: Omit<CalendarEventInput, "user_id"> = {
+        ...formData,
         routine_id: processedRoutineId,
-        visibility: formData.visibility || "private",
-        zoom_link: formData.zoom_link
+        event_date: format(formData.event_date, "yyyy-MM-dd"),
+        event_time: `${formData.event_time}:00` // Add seconds component
       };
 
       if (selectedEvent) {

@@ -9,7 +9,6 @@ export interface PracticeTemplate {
   is_template: boolean;
   created_at: string;
   updated_at: string;
-  visibility: 'public' | 'private';
   
   // Additional UI fields (not in database)
   includes?: string[];
@@ -27,12 +26,10 @@ export interface PracticeRoutine {
   tags: string[] | null;
   created_at: string;
   updated_at: string;
-  visibility: 'public' | 'private';
   
-  // UI display fields
+  // UI display field
   lastUpdated?: string; // Formatted time for UI display
   progress?: number; // Progress through the routine (0-100%)
-  creator?: string; // Creator name for display
 }
 
 export interface RoutineBlock {

@@ -16,8 +16,6 @@ export interface CalendarEvent {
   user_id: string;
   created_at: string;
   updated_at: string;
-  visibility: "private" | "public";
-  zoom_link?: string;
   // For join with routines table
   routines?: {
     title: string;
@@ -34,8 +32,6 @@ export interface CalendarEventFormData {
   location?: string;
   description?: string;
   routine_id?: string;
-  visibility: "private" | "public";
-  zoom_link?: string;
 }
 
 export interface CalendarEventInput {
@@ -48,6 +44,4 @@ export interface CalendarEventInput {
   description?: string;
   routine_id?: string;
   user_id: string;
-  visibility: "private" | "public";
-  zoom_link?: string;
 }

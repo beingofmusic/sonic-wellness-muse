@@ -12,8 +12,7 @@ export const myRoutines: PracticeRoutine[] = [
     tags: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    lastUpdated: "3 days",
-    visibility: "private"
+    lastUpdated: "3 days"
   },
   {
     id: "routine-2",
@@ -25,8 +24,7 @@ export const myRoutines: PracticeRoutine[] = [
     tags: ["warm-up", "quick"],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    lastUpdated: "3 days",
-    visibility: "public"
+    lastUpdated: "3 days"
   },
   {
     id: "routine-3",
@@ -38,7 +36,6 @@ export const myRoutines: PracticeRoutine[] = [
     tags: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    lastUpdated: "3 days",
-    visibility: "private"
+    lastUpdated: "3 days"
   }
 ];

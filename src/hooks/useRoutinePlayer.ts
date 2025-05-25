@@ -1,11 +1,10 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
 import { fetchRoutineById, fetchRoutineBlocks } from "@/services/practiceService";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/formatters";
-import { useAuth } from "@/context/AuthContext";
 
 export const useRoutinePlayer = (routineId?: string) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -18,15 +17,9 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [focusMode, setFocusMode] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [accessError, setAccessError] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-  const { user } = useAuth();
-  
-  // Determine if we're playing a template or a routine
-  const isTemplate = location.pathname.includes('/template/');
 
   // Clean up timer on unmount
   useEffect(() => {
@@ -47,9 +40,6 @@ export const useRoutinePlayer = (routineId?: string) => {
 
       try {
         setIsLoading(true);
-        setAccessError(null);
-        
-        // For all routines and public templates, use fetchRoutineById
         const routineData = await fetchRoutineById(routineId);
         const blocksData = await fetchRoutineBlocks(routineId);
         
@@ -64,44 +54,22 @@ export const useRoutinePlayer = (routineId?: string) => {
         }
       } catch (error) {
         console.error("Error fetching routine data:", error);
-        
-        // Set specific error message based on the error
-        if (error instanceof Error && error.message.includes("permission")) {
-          setAccessError("You don't have permission to access this routine");
-          
-          // If user is not logged in, suggest signing in
-          if (!user) {
-            toast({
-              title: "Authentication required",
-              description: "Sign in to access private routines",
-              variant: "destructive",
-            });
-          } else {
-            toast({
-              title: "Access denied",
-              description: "You don't have permission to view this routine",
-              variant: "destructive",
-            });
-          }
-        } else {
-          setAccessError("Failed to load routine data");
-          toast({
-            title: "Error",
-            description: "Failed to load routine data",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Error",
+          description: "Failed to load routine data",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRoutineData();
-  }, [routineId, toast, user]);
+  }, [routineId, toast]);
 
   // Start countdown timer when blocks load and not paused
   useEffect(() => {
-    if (blocks.length === 0 || isLoading || isPaused || accessError) return;
+    if (blocks.length === 0 || isLoading || isPaused) return;
     
     // Start the timer
     startTimer();
@@ -111,7 +79,7 @@ export const useRoutinePlayer = (routineId?: string) => {
         clearInterval(timerRef.current);
       }
     };
-  }, [blocks, isLoading, isPaused, accessError]);
+  }, [blocks, isLoading, isPaused]);
 
   // Update session progress when current block changes
   useEffect(() => {
@@ -201,6 +169,7 @@ export const useRoutinePlayer = (routineId?: string) => {
     }
   }, [currentBlockIndex]);
 
+  // Handle timer controls
   const handleReset = useCallback(() => {
     // Stop the current timer
     if (timerRef.current) {
@@ -269,7 +238,6 @@ export const useRoutinePlayer = (routineId?: string) => {
     currentBlockIndex,
     sessionProgress,
     isCompleted,
-    accessError,
     setCurrentBlockIndex,
     handleNext,
     handlePrevious,

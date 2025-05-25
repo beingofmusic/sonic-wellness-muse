@@ -1,9 +1,10 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
 
-export const fetchTemplates = async (limit = 3, templateId?: string): Promise<PracticeTemplate[]> => {
-  let query = supabase
+export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => {
+  const { data, error } = await supabase
     .from("routines")
     .select(`
       id, 
@@ -13,21 +14,13 @@ export const fetchTemplates = async (limit = 3, templateId?: string): Promise<Pr
       tags,
       created_by,
       is_template,
-      visibility,
       created_at,
       updated_at,
       profiles(first_name, last_name)
     `)
-    .or('is_template.eq.true,visibility.eq.public');
-  
-  // If a specific templateId is provided, filter by it
-  if (templateId) {
-    query = query.eq('id', templateId);
-  } else {
-    query = query.order("created_at", { ascending: false }).limit(limit);
-  }
-
-  const { data, error } = await query;
+    .eq("is_template", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("Error fetching templates:", error);
@@ -46,8 +39,6 @@ export const fetchTemplates = async (limit = 3, templateId?: string): Promise<Pr
     
     return {
       ...template,
-      // Ensure visibility is correctly typed
-      visibility: (template.visibility || 'private') as 'public' | 'private',
       creator: creatorName,
       usageCount: Math.floor(Math.random() * 500), // Placeholder until we track this
       includes
@@ -77,48 +68,10 @@ export const fetchUserRoutines = async (): Promise<PracticeRoutine[]> => {
   return data.map(routine => {
     return {
       ...routine,
-      // Ensure visibility is correctly typed
-      visibility: (routine.visibility || 'private') as 'public' | 'private',
       // Format the last updated time for display
       lastUpdated: formatDistanceToNow(new Date(routine.updated_at), { addSuffix: true })
     };
   });
-};
-
-/**
- * Check if a user has access to a specific routine
- * Used by PublicResourceRoute to determine if access should be granted
- */
-export const checkRoutineAccess = async (routineId: string): Promise<boolean> => {
-  try {
-    // Check if routine exists and is public
-    const { data: routine, error: routineError } = await supabase
-      .from("routines")
-      .select("visibility, created_by")
-      .eq("id", routineId)
-      .single();
-
-    if (routineError) {
-      console.error("Error checking routine access:", routineError);
-      return false;
-    }
-
-    // If routine is public, allow access
-    if (routine.visibility === 'public') {
-      return true;
-    }
-
-    // Otherwise, check if user is the creator
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData?.user) {
-      return false;
-    }
-
-    return routine.created_by === userData.user.id;
-  } catch (error) {
-    console.error("Error in checkRoutineAccess:", error);
-    return false;
-  }
 };
 
 export const fetchRoutineBlocks = async (routineId: string): Promise<RoutineBlock[]> => {
@@ -137,13 +90,9 @@ export const fetchRoutineBlocks = async (routineId: string): Promise<RoutineBloc
 };
 
 export const fetchRoutineById = async (routineId: string): Promise<PracticeRoutine> => {
-  // Query for the routine and join with profiles for creator info
   const { data, error } = await supabase
     .from("routines")
-    .select(`
-      *,
-      profiles(first_name, last_name)
-    `)
+    .select("*")
     .eq("id", routineId)
     .single();
 
@@ -152,33 +101,9 @@ export const fetchRoutineById = async (routineId: string): Promise<PracticeRouti
     throw error;
   }
 
-  // Get current user for authorization check
-  const { data: userData } = await supabase.auth.getUser();
-  const currentUserId = userData?.user?.id;
-  
-  // Verify access permission
-  // Allow access if:
-  // 1. The routine is public OR
-  // 2. The user is the creator
-  const isPublic = data.visibility === 'public';
-  const isCreator = currentUserId && data.created_by === currentUserId;
-  
-  if (!isPublic && !isCreator) {
-    throw new Error("You don't have permission to access this routine");
-  }
-
-  // Get creator name from the profiles join
-  const profile = data.profiles as { first_name: string | null, last_name: string | null } | null;
-  const creatorName = profile
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Team member'
-    : 'Team member';
-
   return {
     ...data,
-    // Ensure visibility is correctly typed
-    visibility: (data.visibility || 'private') as 'public' | 'private',
-    lastUpdated: formatDistanceToNow(new Date(data.updated_at), { addSuffix: true }),
-    creator: creatorName
+    lastUpdated: formatDistanceToNow(new Date(data.updated_at), { addSuffix: true })
   };
 };
 
@@ -188,7 +113,6 @@ export const createRoutine = async (
     description?: string;
     is_template: boolean;
     tags?: string[];
-    visibility: 'public' | 'private';
   },
   userId: string
 ): Promise<PracticeRoutine> => {
@@ -207,11 +131,7 @@ export const createRoutine = async (
     throw error;
   }
 
-  return {
-    ...data,
-    // Ensure visibility is correctly typed
-    visibility: (data.visibility || 'private') as 'public' | 'private',
-  };
+  return data;
 };
 
 export const updateRoutine = async (
@@ -221,7 +141,6 @@ export const updateRoutine = async (
     description?: string;
     duration?: number;
     tags?: string[];
-    visibility?: 'public' | 'private';
   }
 ): Promise<void> => {
   const { error } = await supabase
