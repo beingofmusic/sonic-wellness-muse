@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
-import { fetchRoutineById, fetchRoutineBlocks } from "@/services/practiceService";
+import { checkRoutineAccess, fetchRoutineBlocks } from "@/services/practiceService";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/formatters";
 
@@ -40,7 +40,20 @@ export const useRoutinePlayer = (routineId?: string) => {
 
       try {
         setIsLoading(true);
-        const routineData = await fetchRoutineById(routineId);
+        
+        // Check if user has access to this routine (handles both public and private routines)
+        const { hasAccess, routine: routineData } = await checkRoutineAccess(routineId);
+        
+        if (!hasAccess || !routineData) {
+          toast({
+            title: "Access Denied",
+            description: "You don't have permission to access this routine or it doesn't exist",
+            variant: "destructive",
+          });
+          navigate("/practice");
+          return;
+        }
+
         const blocksData = await fetchRoutineBlocks(routineId);
         
         setRoutine(routineData);
@@ -59,13 +72,14 @@ export const useRoutinePlayer = (routineId?: string) => {
           description: "Failed to load routine data",
           variant: "destructive",
         });
+        navigate("/practice");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchRoutineData();
-  }, [routineId, toast]);
+  }, [routineId, toast, navigate]);
 
   // Start countdown timer when blocks load and not paused
   useEffect(() => {

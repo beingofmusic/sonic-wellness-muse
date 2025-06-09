@@ -107,6 +107,16 @@ export const fetchRoutineById = async (routineId: string): Promise<PracticeRouti
   };
 };
 
+export const checkRoutineAccess = async (routineId: string): Promise<{ hasAccess: boolean; routine?: PracticeRoutine }> => {
+  try {
+    const routine = await fetchRoutineById(routineId);
+    return { hasAccess: true, routine };
+  } catch (error) {
+    console.error("Error checking routine access:", error);
+    return { hasAccess: false };
+  }
+};
+
 export const createRoutine = async (
   routine: {
     title: string;
