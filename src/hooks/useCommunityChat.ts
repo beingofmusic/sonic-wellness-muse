@@ -50,9 +50,8 @@ export const useCommunityChat = () => {
 
         // Transform data to include profile info directly in each message
         const formattedMessages = data.map((msg: any) => {
-          // Extract profile data from the nested array (not object)
-          // Supabase returns joined tables as arrays, so we need to get the first element
-          const profileData = msg.profiles && msg.profiles.length > 0 ? msg.profiles[0] : null;
+          // Extract profile data from the joined profiles object
+          const profileData = msg.profiles || null;
           
           return {
             id: msg.id,
