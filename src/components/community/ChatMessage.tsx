@@ -3,6 +3,7 @@ import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ChatMessage as ChatMessageType } from "@/hooks/useCommunityChat";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ClickableUserProfile from "@/components/ClickableUserProfile";
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -54,22 +55,27 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className="p-3 hover:bg-white/5 transition-colors">
       <div className="flex items-start gap-3">
-        <Avatar className="w-8 h-8">
-          {message.avatar_url ? (
-            <AvatarImage 
-              src={message.avatar_url} 
-              alt={getFullName()} 
-              className="object-cover"
-            />
-          ) : (
-            <AvatarFallback className="bg-music-primary/20 text-music-primary text-sm">
-              {getInitials()}
-            </AvatarFallback>
-          )}
-        </Avatar>
+        <ClickableUserProfile
+          userId={message.user_id}
+          username={message.username}
+          firstName={message.first_name}
+          lastName={message.last_name}
+          avatarUrl={message.avatar_url}
+          showAvatar={true}
+          size="md"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline mb-1">
-            <span className="font-medium text-white mr-2 truncate">{getFullName()}</span>
+            <ClickableUserProfile
+              userId={message.user_id}
+              username={message.username}
+              firstName={message.first_name}
+              lastName={message.last_name}
+              avatarUrl={message.avatar_url}
+              className="font-medium text-white mr-2 truncate"
+            >
+              {getFullName()}
+            </ClickableUserProfile>
             <span className="text-xs text-white/50">{formattedTime}</span>
           </div>
           <p className="text-sm text-white/90 break-words">{message.content}</p>

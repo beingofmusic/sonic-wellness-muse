@@ -5,7 +5,7 @@ export interface PracticeTemplate {
   description: string | null;
   duration: number;
   tags: string[] | null;
-  created_by: string;
+  created_by: string; // User ID of creator
   is_template: boolean;
   visibility: string;
   created_at: string;
@@ -14,7 +14,7 @@ export interface PracticeTemplate {
   // Additional UI fields (not in database)
   includes?: string[];
   usageCount?: number;
-  creator?: string;
+  creator?: string; // Display name of creator
 }
 
 export interface PracticeRoutine {

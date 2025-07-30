@@ -3,6 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LeaderboardEntry } from '@/services/leaderboardService';
 import { formatMinutes } from '@/lib/formatters';
+import ClickableUserProfile from '@/components/ClickableUserProfile';
 
 interface LeaderboardCardProps {
   title: string;
@@ -124,15 +125,19 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
               {entry.rank}
             </div>
             
-            <Avatar className="h-6 w-6 mr-2">
-              <AvatarImage src={entry.avatar_url || ''} alt={getDisplayName(entry)} />
-              <AvatarFallback className="text-xs">{getInitials(entry)}</AvatarFallback>
-            </Avatar>
-            
-            <span className="text-sm truncate mr-auto">
+            <ClickableUserProfile
+              userId={entry.user_id}
+              username={entry.username}
+              firstName={entry.first_name}
+              lastName={entry.last_name}
+              avatarUrl={entry.avatar_url}
+              showAvatar={true}
+              size="sm"
+              className="text-sm truncate mr-auto"
+            >
               {getDisplayName(entry)}
               {entry.isCurrentUser && <span className="text-xs ml-1.5 text-music-primary">(You)</span>}
-            </span>
+            </ClickableUserProfile>
             
             <span className="text-sm font-medium">
               {formatValue(entry.value)}

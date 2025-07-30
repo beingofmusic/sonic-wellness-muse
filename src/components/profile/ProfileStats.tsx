@@ -1,15 +1,21 @@
 
 import React from "react";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { usePracticeStatsById } from "@/hooks/usePracticeStatsById";
 import { Clock, Calendar, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProfileStatsProps {
   isLoading: boolean;
+  userId?: string;
 }
 
-const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading }) => {
-  const { stats, formattedTotalTime } = usePracticeStats();
+const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, userId }) => {
+  const currentUserStats = usePracticeStats();
+  const otherUserStats = usePracticeStatsById(userId);
+  
+  // Use appropriate stats based on whether we're viewing another user's profile
+  const { stats, formattedTotalTime } = userId ? otherUserStats : currentUserStats;
 
   const statItems = [
     {

@@ -32,6 +32,7 @@ import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
 
 import TemplatesList from "./pages/TemplatesList";
+import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -202,6 +203,14 @@ const App = () => (
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile/:userId" 
+          element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           } 
         />
