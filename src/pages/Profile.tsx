@@ -12,9 +12,14 @@ import { Pencil } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const Profile: React.FC = () => {
+interface ProfileProps {
+  viewingUserId?: string;
+}
+
+const Profile: React.FC<ProfileProps> = ({ viewingUserId }) => {
   const { user } = useAuth();
   const { profileData, isLoading, updateProfile } = useUserProfile();
+  const isViewingOther = !!viewingUserId;
 
   if (!user) {
     return (
@@ -30,9 +35,9 @@ const Profile: React.FC = () => {
     <Layout>
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Your Profile</h1>
+          <h1 className="text-3xl font-bold mb-2">{isViewingOther ? 'User Profile' : 'Your Profile'}</h1>
           <p className="text-white/70">
-            View and edit your profile information and check your achievements
+            {isViewingOther ? 'View user profile information and achievements' : 'View and edit your profile information and check your achievements'}
           </p>
         </div>
 
@@ -41,21 +46,23 @@ const Profile: React.FC = () => {
           <Card className="border-white/10 bg-card/50">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-xl">Profile Information</CardTitle>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Pencil className="h-4 w-4" />
-                    Edit Profile
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="bg-background/95 backdrop-blur border-white/10">
-                  <ProfileEditor 
-                    profileData={profileData} 
-                    isLoading={isLoading} 
-                    onSave={updateProfile}
-                  />
-                </SheetContent>
-              </Sheet>
+              {!isViewingOther && (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Pencil className="h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent className="bg-background/95 backdrop-blur border-white/10">
+                    <ProfileEditor 
+                      profileData={profileData} 
+                      isLoading={isLoading} 
+                      onSave={updateProfile}
+                    />
+                  </SheetContent>
+                </Sheet>
+              )}
             </CardHeader>
             <CardContent>
               <ProfileHeader profileData={profileData} isLoading={isLoading} />
