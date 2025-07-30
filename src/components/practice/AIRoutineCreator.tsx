@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { Brain, Loader2, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,7 @@ import { toast } from "sonner";
 interface AIRoutineFormData {
   timeAvailable: number;
   focusArea: string;
-  energyLevel: string;
+  goals: string;
   instrument: string;
 }
 
@@ -37,12 +38,12 @@ const AIRoutineCreator: React.FC = () => {
   const [formData, setFormData] = useState<AIRoutineFormData>({
     timeAvailable: 30,
     focusArea: '',
-    energyLevel: '',
+    goals: '',
     instrument: '',
   });
 
   const handleGenerate = async () => {
-    if (!user || !formData.focusArea || !formData.energyLevel || !formData.instrument) {
+    if (!user || !formData.focusArea || !formData.goals.trim() || !formData.instrument) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -70,6 +71,14 @@ const AIRoutineCreator: React.FC = () => {
           duration: generatedRoutine.estimatedDuration,
           created_by: user.id,
           is_template: false,
+          ai_generated: true,
+          generation_context: {
+            focusArea: formData.focusArea,
+            goals: formData.goals,
+            instrument: formData.instrument,
+            timeAvailable: formData.timeAvailable,
+            generatedAt: new Date().toISOString()
+          },
           tags: [formData.focusArea, formData.instrument, 'ai-generated'],
         })
         .select()
@@ -152,17 +161,14 @@ const AIRoutineCreator: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="energyLevel">How are you feeling today?</Label>
-          <Select value={formData.energyLevel} onValueChange={(value) => setFormData(prev => ({ ...prev, energyLevel: value }))}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select your energy level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="energized">Energized & Ready to Push</SelectItem>
-              <SelectItem value="moderate">Balanced & Focused</SelectItem>
-              <SelectItem value="tired">Low Energy & Need Gentle Practice</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="goals">Describe your goals or what you'd like to work on today:</Label>
+          <Textarea
+            id="goals"
+            placeholder="E.g. I want to improve tone, clean up my jazz solos, and work on high range."
+            value={formData.goals}
+            onChange={(e) => setFormData(prev => ({ ...prev, goals: e.target.value }))}
+            className="min-h-[100px] resize-none"
+          />
         </div>
 
         <div className="space-y-2">
@@ -189,7 +195,7 @@ const AIRoutineCreator: React.FC = () => {
 
         <Button 
           onClick={handleGenerate}
-          disabled={isGenerating || !formData.focusArea || !formData.energyLevel || !formData.instrument}
+          disabled={isGenerating || !formData.focusArea || !formData.goals.trim() || !formData.instrument}
           className="w-full bg-gradient-to-r from-music-primary to-music-secondary hover:opacity-90"
           size="lg"
         >

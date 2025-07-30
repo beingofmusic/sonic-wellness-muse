@@ -14,7 +14,7 @@ const corsHeaders = {
 interface RoutineRequest {
   timeAvailable: number; // minutes
   focusArea: string; // 'tone', 'technique', 'improvisation', 'repertoire', 'creativity'
-  energyLevel: string; // 'energized', 'moderate', 'tired'
+  goals: string; // user's free-text goals and objectives
   instrument: string;
   userId: string;
 }
@@ -26,7 +26,10 @@ serve(async (req) => {
 
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { timeAvailable, focusArea, energyLevel, instrument, userId }: RoutineRequest = await req.json();
+    const { timeAvailable, focusArea, goals, instrument, userId }: RoutineRequest = await req.json();
+
+    // Sanitize user input
+    const sanitizedGoals = goals.trim().substring(0, 1000); // Limit to 1000 characters
 
     // Get user's practice history and goals
     const { data: practiceHistory } = await supabase
@@ -55,33 +58,36 @@ serve(async (req) => {
     // Create AI prompt
     const prompt = `Create a personalized practice routine for a ${instrument} player with these parameters:
     
+    PRIMARY GOALS: "${sanitizedGoals}"
     Time Available: ${timeAvailable} minutes
-    Focus Area: ${focusArea}
-    Energy Level: ${energyLevel}
+    General Focus Area: ${focusArea}
     
     User Context:
     - Recent practice sessions: ${practiceHistory?.length || 0} in last 10 sessions
-    - Active goals: ${goals?.map(g => g.title).join(', ') || 'None'}
+    - Active goals from system: ${goals?.map(g => g.title).join(', ') || 'None'}
     
     Available block types: warmup, technique, scales, improvisation, repertoire, creativity, mindfulness, cooldown
     
+    IMPORTANT: The routine should be primarily designed around the user's stated goals: "${sanitizedGoals}"
+    Use the general focus area and time constraint as supporting parameters, but let the user's specific goals drive the content, exercises, and overall approach of the routine.
+    
     Generate a JSON response with this structure:
     {
-      "title": "Generated routine title",
-      "description": "Brief description of the routine's purpose",
+      "title": "Generated routine title that reflects their goals",
+      "description": "Brief description addressing their specific goals",
       "estimatedDuration": ${timeAvailable},
       "blocks": [
         {
           "type": "warmup",
-          "content": "Specific exercise name",
+          "content": "Specific exercise name that supports their goals",
           "duration": 5,
-          "instructions": "Detailed instructions including tempo, key, etc."
+          "instructions": "Detailed instructions including tempo, key, etc. that relate to their stated objectives"
         }
       ],
-      "rationale": "Why this routine fits their current needs"
+      "rationale": "Why this routine addresses their specific goals and current needs"
     }
     
-    Make the routine practical, progressive, and tailored to their ${energyLevel} energy level and ${focusArea} focus.`;
+    Make the routine practical, progressive, and specifically tailored to address: "${sanitizedGoals}"`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
