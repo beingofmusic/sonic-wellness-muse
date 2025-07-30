@@ -1,21 +1,36 @@
 
 import React from "react";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { UserPracticeStats } from "@/hooks/usePracticeStatsById";
 import { Clock, Calendar, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatMinutes } from "@/lib/formatters";
 
 interface ProfileStatsProps {
   isLoading: boolean;
+  customStats?: UserPracticeStats;
+  isOwnProfile?: boolean;
 }
 
-const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading }) => {
-  const { stats, formattedTotalTime } = usePracticeStats();
+const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading, customStats, isOwnProfile = true }) => {
+  const { stats: ownStats, formattedTotalTime } = usePracticeStats();
+  
+  // Use custom stats if provided (for other users), otherwise use own stats
+  const stats = customStats || {
+    totalPracticeTime: ownStats.totalPracticeMinutes,
+    currentStreak: ownStats.currentStreak,
+    totalSessions: ownStats.sessionCount,
+    longestStreak: 0, // Not available in current PracticeStats
+    averageSessionLength: 0, // Not available in current PracticeStats
+    thisWeekMinutes: 0, // Not available in current PracticeStats
+    thisMonthMinutes: 0 // Not available in current PracticeStats
+  };
 
   const statItems = [
     {
       icon: <Clock className="h-5 w-5 text-music-primary" />,
       label: "Total Practice",
-      value: formattedTotalTime,
+      value: customStats ? formatMinutes(stats.totalPracticeTime) : formattedTotalTime,
     },
     {
       icon: <Calendar className="h-5 w-5 text-music-secondary" />,
@@ -25,7 +40,7 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading }) => {
     {
       icon: <CheckCircle className="h-5 w-5 text-music-tertiary" />,
       label: "Sessions Completed",
-      value: stats.sessionCount.toString(),
+      value: stats.totalSessions.toString(),
     },
   ];
 

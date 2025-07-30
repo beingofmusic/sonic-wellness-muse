@@ -4,13 +4,15 @@ import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileData } from "@/hooks/useUserProfile";
+import { UserProfileData } from "@/hooks/useUserProfileById";
 
 interface ProfileHeaderProps {
-  profileData: ProfileData | null;
+  profileData: ProfileData | UserProfileData | null;
   isLoading: boolean;
+  isOwnProfile?: boolean;
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profileData, isLoading }) => {
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profileData, isLoading, isOwnProfile = true }) => {
   // Function to get name display
   const getFullName = () => {
     if (profileData?.first_name) {
@@ -69,7 +71,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profileData, isLoading })
 
       <div className="flex-1 space-y-2 text-center md:text-left">
         <h2 className="text-2xl font-bold">{getFullName()}</h2>
-        <p className="text-white/70">{profileData?.email || "No email provided"}</p>
+        {isOwnProfile && <p className="text-white/70">{'email' in profileData && profileData?.email ? profileData.email : "No email provided"}</p>}
         <p className="text-white/50 text-sm">{getJoinedDate()}</p>
       </div>
     </div>
