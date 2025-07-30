@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Globe, Lock } from "lucide-react";
 import RoutineBlockForm from "@/components/practice/RoutineBlockForm";
 import BlockLibrarySidebar from "@/components/practice/BlockLibrarySidebar";
 import { BlockFormValues } from "@/schemas/routineSchema";
@@ -87,6 +89,45 @@ const RoutineBuilderForm: React.FC<RoutineBuilderFormProps> = ({
                           className="h-20 bg-card/80 backdrop-blur-sm"
                           {...field} 
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="visibility"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel className="text-base">Visibility</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="flex gap-6"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="public" id="public" />
+                            <label 
+                              htmlFor="public" 
+                              className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              <Globe className="h-4 w-4" />
+                              Public – Shared with the community
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="private" id="private" />
+                            <label 
+                              htmlFor="private" 
+                              className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            >
+                              <Lock className="h-4 w-4" />
+                              Private – Only visible to you
+                            </label>
+                          </div>
+                        </RadioGroup>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

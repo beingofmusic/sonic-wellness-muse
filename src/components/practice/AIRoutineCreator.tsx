@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { Brain, Loader2, Sparkles } from "lucide-react";
+import { Brain, Loader2, Sparkles, Globe, Lock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,7 @@ interface AIRoutineFormData {
   focusArea: string;
   goals: string;
   instrument: string;
+  visibility: "public" | "private";
 }
 
 interface GeneratedRoutine {
@@ -40,6 +42,7 @@ const AIRoutineCreator: React.FC = () => {
     focusArea: '',
     goals: '',
     instrument: '',
+    visibility: 'public',
   });
 
   const handleGenerate = async () => {
@@ -80,6 +83,7 @@ const AIRoutineCreator: React.FC = () => {
             generatedAt: new Date().toISOString()
           },
           tags: [formData.focusArea, formData.instrument, 'ai-generated'],
+          visibility: formData.visibility,
         })
         .select()
         .single();
@@ -193,7 +197,37 @@ const AIRoutineCreator: React.FC = () => {
           </Select>
         </div>
 
-        <Button 
+        <div className="space-y-3">
+          <Label>Visibility</Label>
+          <RadioGroup
+            value={formData.visibility}
+            onValueChange={(value: "public" | "private") => setFormData(prev => ({ ...prev, visibility: value }))}
+            className="flex gap-6"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="public" id="ai-public" />
+              <label 
+                htmlFor="ai-public" 
+                className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                <Globe className="h-4 w-4" />
+                Public – Shared with the community
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="private" id="ai-private" />
+              <label 
+                htmlFor="ai-private" 
+                className="flex items-center gap-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              >
+                <Lock className="h-4 w-4" />
+                Private – Only visible to you
+              </label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        <Button
           onClick={handleGenerate}
           disabled={isGenerating || !formData.focusArea || !formData.goals.trim() || !formData.instrument}
           className="w-full bg-gradient-to-r from-music-primary to-music-secondary hover:opacity-90"

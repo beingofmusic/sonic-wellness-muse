@@ -15,6 +15,7 @@ export const blockSchema = z.object({
 export const routineSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters long"),
   description: z.string().optional(),
+  visibility: z.enum(["public", "private"]).default("public"),
   blocks: z.array(blockSchema)
     .min(1, "At least one block is required")
     .max(20, "Maximum 20 blocks allowed"),

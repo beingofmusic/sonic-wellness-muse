@@ -22,6 +22,7 @@ export const useRoutineBuilder = (routineId?: string) => {
     defaultValues: {
       title: "",
       description: "",
+      visibility: "public",
       blocks: []
     },
   });
@@ -96,6 +97,7 @@ export const useRoutineBuilder = (routineId?: string) => {
         form.reset({
           title: routineData.title,
           description: routineData.description || "",
+          visibility: (routineData.visibility as "public" | "private") || "public",
           blocks: blocksData.map(block => ({
             id: block.id,
             type: block.type,
@@ -149,6 +151,7 @@ export const useRoutineBuilder = (routineId?: string) => {
           .update({
             title: data.title,
             description: data.description,
+            visibility: data.visibility,
             duration: totalDuration,
             updated_at: new Date().toISOString(),
           })
@@ -172,6 +175,7 @@ export const useRoutineBuilder = (routineId?: string) => {
           .insert({
             title: data.title,
             description: data.description,
+            visibility: data.visibility,
             duration: totalDuration,
             created_by: user.id,
             is_template: false,
