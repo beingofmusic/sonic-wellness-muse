@@ -27,6 +27,7 @@ import Shop from "./pages/Shop";
 import Settings from "./pages/Settings";
 import PracticeHistory from "./pages/PracticeHistory";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 // Import wellness pages
 import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
@@ -202,6 +203,14 @@ const App = () => (
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/profile/:userId" 
+          element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           } 
         />

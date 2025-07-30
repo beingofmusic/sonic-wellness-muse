@@ -1,21 +1,28 @@
 
 import React from "react";
 import { usePracticeStats } from "@/hooks/usePracticeStats";
+import { UserPracticeStats } from "@/hooks/usePracticeStatsById";
 import { Clock, Calendar, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatMinutes } from "@/lib/formatters";
 
 interface ProfileStatsProps {
-  isLoading: boolean;
+  isLoading?: boolean;
+  stats?: UserPracticeStats;
 }
 
-const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading }) => {
-  const { stats, formattedTotalTime } = usePracticeStats();
+const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading = false, stats: providedStats }) => {
+  const { stats: ownStats, formattedTotalTime } = usePracticeStats();
+  
+  // Use provided stats if available (for viewing other users), otherwise use own stats
+  const stats = providedStats || ownStats;
+  const totalTimeFormatted = providedStats ? formatMinutes(providedStats.totalMinutes) : formattedTotalTime;
 
   const statItems = [
     {
       icon: <Clock className="h-5 w-5 text-music-primary" />,
       label: "Total Practice",
-      value: formattedTotalTime,
+      value: totalTimeFormatted,
     },
     {
       icon: <Calendar className="h-5 w-5 text-music-secondary" />,
@@ -25,7 +32,7 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({ isLoading }) => {
     {
       icon: <CheckCircle className="h-5 w-5 text-music-tertiary" />,
       label: "Sessions Completed",
-      value: stats.sessionCount.toString(),
+      value: ('totalSessions' in stats ? stats.totalSessions : stats.sessionCount || 0).toString(),
     },
   ];
 
