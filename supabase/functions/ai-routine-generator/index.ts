@@ -28,6 +28,15 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { timeAvailable, focusArea, goals, instrument, userId }: RoutineRequest = await req.json();
 
+    // Check for required OpenAI API key
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
+      return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Sanitize user input
     const sanitizedGoals = goals.trim().substring(0, 1000); // Limit to 1000 characters
 
@@ -39,11 +48,11 @@ serve(async (req) => {
       .order('completed_at', { ascending: false })
       .limit(10);
 
-    const { data: goals } = await supabase
+    const { data: userGoals } = await supabase
       .from('practice_goals')
       .select('*')
       .eq('user_id', userId)
-      .eq('isCompleted', false);
+      .eq('progress', '<', 100);
 
     // Get available block templates
     const { data: blockTemplates } = await supabase
@@ -64,7 +73,7 @@ serve(async (req) => {
     
     User Context:
     - Recent practice sessions: ${practiceHistory?.length || 0} in last 10 sessions
-    - Active goals from system: ${goals?.map(g => g.title).join(', ') || 'None'}
+    - Active goals from system: ${userGoals?.map(g => g.title).join(', ') || 'None'}
     
     Available block types: warmup, technique, scales, improvisation, repertoire, creativity, mindfulness, cooldown
     
@@ -109,9 +118,27 @@ serve(async (req) => {
       }),
     });
 
-    const aiData = await response.json();
-    const generatedRoutine = JSON.parse(aiData.choices[0].message.content);
+    if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText);
+      const errorData = await response.text();
+      console.error('OpenAI error details:', errorData);
+      return new Response(JSON.stringify({ error: 'Failed to generate routine from AI' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
+    const aiData = await response.json();
+    
+    if (!aiData.choices?.[0]?.message?.content) {
+      console.error('Invalid AI response structure:', aiData);
+      return new Response(JSON.stringify({ error: 'Invalid response from AI' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const generatedRoutine = JSON.parse(aiData.choices[0].message.content);
     console.log('Generated routine:', generatedRoutine);
 
     return new Response(JSON.stringify(generatedRoutine), {
