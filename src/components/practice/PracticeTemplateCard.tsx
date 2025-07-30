@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import { PracticeTemplate } from "@/types/practice";
 import { Link } from "react-router-dom";
-import ClickableUserProfile from "@/components/ClickableUserProfile";
 
 interface PracticeTemplateCardProps {
   template: PracticeTemplate;
@@ -52,16 +51,7 @@ const PracticeTemplateCard: React.FC<PracticeTemplateCardProps> = ({ template })
         <div className="flex items-center gap-1 text-xs text-white/50">
           <span>{template.usageCount} uses</span>
           <span>•</span>
-          <span>Created by </span>
-          {template.creatorId ? (
-            <ClickableUserProfile
-              userId={template.creatorId}
-              displayName={template.creator}
-              className="text-xs text-white/50 hover:text-music-primary"
-            />
-          ) : (
-            <span>{template.creator}</span>
-          )}
+          <span>Created by {template.creator}</span>
         </div>
         
         <Link to={`/practice/routine/${template.id}`}>

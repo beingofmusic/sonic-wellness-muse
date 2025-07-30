@@ -15,7 +15,6 @@ export interface PracticeTemplate {
   includes?: string[];
   usageCount?: number;
   creator?: string;
-  creatorId?: string;
 }
 
 export interface PracticeRoutine {
