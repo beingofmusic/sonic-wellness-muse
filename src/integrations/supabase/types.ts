@@ -162,26 +162,66 @@ export type Database = {
           },
         ]
       }
+      community_channels: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          order_index: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          order_index?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          order_index?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_messages: {
         Row: {
+          channel_id: string
           content: string
           created_at: string
           id: string
           user_id: string
         }
         Insert: {
+          channel_id: string
           content: string
           created_at?: string
           id?: string
           user_id: string
         }
         Update: {
+          channel_id?: string
           content?: string
           created_at?: string
           id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "community_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "community_channels"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "community_messages_user_id_fkey"
             columns: ["user_id"]

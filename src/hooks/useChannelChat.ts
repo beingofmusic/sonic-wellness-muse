@@ -1,12 +1,12 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-export type ChatMessage = {
+export type ChannelMessage = {
   id: string;
   user_id: string;
+  channel_id: string;
   content: string;
   created_at: string;
   username?: string;
@@ -15,18 +15,25 @@ export type ChatMessage = {
   avatar_url?: string;
 };
 
-export const useCommunityChat = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+export const useChannelChat = (channelId: string | null) => {
+  const [messages, setMessages] = useState<ChannelMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState('');
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Fetch messages on component mount
+  // Fetch messages when channel changes
   useEffect(() => {
+    if (!channelId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
     const fetchMessages = async () => {
+      setLoading(true);
       try {
-        console.log('Fetching messages...');
+        console.log('Fetching messages for channel:', channelId);
         const { data, error } = await supabase
           .from('community_messages')
           .select(`
@@ -34,6 +41,7 @@ export const useCommunityChat = () => {
             content,
             created_at,
             user_id,
+            channel_id,
             profiles(
               username,
               first_name,
@@ -41,21 +49,22 @@ export const useCommunityChat = () => {
               avatar_url
             )
           `)
+          .eq('channel_id', channelId)
           .order('created_at', { ascending: true })
           .limit(100);
 
         if (error) throw error;
         
-        console.log('Raw message data:', JSON.stringify(data, null, 2));
+        console.log('Raw channel messages:', data);
 
         // Transform data to include profile info directly in each message
         const formattedMessages = data.map((msg: any) => {
-          // Extract profile data from the joined profiles object
           const profileData = msg.profiles || null;
           
           return {
             id: msg.id,
             user_id: msg.user_id,
+            channel_id: msg.channel_id,
             content: msg.content,
             created_at: msg.created_at,
             username: profileData?.username || null,
@@ -65,11 +74,11 @@ export const useCommunityChat = () => {
           };
         });
 
-        console.log('Formatted messages:', JSON.stringify(formattedMessages, null, 2));
+        console.log('Formatted channel messages:', formattedMessages);
         setMessages(formattedMessages);
       } catch (error) {
-        console.error('Error fetching messages:', error);
-        toast.error('Failed to load chat messages');
+        console.error('Error fetching channel messages:', error);
+        toast.error('Failed to load messages');
       } finally {
         setLoading(false);
       }
@@ -77,19 +86,20 @@ export const useCommunityChat = () => {
 
     fetchMessages();
 
-    // Subscribe to realtime changes
+    // Subscribe to realtime changes for this channel
     const channel = supabase
-      .channel('community_messages_changes')
+      .channel(`community_messages_${channelId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'community_messages',
+          filter: `channel_id=eq.${channelId}`
         },
         async (payload) => {
-          console.log('New message received:', payload);
-          // When we get a new message, fetch the profile information
+          console.log('New channel message received:', payload);
+          
           try {
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
@@ -97,11 +107,10 @@ export const useCommunityChat = () => {
               .eq('id', payload.new.user_id)
               .single();
 
-            console.log('Profile data for new message:', profileData, profileError);
-
-            const newMsg: ChatMessage = {
+            const newMsg: ChannelMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
+              channel_id: payload.new.channel_id,
               content: payload.new.content,
               created_at: payload.new.created_at,
               username: profileData?.username || null,
@@ -119,9 +128,10 @@ export const useCommunityChat = () => {
           } catch (error) {
             console.error('Error fetching profile for new message:', error);
             // Still add the message even if we can't fetch the profile
-            const newMsg: ChatMessage = {
+            const newMsg: ChannelMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
+              channel_id: payload.new.channel_id,
               content: payload.new.content,
               created_at: payload.new.created_at
             };
@@ -138,28 +148,16 @@ export const useCommunityChat = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [channelId]);
 
-  // Function to send a new message (deprecated - use useChannelChat instead)
+  // Function to send a new message
   const sendMessage = async () => {
-    if (!user || !newMessage.trim()) return;
+    if (!user || !newMessage.trim() || !channelId) return;
 
     try {
-      // Get the general chat channel for backward compatibility
-      const { data: generalChannel } = await supabase
-        .from('community_channels')
-        .select('id')
-        .eq('slug', 'general-chat')
-        .single();
-
-      if (!generalChannel) {
-        toast.error('General chat channel not found');
-        return;
-      }
-
       const { error } = await supabase.from('community_messages').insert({
         user_id: user.id,
-        channel_id: generalChannel.id,
+        channel_id: channelId,
         content: newMessage.trim(),
       });
 
