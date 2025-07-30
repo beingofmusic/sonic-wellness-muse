@@ -180,7 +180,7 @@ const Sidebar: React.FC = () => {
               onClick={() => navigate('/profile')}
             >
               <User className="mr-2 h-4 w-4" />
-              My Profile
+              Profile
             </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center cursor-pointer"
