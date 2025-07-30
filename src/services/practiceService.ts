@@ -14,11 +14,13 @@ export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => 
       tags,
       created_by,
       is_template,
+      visibility,
       created_at,
       updated_at,
       profiles(first_name, last_name)
     `)
-    .eq("is_template", true)
+    .or("is_template.eq.true,visibility.eq.public")
+    .neq("visibility", "private")
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -44,6 +46,72 @@ export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => 
       includes
     } as PracticeTemplate;
   });
+};
+
+export const fetchAllTemplates = async (page = 1, pageSize = 12): Promise<{ templates: PracticeTemplate[]; totalCount: number }> => {
+  // Get total count first
+  const { count, error: countError } = await supabase
+    .from("routines")
+    .select("*", { count: "exact", head: true })
+    .or("is_template.eq.true,visibility.eq.public")
+    .neq("visibility", "private");
+
+  if (countError) {
+    console.error("Error fetching templates count:", countError);
+    throw countError;
+  }
+
+  // Get paginated data
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error } = await supabase
+    .from("routines")
+    .select(`
+      id, 
+      title, 
+      description, 
+      duration, 
+      tags,
+      created_by,
+      is_template,
+      visibility,
+      created_at,
+      updated_at,
+      profiles(first_name, last_name)
+    `)
+    .or("is_template.eq.true,visibility.eq.public")
+    .neq("visibility", "private")
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  if (error) {
+    console.error("Error fetching all templates:", error);
+    throw error;
+  }
+
+  // Transform the data to match our frontend type
+  const templates = data.map(template => {
+    const profile = template.profiles as { first_name: string | null, last_name: string | null };
+    const creatorName = profile ? 
+      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Team member' : 
+      'Team member';
+    
+    // Just placeholder data for now until we implement the blocks
+    const includes = ["Warm-up exercise", "Technical drill", "Mindfulness practice"];
+    
+    return {
+      ...template,
+      creator: creatorName,
+      usageCount: Math.floor(Math.random() * 500), // Placeholder until we track this
+      includes
+    } as PracticeTemplate;
+  });
+
+  return {
+    templates,
+    totalCount: count || 0
+  };
 };
 
 export const fetchUserRoutines = async (): Promise<PracticeRoutine[]> => {

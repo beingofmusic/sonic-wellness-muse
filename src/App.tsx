@@ -31,8 +31,7 @@ import Profile from "./pages/Profile";
 import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
 
-// Placeholder page for templates list - will be implemented later
-const TemplatesList = () => <div className="p-6"><h1>All Templates</h1><p>Coming soon</p></div>;
+import TemplatesList from "./pages/TemplatesList";
 
 const queryClient = new QueryClient();
 

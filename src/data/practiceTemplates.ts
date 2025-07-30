@@ -10,6 +10,7 @@ export const featuredTemplates: PracticeTemplate[] = [
     tags: ["warm-up", "quick", "daily"],
     created_by: "staff-1",
     is_template: true,
+    visibility: "public",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     includes: [
@@ -28,6 +29,7 @@ export const featuredTemplates: PracticeTemplate[] = [
     tags: ["mindfulness", "awareness", "tone", "meditation"],
     created_by: "staff-1",
     is_template: true,
+    visibility: "public",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     includes: [
@@ -46,6 +48,7 @@ export const featuredTemplates: PracticeTemplate[] = [
     tags: ["range", "high-notes", "endurance"],
     created_by: "staff-1",
     is_template: true,
+    visibility: "public",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     includes: [

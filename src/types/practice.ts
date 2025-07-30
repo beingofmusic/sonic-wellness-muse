@@ -7,6 +7,7 @@ export interface PracticeTemplate {
   tags: string[] | null;
   created_by: string;
   is_template: boolean;
+  visibility: string;
   created_at: string;
   updated_at: string;
   
