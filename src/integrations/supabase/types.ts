@@ -772,10 +772,12 @@ export type Database = {
       }
       routines: {
         Row: {
+          ai_generated: boolean | null
           created_at: string
           created_by: string
           description: string | null
           duration: number
+          generation_context: Json | null
           id: string
           is_template: boolean
           tags: string[] | null
@@ -784,10 +786,12 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          ai_generated?: boolean | null
           created_at?: string
           created_by: string
           description?: string | null
           duration?: number
+          generation_context?: Json | null
           id?: string
           is_template?: boolean
           tags?: string[] | null
@@ -796,10 +800,12 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          ai_generated?: boolean | null
           created_at?: string
           created_by?: string
           description?: string | null
           duration?: number
+          generation_context?: Json | null
           id?: string
           is_template?: boolean
           tags?: string[] | null
@@ -845,6 +851,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_practice_preferences: {
+        Row: {
+          created_at: string
+          energy_patterns: Json | null
+          focus_areas: string[] | null
+          id: string
+          preferred_practice_time: string | null
+          primary_instrument: string | null
+          skill_level: string | null
+          typical_practice_duration: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          energy_patterns?: Json | null
+          focus_areas?: string[] | null
+          id?: string
+          preferred_practice_time?: string | null
+          primary_instrument?: string | null
+          skill_level?: string | null
+          typical_practice_duration?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          energy_patterns?: Json | null
+          focus_areas?: string[] | null
+          id?: string
+          preferred_practice_time?: string | null
+          primary_instrument?: string | null
+          skill_level?: string | null
+          typical_practice_duration?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       wellness_goals: {
         Row: {
