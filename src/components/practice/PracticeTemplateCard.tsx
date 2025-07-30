@@ -54,7 +54,7 @@ const PracticeTemplateCard: React.FC<PracticeTemplateCardProps> = ({ template })
           <span>Created by {template.creator}</span>
         </div>
         
-        <Link to={`/practice/template/${template.id}`}>
+        <Link to={`/practice/routine/${template.id}`}>
           <Button className="bg-music-primary hover:bg-music-secondary text-white">
             Start Practice
           </Button>
