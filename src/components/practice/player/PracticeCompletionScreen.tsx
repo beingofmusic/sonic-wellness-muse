@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
 import { Button } from "@/components/ui/button";
-import { Award, CheckCircle } from "lucide-react";
+import { Award, CheckCircle, Home, History, Music } from "lucide-react";
 import { logPracticeSession } from "@/services/practiceStatsService";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -99,32 +99,29 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
         </div>
         
         <div className="flex flex-col lg:flex-row gap-4 w-full max-w-2xl">
-          <Button
-            variant="default"
-            size="lg"
-            className="flex-1 min-w-0"
+          <button
+            className="flex-1 min-w-0 h-14 bg-gradient-to-r from-music-primary to-music-secondary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-music-primary/25 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
             onClick={() => navigate("/practice")}
           >
+            <Music className="w-5 h-5" />
             Return to Practice Studio
-          </Button>
+          </button>
           
-          <Button
-            variant="outline"
-            size="lg"
-            className="flex-1 min-w-0"
+          <button
+            className="flex-1 min-w-0 h-14 bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm border border-white/20 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] hover:bg-gradient-to-r hover:from-card hover:to-card/80 active:scale-[0.98] flex items-center justify-center gap-3"
             onClick={() => navigate("/practice/history")}
           >
+            <History className="w-5 h-5" />
             View Practice History
-          </Button>
+          </button>
           
-          <Button
-            variant="secondary"
-            size="lg"
-            className="flex-1 min-w-0"
+          <button
+            className="flex-1 min-w-0 h-14 bg-gradient-to-r from-music-accent/80 to-music-accent/60 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-music-accent/25 hover:scale-[1.02] hover:from-music-accent hover:to-music-accent/80 active:scale-[0.98] flex items-center justify-center gap-3"
             onClick={() => navigate("/dashboard")}
           >
+            <Home className="w-5 h-5" />
             Go to Dashboard
-          </Button>
+          </button>
         </div>
       </div>
     </div>
