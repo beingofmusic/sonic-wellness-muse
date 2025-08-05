@@ -28,12 +28,6 @@ const Practice: React.FC = () => {
                 View History
               </Button>
             </Link>
-            <Link to="/loop-trainer">
-              <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 flex items-center gap-2">
-                <span className="text-lg">🎵</span>
-                Loop Trainer
-              </Button>
-            </Link>
           </div>
         </div>
         
