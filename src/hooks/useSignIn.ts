@@ -15,8 +15,8 @@ export const useSignIn = () => {
   const navigate = useNavigate();
 
   // Demo account credentials
-  const DEMO_EMAIL = "demo@beingofmusic.com";
-  const DEMO_PASSWORD = "demo123456";
+  const DEMO_EMAIL = import.meta.env.VITE_DEMO_EMAIL || "demo@beingofmusic.com";
+  const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "demo123456";
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
