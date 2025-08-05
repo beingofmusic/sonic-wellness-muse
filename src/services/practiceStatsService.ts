@@ -238,3 +238,28 @@ export const fetchPracticeStats = async (): Promise<PracticeStats> => {
     };
   }
 };
+
+// Save an open practice session (no routine)
+export const logOpenPracticeSession = async (
+  userId: string,
+  totalDurationMinutes: number,
+  sessionData?: { type: string; tags: string[]; notes: string }
+): Promise<string> => {
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .insert({
+      user_id: userId,
+      routine_id: null, // No routine for open practice
+      total_duration: totalDurationMinutes,
+      block_breakdown: sessionData || { type: 'open_practice' },
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error("Error creating open practice session:", error);
+    throw new Error("Failed to save practice session");
+  }
+
+  return data.id;
+};

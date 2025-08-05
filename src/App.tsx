@@ -34,6 +34,7 @@ import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
 
 import TemplatesList from "./pages/TemplatesList";
+import OpenPractice from "./pages/OpenPractice";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,14 @@ const App = () => (
           element={
             <ProtectedRoute>
               <TemplatesList />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/practice/open" 
+          element={
+            <ProtectedRoute>
+              <OpenPractice />
             </ProtectedRoute>
           } 
         />

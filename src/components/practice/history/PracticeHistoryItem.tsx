@@ -22,9 +22,19 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
     
     return Object.keys(session.block_breakdown.blockTypes);
   }, [session]);
+
+  // Check if this is an open practice session
+  const isOpenPractice = !session.routine_id && session.block_breakdown?.type === 'open_practice';
+  
+  // Get tags from open practice session
+  const openPracticeTags = isOpenPractice ? session.block_breakdown?.tags || [] : [];
   
   // Function to get icon based on routine title or block types
   const getRoutineIcon = () => {
+    if (isOpenPractice) {
+      return <Music className="h-5 w-5 text-music-secondary" />;
+    }
+    
     const title = session.routine_title?.toLowerCase() || '';
     
     if (title.includes('technique') || title.includes('technical')) {
@@ -46,11 +56,19 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
         <div className="flex-grow min-w-0">
           <div className="flex items-start justify-between">
             <div>
-              <h4 className="font-medium truncate">{session.routine_title}</h4>
+              <h4 className="font-medium truncate">
+                {isOpenPractice ? "Open Practice" : session.routine_title}
+              </h4>
               <div className="flex items-center gap-2 text-sm text-white/60">
                 <span className="whitespace-nowrap">{session.formatted_time}</span>
                 <span className="h-1 w-1 bg-white/30 rounded-full"></span>
                 <span>{formatMinutes(session.total_duration)}</span>
+                {isOpenPractice && (
+                  <>
+                    <span className="h-1 w-1 bg-white/30 rounded-full"></span>
+                    <span className="text-music-secondary">Freeform</span>
+                  </>
+                )}
               </div>
             </div>
             
@@ -58,8 +76,19 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
           </div>
           
           {/* Tags or block types */}
-          {(session.routine_tags?.length > 0 || blockTypes.length > 0) && (
+          {(session.routine_tags?.length > 0 || blockTypes.length > 0 || openPracticeTags.length > 0) && (
             <div className="mt-2 flex flex-wrap gap-2">
+              {/* Open practice tags */}
+              {openPracticeTags.map((tag, index) => (
+                <Badge 
+                  key={`open-${index}`} 
+                  className="bg-music-secondary/20 text-music-secondary hover:bg-music-secondary/30 text-xs"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              
+              {/* Regular routine tags */}
               {session.routine_tags?.map((tag, index) => (
                 <Badge 
                   key={index} 
