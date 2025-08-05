@@ -58,7 +58,7 @@ export const fetchPracticeSessions = async ({
     
     const userId = userData.user.id;
     
-    // Build query for sessions with recordings
+    // Build query for sessions
     let query = supabase
       .from("practice_sessions")
       .select(`
@@ -67,15 +67,6 @@ export const fetchPracticeSessions = async ({
           id,
           title,
           tags
-        ),
-        practice_recordings (
-          id,
-          title,
-          recording_url,
-          notes,
-          tags,
-          duration_seconds,
-          created_at
         )
       `)
       .eq("user_id", userId)
@@ -185,11 +176,46 @@ export const fetchPracticeSessions = async ({
         }))
       : [];
     
+    // Fetch recordings for these sessions using timestamp-based matching
+    const sessionIds = sessions?.map(s => s.id) || [];
+    let recordings: any[] = [];
+    
+    if (sessionIds.length > 0) {
+      // First try to get recordings linked by session_id
+      const { data: linkedRecordings } = await supabase
+        .from('practice_recordings')
+        .select('*')
+        .in('session_id', sessionIds)
+        .eq('user_id', userId);
+
+      // Then get recordings that might need timestamp-based matching
+      const { data: unlinkedRecordings } = await supabase
+        .from('practice_recordings')
+        .select('*')
+        .is('session_id', null)
+        .eq('user_id', userId);
+
+      recordings = [...(linkedRecordings || []), ...(unlinkedRecordings || [])];
+    }
+
     // Format the sessions for display
     const formattedSessions: PracticeSessionWithRoutine[] = sessions?.map((session: any) => {
       const routine = session.routines as any;
-      const recording = session.practice_recordings?.[0] || null; // Get first recording if any
       const completedDate = new Date(session.completed_at);
+      
+      // Find matching recording - first by session_id, then by timestamp proximity
+      let recording = recordings.find(r => r.session_id === session.id);
+      
+      if (!recording) {
+        // Try timestamp-based matching (within 5 minutes)
+        const sessionTime = new Date(session.completed_at).getTime();
+        recording = recordings.find(r => {
+          if (r.session_id) return false; // Skip already linked recordings
+          const recordingTime = new Date(r.created_at).getTime();
+          const timeDiff = Math.abs(sessionTime - recordingTime);
+          return timeDiff <= 5 * 60 * 1000; // 5 minutes tolerance
+        });
+      }
       
       return {
         ...session,
@@ -198,7 +224,7 @@ export const fetchPracticeSessions = async ({
         formatted_date: format(completedDate, 'MMM d, yyyy'),
         formatted_time: format(completedDate, 'h:mm a'),
         time_ago: formatDistanceToNow(completedDate, { addSuffix: true }),
-        recording: recording
+        recording: recording || null
       };
     }) || [];
     
