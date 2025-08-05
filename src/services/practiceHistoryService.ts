@@ -176,26 +176,19 @@ export const fetchPracticeSessions = async ({
         }))
       : [];
     
-    // Fetch recordings for these sessions using timestamp-based matching
+    // Fetch recordings for these sessions using comprehensive matching
     const sessionIds = sessions?.map(s => s.id) || [];
     let recordings: any[] = [];
     
     if (sessionIds.length > 0) {
-      // First try to get recordings linked by session_id
-      const { data: linkedRecordings } = await supabase
+      // Get ALL recordings for this user to ensure we don't miss any
+      const { data: allRecordings } = await supabase
         .from('practice_recordings')
         .select('*')
-        .in('session_id', sessionIds)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-      // Then get recordings that might need timestamp-based matching
-      const { data: unlinkedRecordings } = await supabase
-        .from('practice_recordings')
-        .select('*')
-        .is('session_id', null)
-        .eq('user_id', userId);
-
-      recordings = [...(linkedRecordings || []), ...(unlinkedRecordings || [])];
+      recordings = allRecordings || [];
     }
 
     // Format the sessions for display
