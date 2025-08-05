@@ -432,6 +432,54 @@ export type Database = {
           },
         ]
       }
+      loop_trainer_sessions: {
+        Row: {
+          created_at: string
+          end_time_sec: number
+          id: string
+          loop_count: number
+          pitch_shift: number
+          playback_speed: number
+          session_notes: string | null
+          start_time_sec: number
+          total_practice_time: number
+          updated_at: string
+          user_id: string
+          video_title: string | null
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string
+          end_time_sec: number
+          id?: string
+          loop_count?: number
+          pitch_shift?: number
+          playback_speed?: number
+          session_notes?: string | null
+          start_time_sec?: number
+          total_practice_time?: number
+          updated_at?: string
+          user_id: string
+          video_title?: string | null
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string
+          end_time_sec?: number
+          id?: string
+          loop_count?: number
+          pitch_shift?: number
+          playback_speed?: number
+          session_notes?: string | null
+          start_time_sec?: number
+          total_practice_time?: number
+          updated_at?: string
+          user_id?: string
+          video_title?: string | null
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       musical_journal_entries: {
         Row: {
           content: string

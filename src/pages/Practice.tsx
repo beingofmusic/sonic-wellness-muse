@@ -21,12 +21,20 @@ const Practice: React.FC = () => {
             </p>
           </div>
           
-          <Link to="/practice/history">
-            <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              View History
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link to="/practice/history">
+              <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                View History
+              </Button>
+            </Link>
+            <Link to="/loop-trainer">
+              <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10 flex items-center gap-2">
+                <span className="text-lg">🎵</span>
+                Loop Trainer
+              </Button>
+            </Link>
+          </div>
         </div>
         
         <FeaturedTemplates />

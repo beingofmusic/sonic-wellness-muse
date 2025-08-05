@@ -6,6 +6,8 @@ import { Metronome, MetronomeOptions } from "@/lib/metronome";
 import { DroneGenerator, DroneOptions, ChordType } from "@/lib/droneGenerator";
 import MetronomeSection from "./MetronomeSection";
 import DroneSection from "./DroneSection";
+import LoopTrainerSection from "../loopTrainer/LoopTrainerSection";
+import { useLoopTrainer } from "@/hooks/useLoopTrainer";
 
 const PracticeTools: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -16,6 +18,9 @@ const PracticeTools: React.FC = () => {
   const [isDroneActive, setIsDroneActive] = useState(false);
   const [playChord, setPlayChord] = useState(false);
   const [chordType, setChordType] = useState<ChordType>("major");
+  
+  // Loop trainer hook
+  const { createSession } = useLoopTrainer();
   
   // Refs to store class instances
   const metronomeRef = useRef<Metronome | null>(null);
@@ -144,6 +149,12 @@ const PracticeTools: React.FC = () => {
             toggleDrone={toggleDrone}
             getDroneStatusText={getDroneStatusText}
           />
+          
+          {/* Separator */}
+          <div className="border-t border-white/10" />
+          
+          {/* Loop Trainer */}
+          <LoopTrainerSection onSaveSession={createSession} />
         </div>
       </CollapsibleContent>
     </Collapsible>
