@@ -98,11 +98,11 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           </div>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-4 w-full max-w-md">
+        <div className="flex flex-col lg:flex-row gap-4 w-full max-w-2xl">
           <Button
             variant="default"
             size="lg"
-            className="flex-1"
+            className="flex-1 min-w-0"
             onClick={() => navigate("/practice")}
           >
             Return to Practice Studio
@@ -111,7 +111,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           <Button
             variant="outline"
             size="lg"
-            className="flex-1"
+            className="flex-1 min-w-0"
             onClick={() => navigate("/practice/history")}
           >
             View Practice History
@@ -120,7 +120,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           <Button
             variant="secondary"
             size="lg"
-            className="flex-1"
+            className="flex-1 min-w-0"
             onClick={() => navigate("/dashboard")}
           >
             Go to Dashboard
