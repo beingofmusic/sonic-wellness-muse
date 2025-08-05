@@ -40,7 +40,7 @@ const Practice: React.FC = () => {
                 </div>
                 <h3 className="font-semibold mb-2">Begin Open Practice</h3>
                 <p className="text-sm text-white/60 mb-4">Free-form practice session with tools and timer</p>
-                <Link to="/practice/open">
+                <Link to="/practice/routine/open-practice">
                   <Button className="w-full bg-primary/80 hover:bg-primary text-white">
                     Start Now
                   </Button>

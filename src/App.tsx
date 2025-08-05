@@ -34,6 +34,7 @@ import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
 
 import TemplatesList from "./pages/TemplatesList";
+import AIRoutinePage from "./pages/AIRoutinePage";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,22 @@ const App = () => (
           element={
             <ProtectedRoute>
               <TemplatesList />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/practice/ai-routine" 
+          element={
+            <ProtectedRoute>
+              <AIRoutinePage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/practice/routine-builder" 
+          element={
+            <ProtectedRoute>
+              <RoutineBuilder />
             </ProtectedRoute>
           } 
         />
