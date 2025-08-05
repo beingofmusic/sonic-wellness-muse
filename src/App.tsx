@@ -28,6 +28,7 @@ import Settings from "./pages/Settings";
 import PracticeHistory from "./pages/PracticeHistory";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
+import MyRecordings from "./pages/MyRecordings";
 // Import wellness pages
 import WellnessPractice from "./pages/wellness/WellnessPractice";
 import JournalingPage from "./pages/wellness/JournalingPage";
@@ -211,6 +212,14 @@ const App = () => (
           element={
             <ProtectedRoute>
               <UserProfile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/recordings" 
+          element={
+            <ProtectedRoute>
+              <MyRecordings />
             </ProtectedRoute>
           } 
         />

@@ -572,6 +572,57 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_recordings: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          id: string
+          notes: string | null
+          recording_url: string
+          session_id: string | null
+          tags: string[] | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          notes?: string | null
+          recording_url: string
+          session_id?: string | null
+          tags?: string[] | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          notes?: string | null
+          recording_url?: string
+          session_id?: string | null
+          tags?: string[] | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_recordings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "practice_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_recordings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_reflections: {
         Row: {
           created_at: string

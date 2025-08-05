@@ -8,6 +8,7 @@ import SessionHeader from "./SessionHeader";
 import SessionProgress from "./SessionProgress";
 import BlockContent from "./BlockContent";
 import PracticeTools from "./PracticeTools";
+import AudioRecorder from "../recording/AudioRecorder";
 import { getCategoryColorClass, getCategoryIcon } from "@/components/practice/CategoryConfig";
 
 interface PracticeSessionProps {
@@ -175,6 +176,8 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             />
             
             <PracticeTools />
+            
+            <AudioRecorder sessionId={routine.id} />
           </div>
         )}
       </div>

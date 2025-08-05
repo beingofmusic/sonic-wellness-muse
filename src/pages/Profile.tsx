@@ -5,6 +5,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStats from "@/components/profile/ProfileStats";
 import BadgeCollection from "@/components/profile/BadgeCollection";
+import RecordingsList from "@/components/practice/recording/RecordingsList";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,9 @@ const Profile: React.FC = () => {
               />
             </CardContent>
           </Card>
+
+          {/* Recordings Section */}
+          <RecordingsList maxItems={5} />
         </div>
       </div>
     </Layout>
