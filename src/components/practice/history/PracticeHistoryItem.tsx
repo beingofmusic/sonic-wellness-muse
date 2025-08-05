@@ -27,7 +27,9 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
   const getRoutineIcon = () => {
     const title = session.routine_title?.toLowerCase() || '';
     
-    if (title.includes('technique') || title.includes('technical')) {
+    if (session.routine_id === 'open-practice') {
+      return <span className="text-lg">🌀</span>;
+    } else if (title.includes('technique') || title.includes('technical')) {
       return <Music className="h-5 w-5 text-music-primary" />;
     } else if (title.includes('mindfulness') || title.includes('meditation')) {
       return <Clock className="h-5 w-5 text-music-secondary" />;
@@ -46,11 +48,19 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
         <div className="flex-grow min-w-0">
           <div className="flex items-start justify-between">
             <div>
-              <h4 className="font-medium truncate">{session.routine_title}</h4>
+              <h4 className="font-medium truncate">
+                {session.routine_id === 'open-practice' ? 'Open Practice' : session.routine_title}
+              </h4>
               <div className="flex items-center gap-2 text-sm text-white/60">
                 <span className="whitespace-nowrap">{session.formatted_time}</span>
                 <span className="h-1 w-1 bg-white/30 rounded-full"></span>
                 <span>{formatMinutes(session.total_duration)}</span>
+                {session.routine_id === 'open-practice' && (
+                  <>
+                    <span className="h-1 w-1 bg-white/30 rounded-full"></span>
+                    <span className="text-music-primary">Freestyle</span>
+                  </>
+                )}
               </div>
             </div>
             
@@ -102,12 +112,22 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
           )}
           
           {/* Practice Again button */}
-          {session.routine_id && (
+          {session.routine_id && session.routine_id !== 'open-practice' && (
             <Link 
               to={`/practice/routine/${session.routine_id}`}
               className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors whitespace-nowrap"
             >
               Practice Again
+            </Link>
+          )}
+          
+          {/* Open Practice Again button */}
+          {session.routine_id === 'open-practice' && (
+            <Link 
+              to="/practice/routine/open-practice"
+              className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors whitespace-nowrap"
+            >
+              Open Practice
             </Link>
           )}
         </div>

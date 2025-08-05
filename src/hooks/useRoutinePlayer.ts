@@ -47,6 +47,55 @@ export const useRoutinePlayer = (routineId?: string) => {
       try {
         setIsLoading(true);
         
+        // Handle special case for open practice
+        if (routineId === 'open-practice') {
+          const openPracticeRoutine: PracticeRoutine = {
+            id: 'open-practice',
+            title: 'Open Practice',
+            description: 'Unstructured practice session',
+            duration: 0, // Will be set by user
+            created_by: user?.id || '',
+            is_template: false,
+            tags: ['freestyle', 'creative'],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          const openPracticeBlocks: RoutineBlock[] = [{
+            id: 'open-practice-block',
+            routine_id: 'open-practice',
+            order_index: 0,
+            type: 'Open Practice',
+            content: 'Practice freely without structure',
+            instructions: 'Use this time for creative exploration, warming up, or working on whatever feels right.',
+            duration: 30, // Default 30 minutes, user can adjust
+            created_at: new Date().toISOString()
+          }];
+          
+          setRoutine(openPracticeRoutine);
+          setBlocks(openPracticeBlocks);
+          
+          // Set initial timer to 30 minutes (1800 seconds)
+          const initialDuration = 30 * 60;
+          setSecondsLeft(initialDuration);
+          setTimeRemaining(formatTime(initialDuration));
+          
+          // Create practice session for open practice
+          if (user?.id) {
+            try {
+              const newSessionId = await createPracticeSession(user.id, 'open-practice', 30);
+              setSessionId(newSessionId);
+            } catch (error) {
+              console.error("Error creating open practice session:", error);
+            }
+          }
+          
+          // Show recording choice dialog
+          setShowRecordingChoice(true);
+          setIsLoading(false);
+          return;
+        }
+        
         // Check if user has access to this routine (handles both public and private routines)
         const { hasAccess, routine: routineData } = await checkRoutineAccess(routineId);
         
