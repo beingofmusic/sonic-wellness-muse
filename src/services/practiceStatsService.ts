@@ -25,7 +25,8 @@ export interface PracticeStats {
 export const logPracticeSession = async (
   routineId: string,
   totalDuration: number,
-  blocks: RoutineBlock[]
+  blocks: RoutineBlock[],
+  sessionId?: string
 ): Promise<{ success: boolean, newBadges: any[] }> => {
   try {
     const { data: userData } = await supabase.auth.getUser();
@@ -42,16 +43,35 @@ export const logPracticeSession = async (
       }, {})
     };
 
-    const { error } = await supabase.from("practice_sessions").insert({
-      user_id: userData.user.id,
-      routine_id: routineId,
-      total_duration: totalDuration,
-      block_breakdown: blockBreakdown,
-    });
+    if (sessionId) {
+      // Update existing session instead of creating a new one
+      const { error } = await supabase
+        .from("practice_sessions")
+        .update({
+          total_duration: totalDuration,
+          block_breakdown: blockBreakdown,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', sessionId)
+        .eq('user_id', userData.user.id);
 
-    if (error) {
-      console.error("Error logging practice session:", error);
-      return { success: false, newBadges: [] };
+      if (error) {
+        console.error("Error updating practice session:", error);
+        return { success: false, newBadges: [] };
+      }
+    } else {
+      // Fallback: create new session if no sessionId provided (shouldn't happen in normal flow)
+      const { error } = await supabase.from("practice_sessions").insert({
+        user_id: userData.user.id,
+        routine_id: routineId,
+        total_duration: totalDuration,
+        block_breakdown: blockBreakdown,
+      });
+
+      if (error) {
+        console.error("Error creating practice session:", error);
+        return { success: false, newBadges: [] };
+      }
     }
 
     // Check for newly earned badges after logging the practice session

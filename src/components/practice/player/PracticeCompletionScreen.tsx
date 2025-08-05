@@ -12,12 +12,14 @@ interface PracticeCompletionScreenProps {
   routine: PracticeRoutine;
   blocks: RoutineBlock[];
   onStartNewSession: () => void;
+  sessionId?: string;
 }
 
 const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
   routine,
   blocks,
   onStartNewSession,
+  sessionId
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -40,7 +42,8 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
       const { success, newBadges } = await logPracticeSession(
         routine.id,
         totalDuration,
-        blocks
+        blocks,
+        sessionId
       );
       
       if (success) {
