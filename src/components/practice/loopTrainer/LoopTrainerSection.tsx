@@ -135,36 +135,62 @@ const LoopTrainerSection: React.FC<LoopTrainerSectionProps> = ({
         },
         onStateChange: (event: any) => {
           const isPlaying = event.data === window.YT.PlayerState.PLAYING;
+          console.log('🎵 Player state changed:', isPlaying ? 'PLAYING' : 'PAUSED');
           setPlayerState(prev => ({
             ...prev,
             isPlaying
           }));
-          if (isPlaying && controls.isLooping) {
-            startTimeTracking();
-          } else {
-            stopTimeTracking();
-          }
         }
       }
     });
-  }, [youtubeUrl, isAPIReady, controls.isLooping, toast]);
+  }, [youtubeUrl, isAPIReady, toast]);
 
-  // Time tracking for loop logic
-  const startTimeTracking = useCallback(() => {
+  // Stop time tracking function
+  const stopTimeTracking = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  // Continuous time monitoring with proper loop logic
+  useEffect(() => {
+    if (!playerRef.current || !playerState.isPlaying) {
+      stopTimeTracking();
+      return;
+    }
+
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
+
     intervalRef.current = setInterval(() => {
       if (playerRef.current && playerRef.current.getCurrentTime) {
         const currentTime = playerRef.current.getCurrentTime();
+        
+        // Update current time state
         setPlayerState(prev => ({
           ...prev,
           currentTime
         }));
 
-        // Loop logic
-        if (controls.isLooping && currentTime >= controls.endTime) {
+        // Debug logging
+        console.log('Loop Trainer Debug:', {
+          currentTime: currentTime.toFixed(2),
+          startTime: controls.startTime.toFixed(2),
+          endTime: controls.endTime.toFixed(2),
+          isLooping: controls.isLooping,
+          loopCount: controls.loopCount
+        });
+
+        // Loop logic with current state values
+        if (controls.isLooping && currentTime >= controls.endTime && controls.endTime > controls.startTime) {
+          console.log('🔄 Triggering loop! Seeking to:', controls.startTime);
+          
+          // Seek to start time
           playerRef.current.seekTo(controls.startTime, true);
+          
+          // Update loop count and hasLooped state
           setControls(prev => ({
             ...prev,
             loopCount: prev.loopCount + 1,
@@ -173,13 +199,14 @@ const LoopTrainerSection: React.FC<LoopTrainerSectionProps> = ({
         }
       }
     }, 100);
-  }, [controls.isLooping, controls.startTime, controls.endTime]);
-  const stopTimeTracking = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [playerState.isPlaying, controls.isLooping, controls.startTime, controls.endTime]);
 
   // Control functions
   const togglePlay = () => {
@@ -195,13 +222,19 @@ const LoopTrainerSection: React.FC<LoopTrainerSectionProps> = ({
     playerRef.current.seekTo(controls.startTime, true);
   };
   const toggleLoop = () => {
+    const newLoopState = !controls.isLooping;
+    console.log('🔄 Loop toggled:', newLoopState ? 'ON' : 'OFF');
+    
     setControls(prev => ({
       ...prev,
-      isLooping: !prev.isLooping,
+      isLooping: newLoopState,
       loopCount: 0,
       hasLooped: false
     }));
-    if (!controls.isLooping && playerRef.current) {
+    
+    // When enabling loop mode, seek to start time
+    if (newLoopState && playerRef.current) {
+      console.log('🎯 Seeking to start time:', controls.startTime);
       playerRef.current.seekTo(controls.startTime, true);
     }
   };
@@ -321,6 +354,10 @@ const LoopTrainerSection: React.FC<LoopTrainerSectionProps> = ({
               <Label htmlFor="loop-mode" className="text-sm">
                 Loop Mode {controls.isLooping && `(${controls.loopCount} loops)`}
               </Label>
+            </div>
+            {/* Current Time Display */}
+            <div className="ml-auto text-sm text-muted-foreground">
+              {formatTime(playerState.currentTime)} / {formatTime(playerState.duration)}
             </div>
           </div>
 
