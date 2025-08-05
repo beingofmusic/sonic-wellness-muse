@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Mic, Square, Pause, Play, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,21 +34,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
     isSupported
   } = useAudioRecording();
 
-  // Automatically start recording when component mounts if autoStart is true
-  useEffect(() => {
-    if (autoStart && user && isSupported && !isRecording && !isPaused) {
-      handleStartRecording();
-    }
-  }, [autoStart, user, isSupported]); // Only run once when component mounts
-
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleStartRecording = async () => {
+  const handleStartRecording = useCallback(async () => {
+    console.log('handleStartRecording called', { 
+      hasUser: !!user, 
+      userId: user?.id,
+      sessionId,
+      isSupported,
+      isRecording,
+      isPaused
+    });
+
     if (!user) {
+      console.error('Recording failed: No user authenticated');
       toast({
         title: "Authentication Required",
         description: "Please sign in to record your practice session.",
@@ -57,8 +60,20 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
       return;
     }
 
+    if (!sessionId) {
+      console.error('Recording failed: No session ID provided');
+      toast({
+        title: "Recording Failed",
+        description: "No practice session ID available.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      console.log('Starting recording...');
       await startRecording();
+      console.log('Recording started successfully');
       toast({
         title: "Recording Started",
         description: "Your practice session is now being recorded.",
@@ -71,7 +86,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
         variant: "destructive"
       });
     }
-  };
+  }, [user, sessionId, isSupported, isRecording, isPaused, startRecording, toast]);
+
+  // Automatically start recording when component mounts if autoStart is true
+  useEffect(() => {
+    console.log('AudioRecorder useEffect triggered', {
+      autoStart,
+      hasUser: !!user,
+      isSupported,
+      isRecording,
+      isPaused,
+      sessionId
+    });
+
+    if (autoStart && user && isSupported && !isRecording && !isPaused && sessionId) {
+      console.log('Auto-starting recording...');
+      handleStartRecording();
+    }
+  }, [autoStart, user, isSupported, isRecording, isPaused, sessionId, handleStartRecording]);
 
   const handleStopRecording = async () => {
     console.log('Stopping recording...');
@@ -92,7 +124,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
       hasUser: !!user,
       userId: user?.id,
       sessionId,
-      formData 
+      formData,
+      duration
     });
 
     if (!audioBlob || !user) {
@@ -117,19 +150,26 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
 
     setIsSaving(true);
     try {
-      console.log('Calling recordingService.uploadRecording...');
+      console.log('Calling recordingService.uploadRecording with params:', {
+        blobSize: audioBlob.size,
+        userId: user.id,
+        formData,
+        duration,
+        sessionId
+      });
+      
       const result = await recordingService.uploadRecording(audioBlob, user.id, formData, duration, sessionId);
       console.log('Upload successful:', result);
       
       toast({
         title: "Recording Saved",
-        description: "Your practice recording has been saved successfully.",
+        description: `Your practice recording "${formData.title}" has been saved successfully.`,
       });
       
       resetRecording();
       setShowSaveDialog(false);
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Save error details:', error);
       toast({
         title: "Save Failed",
         description: error instanceof Error ? error.message : "Could not save recording. Please try again.",

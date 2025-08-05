@@ -181,7 +181,12 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             
             <PracticeTools />
             
-            {shouldRecord && <AudioRecorder sessionId={sessionId} autoStart={true} />}
+            {shouldRecord && (
+              <>
+                {console.log('Rendering AudioRecorder with:', { sessionId, shouldRecord })}
+                <AudioRecorder sessionId={sessionId} autoStart={true} />
+              </>
+            )}
           </div>
         )}
       </div>
