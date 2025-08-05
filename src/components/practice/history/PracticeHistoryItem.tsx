@@ -1,17 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PracticeSessionWithRoutine } from '@/services/practiceHistoryService';
 import { Card, CardContent } from '@/components/ui/card';
 import { formatMinutes } from '@/lib/formatters';
-import { Clock, Music, CheckCircle } from 'lucide-react';
+import { Clock, Music, CheckCircle, Volume2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import SessionRecordingPlayer from './SessionRecordingPlayer';
 
 interface PracticeHistoryItemProps {
   session: PracticeSessionWithRoutine;
 }
 
 const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) => {
+  const [showRecordingPlayer, setShowRecordingPlayer] = useState(false);
+  
   // Get block type breakdown if available
   const blockTypes = React.useMemo(() => {
     if (!session.block_breakdown?.blockTypes) return [];
@@ -84,13 +88,47 @@ const PracticeHistoryItem: React.FC<PracticeHistoryItemProps> = ({ session }) =>
           )}
         </div>
         
-        {session.routine_id && (
-          <Link 
-            to={`/practice/routine/${session.routine_id}`}
-            className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors whitespace-nowrap"
-          >
-            Practice Again
-          </Link>
+        <div className="flex items-center gap-2">
+          {/* Recording button */}
+          {session.recording && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRecordingPlayer(true)}
+              className="p-2 h-8 w-8 bg-music-primary/10 hover:bg-music-primary/20 text-music-primary"
+            >
+              <Volume2 className="h-4 w-4" />
+            </Button>
+          )}
+          
+          {/* Practice Again button */}
+          {session.routine_id && (
+            <Link 
+              to={`/practice/routine/${session.routine_id}`}
+              className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded text-white/70 hover:text-white transition-colors whitespace-nowrap"
+            >
+              Practice Again
+            </Link>
+          )}
+        </div>
+        
+        {/* Recording Player Modal */}
+        {session.recording && (
+          <SessionRecordingPlayer
+            recording={{
+              id: session.recording.id,
+              user_id: session.user_id,
+              session_id: session.id,
+              title: session.recording.title,
+              recording_url: session.recording.recording_url,
+              notes: session.recording.notes,
+              tags: session.recording.tags,
+              duration_seconds: session.recording.duration_seconds,
+              created_at: session.recording.created_at
+            }}
+            isOpen={showRecordingPlayer}
+            onClose={() => setShowRecordingPlayer(false)}
+          />
         )}
       </CardContent>
     </Card>

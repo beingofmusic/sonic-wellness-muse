@@ -9,6 +9,15 @@ export interface PracticeSessionWithRoutine extends PracticeSession {
   formatted_date?: string;
   formatted_time?: string;
   time_ago?: string;
+  recording?: {
+    id: string;
+    title: string;
+    recording_url: string;
+    notes: string | null;
+    tags: string[];
+    duration_seconds: number;
+    created_at: string;
+  } | null;
 }
 
 interface FetchPracticeSessionsOptions {
@@ -49,7 +58,7 @@ export const fetchPracticeSessions = async ({
     
     const userId = userData.user.id;
     
-    // Build query for sessions
+    // Build query for sessions with recordings
     let query = supabase
       .from("practice_sessions")
       .select(`
@@ -58,6 +67,15 @@ export const fetchPracticeSessions = async ({
           id,
           title,
           tags
+        ),
+        practice_recordings (
+          id,
+          title,
+          recording_url,
+          notes,
+          tags,
+          duration_seconds,
+          created_at
         )
       `)
       .eq("user_id", userId)
@@ -170,6 +188,7 @@ export const fetchPracticeSessions = async ({
     // Format the sessions for display
     const formattedSessions: PracticeSessionWithRoutine[] = sessions?.map((session: any) => {
       const routine = session.routines as any;
+      const recording = session.practice_recordings?.[0] || null; // Get first recording if any
       const completedDate = new Date(session.completed_at);
       
       return {
@@ -179,6 +198,7 @@ export const fetchPracticeSessions = async ({
         formatted_date: format(completedDate, 'MMM d, yyyy'),
         formatted_time: format(completedDate, 'h:mm a'),
         time_ago: formatDistanceToNow(completedDate, { addSuffix: true }),
+        recording: recording
       };
     }) || [];
     
