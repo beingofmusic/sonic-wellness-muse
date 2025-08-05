@@ -11,14 +11,12 @@ import { useBadgeNotificationContext } from "@/context/BadgeNotificationContext"
 interface PracticeCompletionScreenProps {
   routine: PracticeRoutine;
   blocks: RoutineBlock[];
-  onStartNewSession: () => void;
   sessionId?: string;
 }
 
 const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
   routine,
   blocks,
-  onStartNewSession,
   sessionId
 }) => {
   const { toast } = useToast();
@@ -105,18 +103,27 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
             variant="default"
             size="lg"
             className="flex-1"
-            onClick={onStartNewSession}
+            onClick={() => navigate("/practice")}
           >
-            Practice Again
+            Return to Practice Studio
           </Button>
           
           <Button
             variant="outline"
             size="lg"
             className="flex-1"
-            onClick={() => navigate("/practice")}
+            onClick={() => navigate("/practice/history")}
           >
-            Return to Practice
+            View Practice History
+          </Button>
+          
+          <Button
+            variant="secondary"
+            size="lg"
+            className="flex-1"
+            onClick={() => navigate("/dashboard")}
+          >
+            Go to Dashboard
           </Button>
         </div>
       </div>

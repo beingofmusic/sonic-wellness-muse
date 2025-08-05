@@ -69,7 +69,6 @@ const RoutinePlayer: React.FC = () => {
         <PracticeCompletionScreen 
           routine={routine} 
           blocks={blocks}
-          onStartNewSession={handleStartNewSession}
           sessionId={sessionId}
         />
       ) : (
