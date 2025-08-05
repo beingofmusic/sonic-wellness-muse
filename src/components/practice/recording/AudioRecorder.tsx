@@ -65,13 +65,30 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) =
     }
   };
 
-  const handleStopRecording = () => {
-    stopRecording();
-    setShowSaveDialog(true);
+  const handleStopRecording = async () => {
+    console.log('Stopping recording...');
+    await stopRecording();
+    console.log('Recording stopped, audio blob:', audioBlob);
+    
+    // Wait a moment for the blob to be processed
+    setTimeout(() => {
+      console.log('Opening save dialog, blob available:', !!audioBlob);
+      setShowSaveDialog(true);
+    }, 100);
   };
 
   const handleSaveRecording = async (formData: RecordingFormData) => {
+    console.log('Attempting to save recording...', { 
+      hasBlob: !!audioBlob, 
+      blobSize: audioBlob?.size, 
+      hasUser: !!user,
+      userId: user?.id,
+      sessionId,
+      formData 
+    });
+
     if (!audioBlob || !user) {
+      console.error('Save failed: Missing blob or user', { hasBlob: !!audioBlob, hasUser: !!user });
       toast({
         title: "Save Failed",
         description: "No recording data or user not authenticated.",
@@ -80,9 +97,21 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) =
       return;
     }
 
+    if (audioBlob.size === 0) {
+      console.error('Save failed: Empty audio blob');
+      toast({
+        title: "Save Failed",
+        description: "Recording appears to be empty. Please try recording again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSaving(true);
     try {
-      await recordingService.uploadRecording(audioBlob, user.id, formData, sessionId);
+      console.log('Calling recordingService.uploadRecording...');
+      const result = await recordingService.uploadRecording(audioBlob, user.id, formData, duration);
+      console.log('Upload successful:', result);
       
       toast({
         title: "Recording Saved",
@@ -95,7 +124,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) =
       console.error('Save error:', error);
       toast({
         title: "Save Failed",
-        description: "Could not save recording. Please try again.",
+        description: error instanceof Error ? error.message : "Could not save recording. Please try again.",
         variant: "destructive"
       });
     } finally {

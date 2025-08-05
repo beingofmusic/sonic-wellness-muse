@@ -9,7 +9,7 @@ export interface UseAudioRecordingReturn {
   startRecording: () => Promise<void>;
   pauseRecording: () => void;
   resumeRecording: () => void;
-  stopRecording: () => void;
+  stopRecording: () => Promise<void>;
   resetRecording: () => void;
   isSupported: boolean;
 }
@@ -79,9 +79,11 @@ export const useAudioRecording = (): UseAudioRecordingReturn => {
       };
       
       mediaRecorder.onstop = () => {
+        console.log('MediaRecorder stopped, creating blob from chunks:', chunksRef.current.length);
         const blob = new Blob(chunksRef.current, { 
           type: selectedMimeType || 'audio/webm' 
         });
+        console.log('Created audio blob:', { size: blob.size, type: blob.type });
         setAudioBlob(blob);
         
         // Clean up stream
@@ -135,16 +137,28 @@ export const useAudioRecording = (): UseAudioRecordingReturn => {
   }, [isRecording, isPaused, duration, updateDuration]);
 
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && (isRecording || isPaused)) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      setIsPaused(false);
-      
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    return new Promise<void>((resolve) => {
+      if (mediaRecorderRef.current && (isRecording || isPaused)) {
+        console.log('Stopping recording...');
+        
+        const handleStop = () => {
+          console.log('Recording stopped, blob will be ready shortly');
+          setIsRecording(false);
+          setIsPaused(false);
+          
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          resolve();
+        };
+
+        mediaRecorderRef.current.addEventListener('stop', handleStop, { once: true });
+        mediaRecorderRef.current.stop();
+      } else {
+        resolve();
       }
-    }
+    });
   }, [isRecording, isPaused]);
 
   const resetRecording = useCallback(() => {

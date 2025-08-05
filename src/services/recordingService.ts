@@ -6,11 +6,21 @@ export const recordingService = {
     audioBlob: Blob, 
     userId: string, 
     formData: RecordingFormData,
-    sessionId?: string
+    durationSeconds: number
   ): Promise<PracticeRecording> {
+    console.log('Starting upload process...', { 
+      blobSize: audioBlob.size, 
+      blobType: audioBlob.type, 
+      userId, 
+      durationSeconds,
+      formData 
+    });
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `recording_${userId}_${timestamp}.webm`;
     const filePath = `${userId}/${fileName}`;
+
+    console.log('Uploading to storage...', { fileName, filePath });
 
     // Upload audio file to storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -21,33 +31,48 @@ export const recordingService = {
       });
 
     if (uploadError) {
+      console.error('Storage upload error:', uploadError);
       throw new Error(`Failed to upload recording: ${uploadError.message}`);
     }
+
+    console.log('Storage upload successful:', uploadData);
 
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('practice_recordings')
       .getPublicUrl(filePath);
 
-    // Calculate duration from blob (estimate based on size, will be updated on client)
-    const estimatedDuration = Math.floor(audioBlob.size / 16000); // Rough estimate
+    console.log('Got public URL:', publicUrl);
 
-    // Save recording metadata to database
+    // Use the actual duration passed from the recorder
+    const actualDuration = durationSeconds > 0 ? durationSeconds : Math.floor(audioBlob.size / 16000);
+
+    console.log('Inserting metadata to database...', {
+      user_id: userId,
+      title: formData.title,
+      recording_url: publicUrl,
+      notes: formData.notes || null,
+      tags: formData.tags || [],
+      duration_seconds: actualDuration
+    });
+
+    // Save recording metadata to database (removed session_id to avoid foreign key issues)
     const { data: recordingData, error: dbError } = await supabase
       .from('practice_recordings')
       .insert({
         user_id: userId,
-        session_id: sessionId || null,
+        session_id: null, // Temporarily set to null to avoid foreign key constraint
         title: formData.title,
         recording_url: publicUrl,
         notes: formData.notes || null,
         tags: formData.tags || [],
-        duration_seconds: estimatedDuration
+        duration_seconds: actualDuration
       })
       .select()
       .single();
 
     if (dbError) {
+      console.error('Database insert error:', dbError);
       // Clean up uploaded file if database insert fails
       await supabase.storage
         .from('practice_recordings')
@@ -56,6 +81,7 @@ export const recordingService = {
       throw new Error(`Failed to save recording metadata: ${dbError.message}`);
     }
 
+    console.log('Database insert successful:', recordingData);
     return recordingData;
   },
 
