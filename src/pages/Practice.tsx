@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import FeaturedTemplates from "@/components/practice/FeaturedTemplates";
 import CreateRoutineCta from "@/components/practice/CreateRoutineCta";
-import OpenPracticeMode from "@/components/practice/OpenPracticeMode";
 import MyRoutines from "@/components/practice/MyRoutines";
 import PracticeGoals from "@/components/practice/goals/PracticeGoals";
 
@@ -32,7 +31,6 @@ const Practice: React.FC = () => {
         
         <FeaturedTemplates />
         <CreateRoutineCta />
-        <OpenPracticeMode />
         <MyRoutines />
         <PracticeGoals />
       </div>
