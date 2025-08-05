@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mic, Square, Pause, Play, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,13 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) =
     resetRecording,
     isSupported
   } = useAudioRecording();
+
+  // Automatically start recording when component mounts (since user chose to record)
+  useEffect(() => {
+    if (user && isSupported && !isRecording && !isPaused) {
+      handleStartRecording();
+    }
+  }, [user, isSupported]); // Only run once when component mounts
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);

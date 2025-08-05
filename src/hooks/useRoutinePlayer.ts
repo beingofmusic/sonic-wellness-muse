@@ -19,6 +19,9 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [showRecordingChoice, setShowRecordingChoice] = useState(false);
+  const [shouldRecord, setShouldRecord] = useState(false);
+  const [hasChosenRecording, setHasChosenRecording] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -80,6 +83,9 @@ export const useRoutinePlayer = (routineId?: string) => {
             // Continue without session ID - recordings will still work but won't be linked
           }
         }
+
+        // Show recording choice dialog after loading data
+        setShowRecordingChoice(true);
       } catch (error) {
         console.error("Error fetching routine data:", error);
         toast({
@@ -96,9 +102,9 @@ export const useRoutinePlayer = (routineId?: string) => {
     fetchRoutineData();
   }, [routineId, toast, navigate]);
 
-  // Start countdown timer when blocks load and not paused
+  // Start countdown timer when blocks load and not paused - but only after recording choice is made
   useEffect(() => {
-    if (blocks.length === 0 || isLoading || isPaused) return;
+    if (blocks.length === 0 || isLoading || isPaused || !hasChosenRecording) return;
     
     // Start the timer
     startTimer();
@@ -108,7 +114,7 @@ export const useRoutinePlayer = (routineId?: string) => {
         clearInterval(timerRef.current);
       }
     };
-  }, [blocks, isLoading, isPaused]);
+  }, [blocks, isLoading, isPaused, hasChosenRecording]);
 
   // Update session progress when current block changes
   useEffect(() => {
@@ -257,8 +263,16 @@ export const useRoutinePlayer = (routineId?: string) => {
       setSecondsLeft(initialDuration);
       setTimeRemaining(formatTime(initialDuration));
       setIsPaused(false);
+      setShowRecordingChoice(true);
+      setHasChosenRecording(false);
     }
   }, [blocks]);
+
+  const handleRecordingChoice = useCallback((shouldRecord: boolean) => {
+    setShouldRecord(shouldRecord);
+    setShowRecordingChoice(false);
+    setHasChosenRecording(true);
+  }, []);
 
   return {
     isLoading,
@@ -279,6 +293,9 @@ export const useRoutinePlayer = (routineId?: string) => {
     secondsLeft,
     focusMode,
     toggleFocusMode,
-    handleExit
+    handleExit,
+    showRecordingChoice,
+    shouldRecord,
+    handleRecordingChoice
   };
 };

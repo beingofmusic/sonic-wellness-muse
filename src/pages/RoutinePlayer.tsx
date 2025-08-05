@@ -6,6 +6,7 @@ import { useRoutinePlayer } from "@/hooks/useRoutinePlayer";
 import PracticeSession from "@/components/practice/player/PracticeSession";
 import LoadingState from "@/components/practice/player/LoadingState";
 import PracticeCompletionScreen from "@/components/practice/player/PracticeCompletionScreen";
+import RecordingChoiceDialog from "@/components/practice/player/RecordingChoiceDialog";
 
 const RoutinePlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +29,10 @@ const RoutinePlayer: React.FC = () => {
     secondsLeft,
     focusMode,
     toggleFocusMode,
-    handleExit
+    handleExit,
+    showRecordingChoice,
+    shouldRecord,
+    handleRecordingChoice
   } = useRoutinePlayer(id);
 
   // Display loading state while fetching routine data
@@ -56,6 +60,11 @@ const RoutinePlayer: React.FC = () => {
 
   return (
     <Layout>
+      <RecordingChoiceDialog
+        isOpen={showRecordingChoice}
+        onChoice={handleRecordingChoice}
+      />
+      
       {isCompleted ? (
         <PracticeCompletionScreen 
           routine={routine} 
@@ -81,6 +90,7 @@ const RoutinePlayer: React.FC = () => {
           focusMode={focusMode}
           toggleFocusMode={toggleFocusMode}
           onExit={handleExit}
+          shouldRecord={shouldRecord}
         />
       )}
     </Layout>

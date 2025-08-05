@@ -28,6 +28,7 @@ interface PracticeSessionProps {
   focusMode: boolean;
   toggleFocusMode: () => void;
   onExit: () => void;
+  shouldRecord: boolean;
 }
 
 const PracticeSession: React.FC<PracticeSessionProps> = ({
@@ -46,7 +47,8 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   secondsLeft,
   focusMode,
   toggleFocusMode,
-  onExit
+  onExit,
+  shouldRecord
 }) => {
   const currentBlock = blocks[currentBlockIndex];
   const colorClass = currentBlock ? getCategoryColorClass(currentBlock.type) : '';
@@ -179,7 +181,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             
             <PracticeTools />
             
-            <AudioRecorder sessionId={sessionId} />
+            {shouldRecord && <AudioRecorder sessionId={sessionId} />}
           </div>
         )}
       </div>
