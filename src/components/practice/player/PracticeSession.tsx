@@ -181,7 +181,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             
             <PracticeTools />
             
-            {shouldRecord && <AudioRecorder sessionId={sessionId} />}
+            {shouldRecord && <AudioRecorder sessionId={sessionId} autoStart={true} />}
           </div>
         )}
       </div>

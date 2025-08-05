@@ -12,9 +12,10 @@ import RecordingSaveDialog from './RecordingSaveDialog';
 interface AudioRecorderProps {
   sessionId?: string;
   className?: string;
+  autoStart?: boolean;
 }
 
-const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) => {
+const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, autoStart = false }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -33,12 +34,12 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) =
     isSupported
   } = useAudioRecording();
 
-  // Automatically start recording when component mounts (since user chose to record)
+  // Automatically start recording when component mounts if autoStart is true
   useEffect(() => {
-    if (user && isSupported && !isRecording && !isPaused) {
+    if (autoStart && user && isSupported && !isRecording && !isPaused) {
       handleStartRecording();
     }
-  }, [user, isSupported]); // Only run once when component mounts
+  }, [autoStart, user, isSupported]); // Only run once when component mounts
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
