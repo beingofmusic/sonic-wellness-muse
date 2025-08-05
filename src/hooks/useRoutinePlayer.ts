@@ -80,10 +80,10 @@ export const useRoutinePlayer = (routineId?: string) => {
           setSecondsLeft(initialDuration);
           setTimeRemaining(formatTime(initialDuration));
           
-          // Create practice session for open practice
+          // Create practice session for open practice (with NULL routine_id)
           if (user?.id) {
             try {
-              const newSessionId = await createPracticeSession(user.id, 'open-practice', 30);
+              const newSessionId = await createPracticeSession(user.id, null, 30);
               setSessionId(newSessionId);
             } catch (error) {
               console.error("Error creating open practice session:", error);

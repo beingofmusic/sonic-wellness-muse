@@ -23,7 +23,7 @@ export interface PracticeStats {
 
 // Save a completed practice session
 export const logPracticeSession = async (
-  routineId: string,
+  routineId: string | null,
   totalDuration: number,
   blocks: RoutineBlock[],
   sessionId?: string

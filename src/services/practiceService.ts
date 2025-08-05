@@ -269,7 +269,7 @@ export const deleteRoutineBlocks = async (routineId: string): Promise<void> => {
 
 export const createPracticeSession = async (
   userId: string,
-  routineId: string,
+  routineId: string | null,
   totalDuration: number,
   blockBreakdown?: any
 ): Promise<string> => {

@@ -38,7 +38,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
   useEffect(() => {
     const saveSession = async () => {
       const { success, newBadges } = await logPracticeSession(
-        routine.id,
+        routine.id === 'open-practice' ? null : routine.id,
         totalDuration,
         blocks,
         sessionId
