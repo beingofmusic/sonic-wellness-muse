@@ -102,7 +102,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           <Button
             variant="default"
             size="lg"
-            className="flex-1 min-w-0 h-12 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+            className="flex-1 min-w-0 h-16 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2"
             onClick={() => navigate("/practice")}
           >
             <Music className="w-4 h-4" />
@@ -110,9 +110,9 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           </Button>
           
           <Button
-            variant="default"
+            variant="outline"
             size="lg"
-            className="flex-1 min-w-0 h-12 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+            className="flex-1 min-w-0 h-16 bg-black/40 hover:bg-black/50 border-black/20 text-white font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2"
             onClick={() => navigate("/practice/history")}
           >
             <History className="w-4 h-4" />
@@ -122,7 +122,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           <Button
             variant="default"
             size="lg"
-            className="flex-1 min-w-0 h-12 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
+            className="flex-1 min-w-0 h-16 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-2xl transition-all duration-200 flex items-center justify-center gap-2"
             onClick={() => navigate("/dashboard")}
           >
             <Home className="w-4 h-4" />
