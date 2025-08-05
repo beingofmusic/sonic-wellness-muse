@@ -16,6 +16,7 @@ const RoutinePlayer: React.FC = () => {
     currentBlockIndex,
     sessionProgress,
     isCompleted,
+    sessionId,
     setCurrentBlockIndex,
     handleNext,
     handlePrevious,
@@ -67,6 +68,7 @@ const RoutinePlayer: React.FC = () => {
           blocks={blocks}
           currentBlockIndex={currentBlockIndex}
           sessionProgress={sessionProgress}
+          sessionId={sessionId}
           setCurrentBlockIndex={setCurrentBlockIndex}
           onNext={handleNext}
           onPrevious={handlePrevious}

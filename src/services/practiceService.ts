@@ -266,3 +266,29 @@ export const deleteRoutineBlocks = async (routineId: string): Promise<void> => {
     throw error;
   }
 };
+
+export const createPracticeSession = async (
+  userId: string,
+  routineId: string,
+  totalDuration: number,
+  blockBreakdown?: any
+): Promise<string> => {
+  const { data, error } = await supabase
+    .from("practice_sessions")
+    .insert({
+      user_id: userId,
+      routine_id: routineId,
+      total_duration: totalDuration,
+      block_breakdown: blockBreakdown,
+      completed_at: new Date().toISOString()
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error("Error creating practice session:", error);
+    throw error;
+  }
+
+  return data.id;
+};

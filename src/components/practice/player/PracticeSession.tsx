@@ -16,6 +16,7 @@ interface PracticeSessionProps {
   blocks: RoutineBlock[];
   currentBlockIndex: number;
   sessionProgress: number;
+  sessionId: string | null;
   setCurrentBlockIndex: (index: number) => void;
   onNext: () => void;
   onPrevious: () => void;
@@ -34,6 +35,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   blocks,
   currentBlockIndex,
   sessionProgress,
+  sessionId,
   setCurrentBlockIndex,
   onNext,
   onPrevious,
@@ -177,7 +179,7 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             
             <PracticeTools />
             
-            <AudioRecorder sessionId={routine.id} />
+            <AudioRecorder sessionId={sessionId} />
           </div>
         )}
       </div>

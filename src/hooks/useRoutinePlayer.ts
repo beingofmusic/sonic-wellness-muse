@@ -2,9 +2,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PracticeRoutine, RoutineBlock } from "@/types/practice";
-import { checkRoutineAccess, fetchRoutineBlocks } from "@/services/practiceService";
+import { checkRoutineAccess, fetchRoutineBlocks, createPracticeSession } from "@/services/practiceService";
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/formatters";
+import { useAuth } from "@/context/AuthContext";
 
 export const useRoutinePlayer = (routineId?: string) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -17,9 +18,11 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [focusMode, setFocusMode] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Clean up timer on unmount
   useEffect(() => {
@@ -64,6 +67,18 @@ export const useRoutinePlayer = (routineId?: string) => {
           const initialDuration = blocksData[0].duration * 60; // convert to seconds
           setSecondsLeft(initialDuration);
           setTimeRemaining(formatTime(initialDuration));
+        }
+
+        // Create practice session
+        if (user?.id && routineData.id) {
+          try {
+            const totalDuration = blocksData.reduce((sum, block) => sum + block.duration, 0);
+            const newSessionId = await createPracticeSession(user.id, routineData.id, totalDuration);
+            setSessionId(newSessionId);
+          } catch (error) {
+            console.error("Error creating practice session:", error);
+            // Continue without session ID - recordings will still work but won't be linked
+          }
         }
       } catch (error) {
         console.error("Error fetching routine data:", error);
@@ -252,6 +267,7 @@ export const useRoutinePlayer = (routineId?: string) => {
     currentBlockIndex,
     sessionProgress,
     isCompleted,
+    sessionId,
     setCurrentBlockIndex,
     handleNext,
     handlePrevious,

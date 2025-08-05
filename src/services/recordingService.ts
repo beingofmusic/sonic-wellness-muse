@@ -6,7 +6,8 @@ export const recordingService = {
     audioBlob: Blob, 
     userId: string, 
     formData: RecordingFormData,
-    durationSeconds: number
+    durationSeconds: number,
+    sessionId?: string
   ): Promise<PracticeRecording> {
     console.log('Starting upload process...', { 
       blobSize: audioBlob.size, 
@@ -56,12 +57,12 @@ export const recordingService = {
       duration_seconds: actualDuration
     });
 
-    // Save recording metadata to database (removed session_id to avoid foreign key issues)
+    // Save recording metadata to database
     const { data: recordingData, error: dbError } = await supabase
       .from('practice_recordings')
       .insert({
         user_id: userId,
-        session_id: null, // Temporarily set to null to avoid foreign key constraint
+        session_id: sessionId || null,
         title: formData.title,
         recording_url: publicUrl,
         notes: formData.notes || null,

@@ -110,7 +110,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className }) =
     setIsSaving(true);
     try {
       console.log('Calling recordingService.uploadRecording...');
-      const result = await recordingService.uploadRecording(audioBlob, user.id, formData, duration);
+      const result = await recordingService.uploadRecording(audioBlob, user.id, formData, duration, sessionId);
       console.log('Upload successful:', result);
       
       toast({
