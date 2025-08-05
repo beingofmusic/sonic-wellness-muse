@@ -1,5 +1,6 @@
 
 import React from "react";
+import DOMPurify from "dompurify";
 import { RoutineBlock } from "@/types/practice";
 import { Info, MessageCircle, BrainCircuit } from "lucide-react";
 
@@ -32,7 +33,12 @@ const BlockContent: React.FC<BlockContentProps> = ({ block }) => {
         {hasInstructions ? (
           <div 
             className="prose prose-invert max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-1.5 prose-blockquote:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-hr:my-4"
-            dangerouslySetInnerHTML={{ __html: block.instructions || '' }}
+            dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(block.instructions || '', {
+                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'hr'],
+                ALLOWED_ATTR: []
+              })
+            }}
           />
         ) : (
           <p>{instructions}</p>
