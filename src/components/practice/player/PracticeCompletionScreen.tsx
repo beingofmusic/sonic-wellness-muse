@@ -99,29 +99,35 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
         </div>
         
         <div className="flex flex-col lg:flex-row gap-4 w-full max-w-2xl">
-          <button
-            className="flex-1 min-w-0 h-14 bg-gradient-to-r from-music-primary to-music-secondary text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-music-primary/25 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+          <Button
+            variant="default"
+            size="lg"
+            className="flex-1 min-w-0 h-12 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
             onClick={() => navigate("/practice")}
           >
-            <Music className="w-5 h-5" />
+            <Music className="w-4 h-4" />
             Return to Practice Studio
-          </button>
+          </Button>
           
-          <button
-            className="flex-1 min-w-0 h-14 bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm border border-white/20 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-white/10 hover:scale-[1.02] hover:bg-gradient-to-r hover:from-card hover:to-card/80 active:scale-[0.98] flex items-center justify-center gap-3"
+          <Button
+            variant="default"
+            size="lg"
+            className="flex-1 min-w-0 h-12 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
             onClick={() => navigate("/practice/history")}
           >
-            <History className="w-5 h-5" />
+            <History className="w-4 h-4" />
             View Practice History
-          </button>
+          </Button>
           
-          <button
-            className="flex-1 min-w-0 h-14 bg-gradient-to-r from-music-accent/80 to-music-accent/60 text-white rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:shadow-music-accent/25 hover:scale-[1.02] hover:from-music-accent hover:to-music-accent/80 active:scale-[0.98] flex items-center justify-center gap-3"
+          <Button
+            variant="default"
+            size="lg"
+            className="flex-1 min-w-0 h-12 bg-music-primary hover:bg-music-primary/90 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2"
             onClick={() => navigate("/dashboard")}
           >
-            <Home className="w-5 h-5" />
+            <Home className="w-4 h-4" />
             Go to Dashboard
-          </button>
+          </Button>
         </div>
       </div>
     </div>
