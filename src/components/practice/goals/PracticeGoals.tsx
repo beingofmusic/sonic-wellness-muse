@@ -2,18 +2,22 @@ import React, { useState } from "react";
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/hooks/useGoals";
 import { PracticeGoal, GoalCategory, CreateGoalData } from "@/types/goals";
 import { GoalDialog } from "./GoalDialog";
+import { SuggestedGoalsDialog } from "./SuggestedGoalsDialog";
 import GoalCard from "./GoalCard";
 import { Button } from "@/components/ui/button";
-import { Plus, TrendingUp, Music, FileMusic, Sparkles, Repeat } from "lucide-react";
+import { Plus, TrendingUp, Music, FileMusic, Sparkles, Repeat, Search } from "lucide-react";
 import { format } from "date-fns";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { SuggestedGoal } from "@/data/suggestedGoals";
 
 export default function PracticeGoals() {
   // State for dialogs and selected goal
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [suggestedGoalsOpen, setSuggestedGoalsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<PracticeGoal | undefined>(undefined);
+  const [prefilledGoal, setPrefilledGoal] = useState<SuggestedGoal | undefined>(undefined);
   const [selectedGoalId, setSelectedGoalId] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<GoalCategory | "All Goals">("All Goals");
 
@@ -68,6 +72,14 @@ export default function PracticeGoals() {
   // Open create dialog
   const handleCreateGoal = () => {
     setSelectedGoal(undefined);
+    setPrefilledGoal(undefined);
+    setDialogOpen(true);
+  };
+
+  // Handle selecting a suggested goal
+  const handleSelectSuggestedGoal = (suggestedGoal: SuggestedGoal) => {
+    setSelectedGoal(undefined);
+    setPrefilledGoal(suggestedGoal);
     setDialogOpen(true);
   };
 
@@ -99,10 +111,20 @@ export default function PracticeGoals() {
           <p className="text-white/70">Track your progress and celebrate your musical journey</p>
         </div>
 
-        <Button onClick={handleCreateGoal} className="bg-music-primary hover:bg-music-secondary">
-          <Plus className="h-4 w-4 mr-1" />
-          New Goal
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setSuggestedGoalsOpen(true)}
+            variant="outline"
+            className="border-music-primary/30 text-music-primary hover:bg-music-primary/10"
+          >
+            <Search className="h-4 w-4 mr-1" />
+            Browse Suggested Goals
+          </Button>
+          <Button onClick={handleCreateGoal} className="bg-music-primary hover:bg-music-secondary">
+            <Plus className="h-4 w-4 mr-1" />
+            New Goal
+          </Button>
+        </div>
       </div>
 
       {/* Category filters */}
@@ -165,12 +187,20 @@ export default function PracticeGoals() {
         </div>
       </Tabs>
 
+      {/* Browse Suggested Goals dialog */}
+      <SuggestedGoalsDialog
+        open={suggestedGoalsOpen}
+        onOpenChange={setSuggestedGoalsOpen}
+        onSelectGoal={handleSelectSuggestedGoal}
+      />
+
       {/* Create/Edit dialog */}
       <GoalDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSave={handleSaveGoal}
         initialData={selectedGoal}
+        prefilledData={prefilledGoal}
       />
 
       {/* Delete confirmation dialog */}

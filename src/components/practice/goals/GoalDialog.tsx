@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { format } from "date-fns";
-import { CalendarIcon, Music, TrendingUp, FileMusic, Sparkles, Repeat } from "lucide-react";
+import { CalendarIcon, Music, TrendingUp, FileMusic, Sparkles, Repeat, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,6 +16,8 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PracticeGoal, GoalCategory } from "@/types/goals";
+import { SuggestedGoal } from "@/data/suggestedGoals";
+import { useEffect } from "react";
 
 // Form schema for validation
 const goalFormSchema = z.object({
@@ -33,28 +35,59 @@ interface GoalDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: (values: GoalFormValues) => void;
   initialData?: PracticeGoal;
+  prefilledData?: SuggestedGoal;
 }
 
-export function GoalDialog({ open, onOpenChange, onSave, initialData }: GoalDialogProps) {
+export function GoalDialog({ open, onOpenChange, onSave, initialData, prefilledData }: GoalDialogProps) {
   // Initialize form with default values or existing goal data
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
-    defaultValues: initialData
-      ? {
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "Technique",
+      progress: 0,
+      targetDate: null,
+    },
+  });
+
+  // Reset form when opening with different data
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        // Editing existing goal
+        form.reset({
           title: initialData.title,
           description: initialData.description,
           category: initialData.category,
           progress: initialData.progress,
           targetDate: initialData.targetDate ? new Date(initialData.targetDate) : null,
-        }
-      : {
+        });
+      } else if (prefilledData) {
+        // Using suggested goal template
+        const targetDate = prefilledData.targetDays 
+          ? new Date(Date.now() + prefilledData.targetDays * 24 * 60 * 60 * 1000)
+          : null;
+        
+        form.reset({
+          title: prefilledData.title,
+          description: prefilledData.description,
+          category: prefilledData.category,
+          progress: 0,
+          targetDate,
+        });
+      } else {
+        // Creating new goal from scratch
+        form.reset({
           title: "",
           description: "",
           category: "Technique",
           progress: 0,
           targetDate: null,
-        },
-  });
+        });
+      }
+    }
+  }, [open, initialData, prefilledData, form]);
 
   // Map category to icon
   const getCategoryIcon = (category: GoalCategory) => {
@@ -82,9 +115,29 @@ export function GoalDialog({ open, onOpenChange, onSave, initialData }: GoalDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {initialData ? "Edit Practice Goal" : "Create New Practice Goal"}
+          <DialogTitle className="flex items-center gap-2">
+            {initialData ? (
+              <>
+                <TrendingUp className="h-5 w-5 text-music-primary" />
+                Edit Practice Goal
+              </>
+            ) : prefilledData ? (
+              <>
+                <Sparkles className="h-5 w-5 text-music-primary" />
+                Create Goal from Template
+              </>
+            ) : (
+              <>
+                <Plus className="h-5 w-5 text-music-primary" />
+                Create New Practice Goal
+              </>
+            )}
           </DialogTitle>
+          {prefilledData && (
+            <p className="text-sm text-white/70">
+              This goal is pre-filled from our suggestions. Feel free to customize it to fit your needs.
+            </p>
+          )}
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
