@@ -50,7 +50,7 @@ const Profile: React.FC = () => {
                     Edit Profile
                   </Button>
                 </SheetTrigger>
-                <SheetContent className="bg-background/95 backdrop-blur border-white/10">
+                <SheetContent className="bg-background/95 backdrop-blur border-white/10 overflow-y-auto max-h-screen">
                   <ProfileEditor 
                     profileData={profileData} 
                     isLoading={isLoading} 

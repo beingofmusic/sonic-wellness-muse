@@ -63,15 +63,16 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ profileData, isLoading, o
   };
   
   return (
-    <div>
-      <SheetHeader className="mb-6">
+    <div className="flex flex-col h-full">
+      <SheetHeader className="mb-6 flex-shrink-0">
         <SheetTitle className="text-white">Edit Your Profile</SheetTitle>
         <SheetDescription>
           Update your personal information and profile picture
         </SheetDescription>
       </SheetHeader>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex-1 overflow-y-auto pr-2">
+        <form id="profile-form" onSubmit={handleSubmit} className="space-y-6 pb-6">
         <div className="space-y-4">
           <div className="grid gap-2">
             <Label htmlFor="firstName">First Name</Label>
@@ -144,18 +145,20 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ profileData, isLoading, o
           setAboutMe={setAboutMe}
           disabled={isLoading || isSaving}
         />
-        
-        <div className="flex justify-end pt-6 border-t border-white/10">
-          <Button 
-            type="submit" 
-            disabled={isLoading || isSaving}
-            className="music-button"
-          >
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
-        </div>
-      </form>
+        </form>
+      </div>
+      
+      <div className="flex justify-end pt-6 border-t border-white/10 flex-shrink-0 bg-music-dark/95">
+        <Button 
+          type="submit" 
+          form="profile-form"
+          disabled={isLoading || isSaving}
+          className="music-button"
+        >
+          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Save Changes
+        </Button>
+      </div>
     </div>
   );
 };
