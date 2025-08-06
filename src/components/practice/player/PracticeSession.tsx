@@ -30,6 +30,8 @@ interface PracticeSessionProps {
   onExit: () => void;
   shouldRecord: boolean;
   audioRecorderRef?: React.RefObject<AudioRecorderRef>;
+  awaitingRecordingSave?: boolean;
+  onRecordingSaveComplete?: () => void;
 }
 
 const PracticeSession: React.FC<PracticeSessionProps> = ({
@@ -50,7 +52,9 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   toggleFocusMode,
   onExit,
   shouldRecord,
-  audioRecorderRef
+  audioRecorderRef,
+  awaitingRecordingSave,
+  onRecordingSaveComplete
 }) => {
   const currentBlock = blocks[currentBlockIndex];
   const colorClass = currentBlock ? getCategoryColorClass(currentBlock.type) : '';
@@ -184,14 +188,14 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             <PracticeTools />
             
             {shouldRecord && (
-              <>
-                {console.log('Rendering AudioRecorder with:', { sessionId, shouldRecord })}
-                <AudioRecorder 
-                  ref={audioRecorderRef} 
-                  sessionId={sessionId} 
-                  autoStart={true} 
-                />
-              </>
+              <AudioRecorder 
+                ref={audioRecorderRef}
+                sessionId={sessionId}
+                className="mt-4"
+                autoStart
+                awaitingRecordingSave={awaitingRecordingSave}
+                onRecordingSaveComplete={onRecordingSaveComplete}
+              />
             )}
           </div>
         )}

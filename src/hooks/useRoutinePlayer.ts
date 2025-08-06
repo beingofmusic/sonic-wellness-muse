@@ -23,6 +23,7 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [showRecordingChoice, setShowRecordingChoice] = useState(false);
   const [shouldRecord, setShouldRecord] = useState(false);
   const [hasChosenRecording, setHasChosenRecording] = useState(false);
+  const [awaitingRecordingSave, setAwaitingRecordingSave] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRecorderRef = useRef<AudioRecorderRef>(null);
   const navigate = useNavigate();
@@ -227,23 +228,11 @@ export const useRoutinePlayer = (routineId?: string) => {
     
     // Check if there's an active recording to save
     if (shouldRecord && audioRecorderRef.current?.isCurrentlyRecording()) {
-      try {
-        const sessionTitle = routine ? `${routine.title} - Session Recording` : 'Practice Session Recording';
-        console.log('Auto-saving recording with title:', sessionTitle);
-        await audioRecorderRef.current.stopAndSaveRecording(sessionTitle);
-        
-        toast({
-          title: "Recording Saved",
-          description: "Your practice session recording has been automatically saved.",
-        });
-      } catch (error) {
-        console.error('Failed to auto-save recording:', error);
-        toast({
-          title: "Recording Save Failed",
-          description: "Could not save your recording automatically. Please try saving manually if needed.",
-          variant: "destructive",
-        });
-      }
+      // Stop the recording and trigger save dialog (same as manual stop)
+      setAwaitingRecordingSave(true);
+      audioRecorderRef.current.stopAndShowSaveDialog();
+      // Don't complete session yet - wait for recording to be handled
+      return;
     }
     
     // Show completion state
@@ -350,6 +339,16 @@ export const useRoutinePlayer = (routineId?: string) => {
     setHasChosenRecording(true);
   }, []);
 
+  const handleRecordingSaveComplete = useCallback(() => {
+    console.log('Recording save completed, finishing session...');
+    setAwaitingRecordingSave(false);
+    setIsCompleted(true);
+    toast({
+      title: "Session Complete",
+      description: "Congratulations on completing your practice session!",
+    });
+  }, [toast]);
+
   return {
     isLoading,
     routine,
@@ -373,6 +372,8 @@ export const useRoutinePlayer = (routineId?: string) => {
     showRecordingChoice,
     shouldRecord,
     handleRecordingChoice,
-    audioRecorderRef
+    audioRecorderRef,
+    awaitingRecordingSave,
+    handleRecordingSaveComplete
   };
 };

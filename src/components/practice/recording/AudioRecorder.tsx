@@ -11,6 +11,7 @@ import RecordingSaveDialog from './RecordingSaveDialog';
 
 export interface AudioRecorderRef {
   stopAndSaveRecording: (title?: string) => Promise<void>;
+  stopAndShowSaveDialog: () => Promise<void>;
   isCurrentlyRecording: () => boolean;
 }
 
@@ -18,9 +19,11 @@ interface AudioRecorderProps {
   sessionId?: string;
   className?: string;
   autoStart?: boolean;
+  awaitingRecordingSave?: boolean;
+  onRecordingSaveComplete?: () => void;
 }
 
-const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessionId, className, autoStart = false }, ref) => {
+const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessionId, className, autoStart = false, awaitingRecordingSave = false, onRecordingSaveComplete }, ref) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -173,6 +176,11 @@ const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessio
       
       resetRecording();
       setShowSaveDialog(false);
+      
+      // Call completion callback if session is awaiting recording save
+      if (awaitingRecordingSave && onRecordingSaveComplete) {
+        onRecordingSaveComplete();
+      }
     } catch (error) {
       console.error('Save error details:', error);
       toast({
@@ -188,6 +196,11 @@ const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessio
   const handleCancelSave = () => {
     setShowSaveDialog(false);
     resetRecording();
+    
+    // Call completion callback if session is awaiting recording save
+    if (awaitingRecordingSave && onRecordingSaveComplete) {
+      onRecordingSaveComplete();
+    }
   };
 
   // Imperative API for external control
@@ -253,8 +266,17 @@ const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessio
         }).catch(reject);
       });
     },
+    stopAndShowSaveDialog: async () => {
+      if (!isRecording && !isPaused) {
+        console.log('No recording in progress to stop');
+        return;
+      }
+
+      console.log('Stopping recording and showing save dialog...');
+      await handleStopRecording();
+    },
     isCurrentlyRecording: () => isRecording || isPaused
-  }), [isRecording, isPaused, stopRecording, audioBlob, handleSaveRecording]);
+  }), [isRecording, isPaused, stopRecording, audioBlob, handleSaveRecording, handleStopRecording]);
 
   if (!isSupported) {
     return (
