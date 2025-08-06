@@ -79,8 +79,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profileData, isLoading, i
             <p className="text-white/90 leading-relaxed text-sm font-medium">{profileData.about_me}</p>
           </div>
         )}
-        
-        {isOwnProfile && <p className="text-white/70 text-xs mt-2">{'email' in profileData && profileData?.email ? profileData.email : "No email provided"}</p>}
       </div>
     </div>
   );
