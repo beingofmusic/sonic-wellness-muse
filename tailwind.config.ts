@@ -65,8 +65,8 @@ export default {
 				},
 				// Custom colors for Being of Music
 				music: {
-					primary: '#9b87f5',
-					secondary: '#7E69AB',
+					primary: 'hsl(var(--music-primary))',
+					secondary: 'hsl(var(--music-secondary))',
 					tertiary: '#6E59A5',
 					light: '#D6BCFA',
 					soft: '#E5DEFF',

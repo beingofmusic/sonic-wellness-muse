@@ -33,6 +33,10 @@
     --input: 240 30% 20%;
     --ring: 255 70% 70%;
 
+    /* Music theme specific colors */
+    --music-primary: 255 80% 75%;
+    --music-secondary: 260 50% 55%;
+
     --radius: 0.75rem;
   }
 
