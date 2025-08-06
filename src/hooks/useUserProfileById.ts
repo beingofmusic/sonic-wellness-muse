@@ -10,6 +10,14 @@ export interface UserProfileData {
   avatar_url: string | null;
   created_at: string | null;
   earned_badges: Badge[];
+  // Musical identity fields
+  primary_instruments?: string[] | null;
+  secondary_instruments?: string[] | null;
+  musical_interests?: string[] | null;
+  skill_level?: string | null;
+  location?: string | null;
+  looking_for?: string[] | null;
+  about_me?: string | null;
 }
 
 export const useUserProfileById = (userId: string) => {
@@ -32,7 +40,7 @@ export const useUserProfileById = (userId: string) => {
         // Get user profile data
         const { data: profileInfo, error: profileError } = await supabase
           .from('profiles')
-          .select('username, first_name, last_name, avatar_url, created_at')
+          .select('username, first_name, last_name, avatar_url, created_at, primary_instruments, secondary_instruments, musical_interests, skill_level, location, looking_for, about_me')
           .eq('id', userId)
           .single();
           

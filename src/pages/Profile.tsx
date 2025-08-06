@@ -7,6 +7,7 @@ import ProfileStats from "@/components/profile/ProfileStats";
 import BadgeCollection from "@/components/profile/BadgeCollection";
 import RecordingsList from "@/components/practice/recording/RecordingsList";
 import ProfileEditor from "@/components/profile/ProfileEditor";
+import MusicalIdentity from "@/components/profile/MusicalIdentity";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
@@ -60,6 +61,11 @@ const Profile: React.FC = () => {
             </CardHeader>
             <CardContent>
               <ProfileHeader profileData={profileData} isLoading={isLoading} />
+              
+              {/* Musical Identity Section */}
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <MusicalIdentity profileData={profileData} isLoading={isLoading} />
+              </div>
             </CardContent>
           </Card>
 

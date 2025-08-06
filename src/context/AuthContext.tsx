@@ -14,6 +14,14 @@ export interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   role: UserRole;
+  // Musical identity fields
+  primary_instruments?: string[] | null;
+  secondary_instruments?: string[] | null;
+  musical_interests?: string[] | null;
+  skill_level?: string | null;
+  location?: string | null;
+  looking_for?: string[] | null;
+  about_me?: string | null;
 }
 
 interface AuthContextProps {
@@ -80,7 +88,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           last_name: profileData.last_name,
           avatar_url: profileData.avatar_url,
           // If role is undefined, default to 'user'
-          role: (profileData as any).role || 'user'
+          role: (profileData as any).role || 'user',
+          // Musical identity fields
+          primary_instruments: (profileData as any).primary_instruments || null,
+          secondary_instruments: (profileData as any).secondary_instruments || null,
+          musical_interests: (profileData as any).musical_interests || null,
+          skill_level: (profileData as any).skill_level || null,
+          location: (profileData as any).location || null,
+          looking_for: (profileData as any).looking_for || null,
+          about_me: (profileData as any).about_me || null,
         };
         
         setProfile(typedProfile);

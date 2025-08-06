@@ -6,6 +6,7 @@ import { usePracticeStatsById } from "@/hooks/usePracticeStatsById";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStats from "@/components/profile/ProfileStats";
 import BadgeCollection from "@/components/profile/BadgeCollection";
+import MusicalIdentity from "@/components/profile/MusicalIdentity";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const UserProfile: React.FC = () => {
@@ -60,6 +61,11 @@ const UserProfile: React.FC = () => {
                 isLoading={profileLoading}
                 isOwnProfile={false}
               />
+              
+              {/* Musical Identity Section */}
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <MusicalIdentity profileData={profileData} isLoading={profileLoading} />
+              </div>
             </CardContent>
           </Card>
 

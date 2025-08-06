@@ -776,32 +776,53 @@ export type Database = {
       }
       profiles: {
         Row: {
+          about_me: string | null
           avatar_url: string | null
           created_at: string
           first_name: string | null
           id: string
           last_name: string | null
+          location: string | null
+          looking_for: string[] | null
+          musical_interests: string[] | null
+          primary_instruments: string[] | null
           role: Database["public"]["Enums"]["user_role"]
+          secondary_instruments: string[] | null
+          skill_level: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
+          about_me?: string | null
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id: string
           last_name?: string | null
+          location?: string | null
+          looking_for?: string[] | null
+          musical_interests?: string[] | null
+          primary_instruments?: string[] | null
           role?: Database["public"]["Enums"]["user_role"]
+          secondary_instruments?: string[] | null
+          skill_level?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
+          about_me?: string | null
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
           last_name?: string | null
+          location?: string | null
+          looking_for?: string[] | null
+          musical_interests?: string[] | null
+          primary_instruments?: string[] | null
           role?: Database["public"]["Enums"]["user_role"]
+          secondary_instruments?: string[] | null
+          skill_level?: string | null
           updated_at?: string
           username?: string | null
         }

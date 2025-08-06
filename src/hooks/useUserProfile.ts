@@ -23,6 +23,14 @@ export interface ProfileData {
   avatar_url: string | null;
   created_at: string | null;
   earned_badges: Badge[];
+  // Musical identity fields
+  primary_instruments?: string[] | null;
+  secondary_instruments?: string[] | null;
+  musical_interests?: string[] | null;
+  skill_level?: string | null;
+  location?: string | null;
+  looking_for?: string[] | null;
+  about_me?: string | null;
 }
 
 export const useUserProfile = () => {
@@ -71,7 +79,15 @@ export const useUserProfile = () => {
         email: user.email || null,
         avatar_url: profile?.avatar_url || null,
         created_at: user.created_at || null,
-        earned_badges: earnedBadges
+        earned_badges: earnedBadges,
+        // Musical identity fields
+        primary_instruments: profile?.primary_instruments || null,
+        secondary_instruments: profile?.secondary_instruments || null,
+        musical_interests: profile?.musical_interests || null,
+        skill_level: profile?.skill_level || null,
+        location: profile?.location || null,
+        looking_for: profile?.looking_for || null,
+        about_me: profile?.about_me || null,
       });
       
       // Check and award badges based on current stats
@@ -96,7 +112,18 @@ export const useUserProfile = () => {
   };
   
   // Update profile information
-  const updateProfile = async (data: { first_name?: string; last_name?: string; avatar_url?: string }) => {
+  const updateProfile = async (data: { 
+    first_name?: string; 
+    last_name?: string; 
+    avatar_url?: string;
+    primary_instruments?: string[];
+    secondary_instruments?: string[];
+    musical_interests?: string[];
+    skill_level?: string;
+    location?: string;
+    looking_for?: string[];
+    about_me?: string;
+  }) => {
     if (!user) return false;
     
     try {

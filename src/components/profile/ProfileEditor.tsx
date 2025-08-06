@@ -6,11 +6,23 @@ import { Label } from "@/components/ui/label";
 import { SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { ProfileData } from "@/hooks/useUserProfile";
 import { Loader2 } from "lucide-react";
+import ProfileEditorFields from "./ProfileEditorFields";
 
 interface ProfileEditorProps {
   profileData: ProfileData | null;
   isLoading: boolean;
-  onSave: (data: { first_name?: string; last_name?: string; avatar_url?: string }) => Promise<boolean>;
+  onSave: (data: { 
+    first_name?: string; 
+    last_name?: string; 
+    avatar_url?: string;
+    primary_instruments?: string[];
+    secondary_instruments?: string[];
+    musical_interests?: string[];
+    skill_level?: string;
+    location?: string;
+    looking_for?: string[];
+    about_me?: string;
+  }) => Promise<boolean>;
 }
 
 const ProfileEditor: React.FC<ProfileEditorProps> = ({ profileData, isLoading, onSave }) => {
@@ -18,6 +30,15 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ profileData, isLoading, o
   const [lastName, setLastName] = useState(profileData?.last_name || "");
   const [avatarUrl, setAvatarUrl] = useState(profileData?.avatar_url || "");
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Musical identity fields
+  const [primaryInstruments, setPrimaryInstruments] = useState<string[]>(profileData?.primary_instruments || []);
+  const [secondaryInstruments, setSecondaryInstruments] = useState<string[]>(profileData?.secondary_instruments || []);
+  const [musicalInterests, setMusicalInterests] = useState<string[]>(profileData?.musical_interests || []);
+  const [skillLevel, setSkillLevel] = useState(profileData?.skill_level || "");
+  const [location, setLocation] = useState(profileData?.location || "");
+  const [lookingFor, setLookingFor] = useState<string[]>(profileData?.looking_for || []);
+  const [aboutMe, setAboutMe] = useState(profileData?.about_me || "");
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +49,13 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ profileData, isLoading, o
         first_name: firstName.trim() || null,
         last_name: lastName.trim() || null,
         avatar_url: avatarUrl.trim() || null,
+        primary_instruments: primaryInstruments.length > 0 ? primaryInstruments : null,
+        secondary_instruments: secondaryInstruments.length > 0 ? secondaryInstruments : null,
+        musical_interests: musicalInterests.length > 0 ? musicalInterests : null,
+        skill_level: skillLevel.trim() || null,
+        location: location.trim() || null,
+        looking_for: lookingFor.length > 0 ? lookingFor : null,
+        about_me: aboutMe.trim() || null,
       });
     } finally {
       setIsSaving(false);
@@ -98,7 +126,26 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ profileData, isLoading, o
           )}
         </div>
         
-        <div className="flex justify-end">
+        {/* Musical Identity Fields */}
+        <ProfileEditorFields
+          primaryInstruments={primaryInstruments}
+          secondaryInstruments={secondaryInstruments}
+          musicalInterests={musicalInterests}
+          skillLevel={skillLevel}
+          location={location}
+          lookingFor={lookingFor}
+          aboutMe={aboutMe}
+          setPrimaryInstruments={setPrimaryInstruments}
+          setSecondaryInstruments={setSecondaryInstruments}
+          setMusicalInterests={setMusicalInterests}
+          setSkillLevel={setSkillLevel}
+          setLocation={setLocation}
+          setLookingFor={setLookingFor}
+          setAboutMe={setAboutMe}
+          disabled={isLoading || isSaving}
+        />
+        
+        <div className="flex justify-end pt-6 border-t border-white/10">
           <Button 
             type="submit" 
             disabled={isLoading || isSaving}
