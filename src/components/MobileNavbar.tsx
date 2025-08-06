@@ -37,7 +37,7 @@ const MobileNavbar: React.FC = () => {
   if (isMobile !== true) return null;
   
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-card/90 backdrop-blur-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-navy-primary/95 backdrop-blur-lg z-50">
       <div className="grid grid-cols-6 h-16">
         {navItems.map((item) => (
           <Link 

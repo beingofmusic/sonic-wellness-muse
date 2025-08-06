@@ -61,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = () => {
   };
 
   return (
-    <header className="border-b border-white/10 backdrop-blur-md bg-background/30 sticky top-0 z-50">
+    <header className="border-b border-white/10 backdrop-blur-md bg-navy-primary/95 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <MusicLogo withText />

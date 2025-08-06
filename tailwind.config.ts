@@ -71,6 +71,10 @@ export default {
 					light: '#D6BCFA',
 					soft: '#E5DEFF',
 				},
+				navy: {
+					primary: 'hsl(var(--navy-primary))',
+					secondary: 'hsl(var(--navy-secondary))',
+				},
 				wellness: {
 					peach: '#FDE1D3',
 					blue: '#D3E4FD',
