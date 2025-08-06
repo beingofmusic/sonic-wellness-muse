@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { Mic, Square, Pause, Play, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,13 +9,18 @@ import { recordingService } from '@/services/recordingService';
 import { RecordingFormData } from '@/types/recording';
 import RecordingSaveDialog from './RecordingSaveDialog';
 
+export interface AudioRecorderRef {
+  stopAndSaveRecording: (title?: string) => Promise<void>;
+  isCurrentlyRecording: () => boolean;
+}
+
 interface AudioRecorderProps {
   sessionId?: string;
   className?: string;
   autoStart?: boolean;
 }
 
-const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, autoStart = false }) => {
+const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessionId, className, autoStart = false }, ref) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
@@ -185,6 +190,72 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
     resetRecording();
   };
 
+  // Imperative API for external control
+  useImperativeHandle(ref, () => ({
+    stopAndSaveRecording: async (defaultTitle?: string) => {
+      if (!isRecording && !isPaused) {
+        console.log('No recording in progress to stop');
+        return;
+      }
+
+      console.log('Stopping recording programmatically...');
+      
+      // Set up a one-time listener for when the blob becomes available
+      return new Promise<void>((resolve, reject) => {
+        let resolved = false;
+        
+        const handleBlobReady = (blob: Blob) => {
+          if (resolved) return;
+          resolved = true;
+          
+          console.log('Auto-saving recording with title:', defaultTitle, 'blob size:', blob.size);
+          const formData: RecordingFormData = {
+            title: defaultTitle || 'Practice Session Recording',
+            notes: 'Automatically saved at session completion',
+            tags: ['auto-saved']
+          };
+          
+          handleSaveRecording(formData)
+            .then(() => resolve())
+            .catch(reject);
+        };
+
+        // Stop the recording and wait for the blob
+        stopRecording().then(() => {
+          // Check if blob is already available
+          if (audioBlob && audioBlob.size > 0) {
+            handleBlobReady(audioBlob);
+            return;
+          }
+          
+          // Wait for blob to become available (with timeout)
+          let attempts = 0;
+          const checkBlob = () => {
+            attempts++;
+            
+            if (audioBlob && audioBlob.size > 0) {
+              handleBlobReady(audioBlob);
+              return;
+            }
+            
+            if (attempts >= 30) { // 3 seconds max wait
+              if (!resolved) {
+                resolved = true;
+                reject(new Error('Timeout waiting for audio blob'));
+              }
+              return;
+            }
+            
+            setTimeout(checkBlob, 100);
+          };
+          
+          checkBlob();
+        }).catch(reject);
+      });
+    },
+    isCurrentlyRecording: () => isRecording || isPaused
+  }), [isRecording, isPaused, stopRecording, audioBlob, handleSaveRecording]);
+
   if (!isSupported) {
     return (
       <Card className={`border-white/10 bg-card/50 ${className}`}>
@@ -304,6 +375,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ sessionId, className, aut
       />
     </>
   );
-};
+});
+
+AudioRecorder.displayName = 'AudioRecorder';
 
 export default AudioRecorder;

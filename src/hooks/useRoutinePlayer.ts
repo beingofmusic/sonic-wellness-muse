@@ -6,6 +6,7 @@ import { checkRoutineAccess, fetchRoutineBlocks, createPracticeSession } from "@
 import { useToast } from "@/hooks/use-toast";
 import { formatTime } from "@/lib/formatters";
 import { useAuth } from "@/context/AuthContext";
+import { AudioRecorderRef } from "@/components/practice/recording/AudioRecorder";
 
 export const useRoutinePlayer = (routineId?: string) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +24,7 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [shouldRecord, setShouldRecord] = useState(false);
   const [hasChosenRecording, setHasChosenRecording] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRecorderRef = useRef<AudioRecorderRef>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -200,16 +202,12 @@ export const useRoutinePlayer = (routineId?: string) => {
             clearInterval(timerRef.current);
           }
           
-          // Auto advance to next block
+          // Auto advance to next block or complete session
           if (currentBlockIndex < blocks.length - 1) {
             setCurrentBlockIndex(prevIndex => prevIndex + 1);
           } else {
-            // Show completion state for the last block
-            setIsCompleted(true);
-            toast({
-              title: "Session Complete",
-              description: "Congratulations on completing your practice session!",
-            });
+            // Session completed naturally - handle recording
+            handleSessionCompletion();
           }
           
           return 0;
@@ -223,6 +221,39 @@ export const useRoutinePlayer = (routineId?: string) => {
     }, 1000);
   }, [blocks, currentBlockIndex, toast]);
 
+  // Handle session completion (both natural and manual)
+  const handleSessionCompletion = useCallback(async () => {
+    console.log('Session completing, checking for active recording...');
+    
+    // Check if there's an active recording to save
+    if (shouldRecord && audioRecorderRef.current?.isCurrentlyRecording()) {
+      try {
+        const sessionTitle = routine ? `${routine.title} - Session Recording` : 'Practice Session Recording';
+        console.log('Auto-saving recording with title:', sessionTitle);
+        await audioRecorderRef.current.stopAndSaveRecording(sessionTitle);
+        
+        toast({
+          title: "Recording Saved",
+          description: "Your practice session recording has been automatically saved.",
+        });
+      } catch (error) {
+        console.error('Failed to auto-save recording:', error);
+        toast({
+          title: "Recording Save Failed",
+          description: "Could not save your recording automatically. Please try saving manually if needed.",
+          variant: "destructive",
+        });
+      }
+    }
+    
+    // Show completion state
+    setIsCompleted(true);
+    toast({
+      title: "Session Complete",
+      description: "Congratulations on completing your practice session!",
+    });
+  }, [shouldRecord, routine, toast]);
+
   // Handle navigation between blocks
   const handleNext = useCallback(() => {
     // Stop the current timer
@@ -233,14 +264,10 @@ export const useRoutinePlayer = (routineId?: string) => {
     if (currentBlockIndex < blocks.length - 1) {
       setCurrentBlockIndex(prevIndex => prevIndex + 1);
     } else {
-      // Show completion state
-      setIsCompleted(true);
-      toast({
-        title: "Session Complete",
-        description: "Congratulations on completing your practice session!",
-      });
+      // Handle manual completion
+      handleSessionCompletion();
     }
-  }, [currentBlockIndex, blocks.length, toast]);
+  }, [currentBlockIndex, blocks.length, handleSessionCompletion]);
 
   const handlePrevious = useCallback(() => {
     // Stop the current timer
@@ -345,6 +372,7 @@ export const useRoutinePlayer = (routineId?: string) => {
     handleExit,
     showRecordingChoice,
     shouldRecord,
-    handleRecordingChoice
+    handleRecordingChoice,
+    audioRecorderRef
   };
 };

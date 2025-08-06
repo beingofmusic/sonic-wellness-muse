@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import { ArrowLeft, X, Maximize, Play, Pause, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -8,7 +8,7 @@ import SessionHeader from "./SessionHeader";
 import SessionProgress from "./SessionProgress";
 import BlockContent from "./BlockContent";
 import PracticeTools from "./PracticeTools";
-import AudioRecorder from "../recording/AudioRecorder";
+import AudioRecorder, { AudioRecorderRef } from "../recording/AudioRecorder";
 import { getCategoryColorClass, getCategoryIcon } from "@/components/practice/CategoryConfig";
 
 interface PracticeSessionProps {
@@ -29,6 +29,7 @@ interface PracticeSessionProps {
   toggleFocusMode: () => void;
   onExit: () => void;
   shouldRecord: boolean;
+  audioRecorderRef?: React.RefObject<AudioRecorderRef>;
 }
 
 const PracticeSession: React.FC<PracticeSessionProps> = ({
@@ -48,7 +49,8 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
   focusMode,
   toggleFocusMode,
   onExit,
-  shouldRecord
+  shouldRecord,
+  audioRecorderRef
 }) => {
   const currentBlock = blocks[currentBlockIndex];
   const colorClass = currentBlock ? getCategoryColorClass(currentBlock.type) : '';
@@ -184,7 +186,11 @@ const PracticeSession: React.FC<PracticeSessionProps> = ({
             {shouldRecord && (
               <>
                 {console.log('Rendering AudioRecorder with:', { sessionId, shouldRecord })}
-                <AudioRecorder sessionId={sessionId} autoStart={true} />
+                <AudioRecorder 
+                  ref={audioRecorderRef} 
+                  sessionId={sessionId} 
+                  autoStart={true} 
+                />
               </>
             )}
           </div>

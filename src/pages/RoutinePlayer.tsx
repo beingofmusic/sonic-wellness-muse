@@ -32,7 +32,8 @@ const RoutinePlayer: React.FC = () => {
     handleExit,
     showRecordingChoice,
     shouldRecord,
-    handleRecordingChoice
+    handleRecordingChoice,
+    audioRecorderRef
   } = useRoutinePlayer(id);
 
   // Display loading state while fetching routine data
@@ -90,6 +91,7 @@ const RoutinePlayer: React.FC = () => {
           toggleFocusMode={toggleFocusMode}
           onExit={handleExit}
           shouldRecord={shouldRecord}
+          audioRecorderRef={audioRecorderRef}
         />
       )}
     </Layout>
