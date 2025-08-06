@@ -33,8 +33,7 @@ const MusicalIdentity: React.FC<MusicalIdentityProps> = ({ profileData, isLoadin
       (profileData?.musical_interests && profileData.musical_interests.length > 0) ||
       profileData?.skill_level ||
       profileData?.location ||
-      (profileData?.looking_for && profileData.looking_for.length > 0) ||
-      profileData?.about_me
+      (profileData?.looking_for && profileData.looking_for.length > 0)
     );
   };
 
@@ -95,8 +94,8 @@ const MusicalIdentity: React.FC<MusicalIdentityProps> = ({ profileData, isLoadin
         </div>
       )}
 
-      {/* Skill Level & Location */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Skill Level & Location Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {profileData?.skill_level && (
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -120,51 +119,44 @@ const MusicalIdentity: React.FC<MusicalIdentityProps> = ({ profileData, isLoadin
         )}
       </div>
 
-      {/* Musical Interests */}
-      {profileData?.musical_interests && profileData.musical_interests.length > 0 && (
-        <div>
-          <h3 className="font-semibold mb-3">Musical Interests</h3>
-          <div className="flex flex-wrap gap-2">
-            {profileData.musical_interests.map((interest, index) => (
-              <Badge 
-                key={index} 
-                className="bg-gradient-to-r from-music-primary/30 to-music-secondary/30 text-white border-music-primary/40"
-              >
-                {interest}
-              </Badge>
-            ))}
+      {/* Musical Interests & Looking For Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {profileData?.musical_interests && profileData.musical_interests.length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-3">Musical Interests</h3>
+            <div className="flex flex-wrap gap-2">
+              {profileData.musical_interests.map((interest, index) => (
+                <Badge 
+                  key={index} 
+                  className="bg-gradient-to-r from-music-primary/30 to-music-secondary/30 text-white border-music-primary/40"
+                >
+                  {interest}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Looking For */}
-      {profileData?.looking_for && profileData.looking_for.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="h-4 w-4 text-music-primary" />
-            <h3 className="font-semibold">Looking For</h3>
+        {profileData?.looking_for && profileData.looking_for.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="h-4 w-4 text-music-primary" />
+              <h3 className="font-semibold">Looking For</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {profileData.looking_for.map((item, index) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary"
+                  className="bg-music-light/10 text-music-light border-music-light/30"
+                >
+                  {item}
+                </Badge>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {profileData.looking_for.map((item, index) => (
-              <Badge 
-                key={index} 
-                variant="secondary"
-                className="bg-music-light/10 text-music-light border-music-light/30"
-              >
-                {item}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* About Me */}
-      {profileData?.about_me && (
-        <div>
-          <h3 className="font-semibold mb-3">About Me</h3>
-          <p className="text-white/90 leading-relaxed">{profileData.about_me}</p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

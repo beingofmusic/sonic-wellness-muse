@@ -71,8 +71,16 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profileData, isLoading, i
 
       <div className="flex-1 space-y-2 text-center md:text-left">
         <h2 className="text-2xl font-bold">{getFullName()}</h2>
-        {isOwnProfile && <p className="text-white/70">{'email' in profileData && profileData?.email ? profileData.email : "No email provided"}</p>}
         <p className="text-white/50 text-sm">{getJoinedDate()}</p>
+        
+        {/* About Me Bio Section */}
+        {profileData?.about_me && (
+          <div className="mt-3">
+            <p className="text-white/90 leading-relaxed text-sm font-medium">{profileData.about_me}</p>
+          </div>
+        )}
+        
+        {isOwnProfile && <p className="text-white/70 text-xs mt-2">{'email' in profileData && profileData?.email ? profileData.email : "No email provided"}</p>}
       </div>
     </div>
   );
