@@ -35,7 +35,8 @@ const RoutinePlayer: React.FC = () => {
     handleRecordingChoice,
     audioRecorderRef,
     awaitingRecordingSave,
-    handleRecordingSaveComplete
+    handleRecordingSaveComplete,
+    elapsedTimeSeconds
   } = useRoutinePlayer(id);
 
   // Display loading state while fetching routine data
@@ -73,6 +74,7 @@ const RoutinePlayer: React.FC = () => {
           routine={routine} 
           blocks={blocks}
           sessionId={sessionId}
+          elapsedTimeSeconds={elapsedTimeSeconds}
         />
       ) : (
         <PracticeSession 

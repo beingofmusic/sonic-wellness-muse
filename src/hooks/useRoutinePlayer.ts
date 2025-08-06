@@ -24,17 +24,23 @@ export const useRoutinePlayer = (routineId?: string) => {
   const [shouldRecord, setShouldRecord] = useState(false);
   const [hasChosenRecording, setHasChosenRecording] = useState(false);
   const [awaitingRecordingSave, setAwaitingRecordingSave] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [elapsedTimeSeconds, setElapsedTimeSeconds] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRecorderRef = useRef<AudioRecorderRef>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Clean up timer on unmount
+  // Clean up timers on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
+      }
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
       }
     };
   }, []);
@@ -83,10 +89,10 @@ export const useRoutinePlayer = (routineId?: string) => {
           setSecondsLeft(initialDuration);
           setTimeRemaining(formatTime(initialDuration));
           
-          // Create practice session for open practice (with NULL routine_id)
+          // Create practice session for open practice (with NULL routine_id) - start with 0 duration
           if (user?.id) {
             try {
-              const newSessionId = await createPracticeSession(user.id, null, 30);
+              const newSessionId = await createPracticeSession(user.id, null, 0);
               setSessionId(newSessionId);
             } catch (error) {
               console.error("Error creating open practice session:", error);
@@ -124,11 +130,10 @@ export const useRoutinePlayer = (routineId?: string) => {
           setTimeRemaining(formatTime(initialDuration));
         }
 
-        // Create practice session
+        // Create practice session - start with 0 duration, will update with actual elapsed time
         if (user?.id && routineData.id) {
           try {
-            const totalDuration = blocksData.reduce((sum, block) => sum + block.duration, 0);
-            const newSessionId = await createPracticeSession(user.id, routineData.id, totalDuration);
+            const newSessionId = await createPracticeSession(user.id, routineData.id, 0);
             setSessionId(newSessionId);
           } catch (error) {
             console.error("Error creating practice session:", error);
@@ -154,11 +159,18 @@ export const useRoutinePlayer = (routineId?: string) => {
     fetchRoutineData();
   }, [routineId, toast, navigate]);
 
-  // Start countdown timer when blocks load and not paused - but only after recording choice is made
+  // Start timers when session starts and after recording choice is made
   useEffect(() => {
     if (blocks.length === 0 || isLoading || isPaused || !hasChosenRecording) return;
     
-    // Start the timer
+    // Start the session timer if not already started
+    if (!sessionStartTime) {
+      const startTime = new Date();
+      setSessionStartTime(startTime);
+      startElapsedTimer();
+    }
+    
+    // Start the countdown timer
     startTimer();
 
     return () => {
@@ -167,6 +179,24 @@ export const useRoutinePlayer = (routineId?: string) => {
       }
     };
   }, [blocks, isLoading, isPaused, hasChosenRecording]);
+
+  // Start elapsed time tracker
+  const startElapsedTimer = useCallback(() => {
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+    }
+    
+    elapsedTimerRef.current = setInterval(() => {
+      setElapsedTimeSeconds(prev => prev + 1);
+    }, 1000);
+  }, []);
+
+  // Stop elapsed time tracker
+  const stopElapsedTimer = useCallback(() => {
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
+    }
+  }, []);
 
   // Update session progress when current block changes
   useEffect(() => {
@@ -195,6 +225,9 @@ export const useRoutinePlayer = (routineId?: string) => {
       hasAudioRecorderRef: !!audioRecorderRef.current,
       isCurrentlyRecording: audioRecorderRef.current?.isCurrentlyRecording()
     });
+    
+    // Stop the elapsed time tracker
+    stopElapsedTimer();
     
     // Check if there's an active recording to save
     if (shouldRecord && audioRecorderRef.current?.isCurrentlyRecording()) {
@@ -225,7 +258,7 @@ export const useRoutinePlayer = (routineId?: string) => {
       title: "Session Complete",
       description: "Congratulations on completing your practice session!",
     });
-  }, [shouldRecord, audioRecorderRef, setAwaitingRecordingSave, setIsCompleted, toast]);
+  }, [shouldRecord, audioRecorderRef, setAwaitingRecordingSave, setIsCompleted, toast, stopElapsedTimer]);
 
   // Timer function
   const startTimer = useCallback(() => {
@@ -312,28 +345,35 @@ export const useRoutinePlayer = (routineId?: string) => {
     setIsPaused(prev => {
       const newPausedState = !prev;
       
-      // If resuming, start the timer
+      // If resuming, start both timers
       if (!newPausedState) {
         startTimer();
+        startElapsedTimer();
       } else {
-        // If pausing, clear the timer
+        // If pausing, clear both timers
         if (timerRef.current) {
           clearInterval(timerRef.current);
+        }
+        if (elapsedTimerRef.current) {
+          clearInterval(elapsedTimerRef.current);
         }
       }
       
       return newPausedState;
     });
-  }, [startTimer]);
+  }, [startTimer, startElapsedTimer]);
 
   const toggleFocusMode = useCallback(() => {
     setFocusMode(prev => !prev);
   }, []);
 
   const handleExit = useCallback(() => {
-    // Clean up timer before navigating away
+    // Clean up timers before navigating away
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    if (elapsedTimerRef.current) {
+      clearInterval(elapsedTimerRef.current);
     }
     navigate("/practice");
   }, [navigate]);
@@ -349,6 +389,11 @@ export const useRoutinePlayer = (routineId?: string) => {
       setIsPaused(false);
       setShowRecordingChoice(true);
       setHasChosenRecording(false);
+      setSessionStartTime(null);
+      setElapsedTimeSeconds(0);
+      // Clear any existing timers
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
     }
   }, [blocks]);
 
@@ -393,6 +438,7 @@ export const useRoutinePlayer = (routineId?: string) => {
     handleRecordingChoice,
     audioRecorderRef,
     awaitingRecordingSave,
-    handleRecordingSaveComplete
+    handleRecordingSaveComplete,
+    elapsedTimeSeconds
   };
 };

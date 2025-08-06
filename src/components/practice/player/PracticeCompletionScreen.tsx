@@ -12,19 +12,21 @@ interface PracticeCompletionScreenProps {
   routine: PracticeRoutine;
   blocks: RoutineBlock[];
   sessionId?: string;
+  elapsedTimeSeconds?: number;
 }
 
 const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
   routine,
   blocks,
-  sessionId
+  sessionId,
+  elapsedTimeSeconds = 0
 }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { showBadgeNotification } = useBadgeNotificationContext();
 
-  // Calculate total duration
-  const totalDuration = blocks.reduce((sum, block) => sum + block.duration, 0);
+  // Use actual elapsed time instead of designed duration
+  const actualDurationMinutes = Math.ceil(elapsedTimeSeconds / 60);
   
   // Format minutes as hours and minutes
   const formatDuration = (minutes: number): string => {
@@ -39,7 +41,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
     const saveSession = async () => {
       const { success, newBadges } = await logPracticeSession(
         routine.id === 'open-practice' ? null : routine.id,
-        totalDuration,
+        actualDurationMinutes,
         blocks,
         sessionId
       );
@@ -64,7 +66,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
     };
     
     saveSession();
-  }, [routine.id, blocks, toast, showBadgeNotification]);
+  }, [routine.id, blocks, toast, showBadgeNotification, actualDurationMinutes, sessionId]);
 
   return (
     <div className="container px-4 py-12 mx-auto max-w-4xl">
@@ -89,7 +91,7 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
           
           <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
             <span className="text-white/70">Duration</span>
-            <span className="font-semibold">{formatDuration(totalDuration)}</span>
+            <span className="font-semibold">{formatDuration(actualDurationMinutes)}</span>
           </div>
           
           <div className="flex justify-between items-center p-3 bg-white/5 rounded-lg">
