@@ -122,7 +122,7 @@ const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessio
     setTimeout(() => {
       console.log('Opening save dialog, blob available:', !!audioBlob);
       setShowSaveDialog(true);
-    }, 100);
+    }, 500);
   };
 
   const handleSaveRecording = async (formData: RecordingFormData) => {
@@ -251,7 +251,7 @@ const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessio
               return;
             }
             
-            if (attempts >= 30) { // 3 seconds max wait
+            if (attempts >= 50) { // 5 seconds max wait
               if (!resolved) {
                 resolved = true;
                 reject(new Error('Timeout waiting for audio blob'));
@@ -273,7 +273,13 @@ const AudioRecorder = forwardRef<AudioRecorderRef, AudioRecorderProps>(({ sessio
       }
 
       console.log('Stopping recording and showing save dialog...');
-      await handleStopRecording();
+      try {
+        await handleStopRecording();
+        console.log('Save dialog opened successfully');
+      } catch (error) {
+        console.error('Error in stopAndShowSaveDialog:', error);
+        throw error;
+      }
     },
     isCurrentlyRecording: () => isRecording || isPaused
   }), [isRecording, isPaused, stopRecording, audioBlob, handleSaveRecording, handleStopRecording]);

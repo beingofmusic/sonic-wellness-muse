@@ -188,6 +188,45 @@ export const useRoutinePlayer = (routineId?: string) => {
     }
   }, [currentBlockIndex, blocks]);
 
+  // Handle session completion (both natural and manual)
+  const handleSessionCompletion = useCallback(async () => {
+    console.log('Session completing, checking for active recording...', {
+      shouldRecord,
+      hasAudioRecorderRef: !!audioRecorderRef.current,
+      isCurrentlyRecording: audioRecorderRef.current?.isCurrentlyRecording()
+    });
+    
+    // Check if there's an active recording to save
+    if (shouldRecord && audioRecorderRef.current?.isCurrentlyRecording()) {
+      console.log('Active recording found, stopping and showing save dialog...');
+      // Stop the recording and trigger save dialog (same as manual stop)
+      setAwaitingRecordingSave(true);
+      try {
+        await audioRecorderRef.current.stopAndShowSaveDialog();
+        console.log('Save dialog should now be showing...');
+      } catch (error) {
+        console.error('Error stopping recording:', error);
+        // If recording fails to stop, complete session anyway
+        setIsCompleted(true);
+        toast({
+          title: "Session Complete",
+          description: "Session completed but recording could not be saved.",
+          variant: "destructive"
+        });
+      }
+      // Don't complete session yet - wait for recording to be handled
+      return;
+    }
+    
+    // Show completion state
+    console.log('No active recording, completing session...');
+    setIsCompleted(true);
+    toast({
+      title: "Session Complete",
+      description: "Congratulations on completing your practice session!",
+    });
+  }, [shouldRecord, audioRecorderRef, setAwaitingRecordingSave, setIsCompleted, toast]);
+
   // Timer function
   const startTimer = useCallback(() => {
     // Clear any existing timers first
@@ -208,6 +247,7 @@ export const useRoutinePlayer = (routineId?: string) => {
             setCurrentBlockIndex(prevIndex => prevIndex + 1);
           } else {
             // Session completed naturally - handle recording
+            console.log('Timer expired, completing session naturally...');
             handleSessionCompletion();
           }
           
@@ -220,28 +260,7 @@ export const useRoutinePlayer = (routineId?: string) => {
         return newTime;
       });
     }, 1000);
-  }, [blocks, currentBlockIndex, toast]);
-
-  // Handle session completion (both natural and manual)
-  const handleSessionCompletion = useCallback(async () => {
-    console.log('Session completing, checking for active recording...');
-    
-    // Check if there's an active recording to save
-    if (shouldRecord && audioRecorderRef.current?.isCurrentlyRecording()) {
-      // Stop the recording and trigger save dialog (same as manual stop)
-      setAwaitingRecordingSave(true);
-      audioRecorderRef.current.stopAndShowSaveDialog();
-      // Don't complete session yet - wait for recording to be handled
-      return;
-    }
-    
-    // Show completion state
-    setIsCompleted(true);
-    toast({
-      title: "Session Complete",
-      description: "Congratulations on completing your practice session!",
-    });
-  }, [shouldRecord, routine, toast]);
+  }, [blocks, currentBlockIndex, handleSessionCompletion]);
 
   // Handle navigation between blocks
   const handleNext = useCallback(() => {
