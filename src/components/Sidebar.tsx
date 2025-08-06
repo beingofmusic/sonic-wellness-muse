@@ -163,10 +163,26 @@ const Sidebar: React.FC = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="sidebar-link w-full hover:bg-white/5 transition-colors">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center">
-                <span className="text-sm font-medium text-music-primary">
-                  {getUserInitials()}
-                </span>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-music-primary/20 flex items-center justify-center overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt={`${getDisplayName()}'s avatar`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // If image fails to load, show the initials fallback
+                      const target = e.target as HTMLImageElement;
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `<span class="text-sm font-medium text-music-primary">${getUserInitials()}</span>`;
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className="text-sm font-medium text-music-primary">
+                    {getUserInitials()}
+                  </span>
+                )}
               </div>
               <span>{getDisplayName()}</span>
               <span className="ml-auto text-xs px-2 py-1 rounded bg-white/10 text-white/70">
