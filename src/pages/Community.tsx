@@ -8,6 +8,7 @@ import ChannelChatView from "@/components/community/ChannelChatView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 const Community: React.FC = () => {
   const { user } = useAuth();
@@ -15,15 +16,34 @@ const Community: React.FC = () => {
   const isMobile = useIsMobile();
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [searchParams] = useSearchParams();
+  const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
 
-  // Set default channel when channels load
+  // Handle URL parameters for deep-linking
   useEffect(() => {
-    if (channels.length > 0 && !activeChannelId) {
-      // Default to "General Chat" channel
-      const generalChat = channels.find(ch => ch.slug === 'general-chat');
-      setActiveChannelId(generalChat?.id || channels[0].id);
+    if (channels.length > 0) {
+      const channelParam = searchParams.get('channel');
+      const messageParam = searchParams.get('message');
+      
+      if (channelParam) {
+        // Find channel by slug
+        const targetChannel = channels.find(ch => ch.slug === channelParam);
+        if (targetChannel) {
+          setActiveChannelId(targetChannel.id);
+          if (messageParam) {
+            setTargetMessageId(messageParam);
+          }
+          return;
+        }
+      }
+      
+      // Default to "General Chat" channel if no specific channel requested
+      if (!activeChannelId) {
+        const generalChat = channels.find(ch => ch.slug === 'general-chat');
+        setActiveChannelId(generalChat?.id || channels[0].id);
+      }
     }
-  }, [channels, activeChannelId]);
+  }, [channels, searchParams, activeChannelId]);
 
   // Close sidebar on mobile when channel is selected
   const handleChannelSelect = (channelId: string) => {
@@ -93,7 +113,11 @@ const Community: React.FC = () => {
         <div className={`flex-1 flex flex-col ${isMobile ? 'mt-32' : ''}`}>
           {/* Chat Container */}
           <div className="flex-1 border border-white/10 bg-card/50 overflow-hidden">
-            <ChannelChatView channel={activeChannel} />
+            <ChannelChatView 
+              channel={activeChannel} 
+              targetMessageId={targetMessageId}
+              onMessageFound={() => setTargetMessageId(null)}
+            />
           </div>
         </div>
       </div>

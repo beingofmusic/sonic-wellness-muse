@@ -7,11 +7,11 @@ import { Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import PracticeRoutineCard from "@/components/PracticeRoutineCard";
 import UserCourseProgress from "@/components/dashboard/UserCourseProgress";
-import CommunityPostCard from "@/components/CommunityPostCard";
 import PracticeStats from "@/components/practice/stats/PracticeStats";
 import PracticeLeaderboard from "@/components/practice/leaderboard/PracticeLeaderboard";
 import { useUserRoutines } from "@/hooks/useUserRoutines";
 import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
+import LiveCommunityFeed from "@/components/dashboard/LiveCommunityFeed";
 
 const Dashboard: React.FC = () => {
   const {
@@ -139,20 +139,8 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      {/* Community Highlights */}
-      <section>
-        <div className="flex flex-wrap justify-between items-center mb-4">
-          <h2 className="text-xl font-medium">M.U.S.E. Community Highlights</h2>
-          <Button variant="outline" className="text-sm bg-transparent border border-music-primary/30 text-music-primary hover:bg-music-primary/10 mt-2 sm:mt-0">
-            Join the conversation
-          </Button>
-        </div>
-        
-        <div className="space-y-4">
-          <CommunityPostCard userName="Bill Chicken" timeAgo="30 days ago" message="First message..." reactionCount={0} />
-          <CommunityPostCard userName="Bill Chicken" timeAgo="20 days ago" message="Testing..." reactionCount={0} />
-        </div>
-      </section>
+      {/* Live Community Feed */}
+      <LiveCommunityFeed />
     </Layout>;
 };
 export default Dashboard;

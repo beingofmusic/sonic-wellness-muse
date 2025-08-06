@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useChannelChat } from '@/hooks/useChannelChat';
 import { CommunityChannel } from '@/hooks/useCommunityChannels';
@@ -9,9 +9,15 @@ import { Hash, Users } from 'lucide-react';
 
 interface ChannelChatViewProps {
   channel: CommunityChannel | null;
+  targetMessageId?: string | null;
+  onMessageFound?: () => void;
 }
 
-const ChannelChatView: React.FC<ChannelChatViewProps> = ({ channel }) => {
+const ChannelChatView: React.FC<ChannelChatViewProps> = ({ 
+  channel, 
+  targetMessageId, 
+  onMessageFound 
+}) => {
   const { user } = useAuth();
   const {
     messages,
@@ -29,6 +35,32 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({ channel }) => {
     }
     sendMessage();
   };
+
+  // Scroll to target message when it's found
+  useEffect(() => {
+    if (targetMessageId && messages.length > 0) {
+      const targetMessage = messages.find(msg => msg.id === targetMessageId);
+      if (targetMessage) {
+        // Scroll to the message
+        const messageElement = document.getElementById(`message-${targetMessageId}`);
+        if (messageElement) {
+          messageElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          
+          // Highlight the message briefly
+          messageElement.classList.add('bg-music-primary/20', 'border-music-primary/50');
+          setTimeout(() => {
+            messageElement.classList.remove('bg-music-primary/20', 'border-music-primary/50');
+          }, 2000);
+          
+          // Call the callback to clear the target
+          onMessageFound?.();
+        }
+      }
+    }
+  }, [targetMessageId, messages, onMessageFound]);
 
   if (!channel) {
     return (
@@ -76,7 +108,13 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({ channel }) => {
           </div>
         ) : (
           messages.map(message => (
-            <ChatMessage key={message.id} message={message} />
+            <div 
+              key={message.id} 
+              id={`message-${message.id}`}
+              className="transition-all duration-500 rounded-lg"
+            >
+              <ChatMessage message={message} />
+            </div>
           ))
         )}
       </div>
