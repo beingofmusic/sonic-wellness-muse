@@ -1,17 +1,18 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Layout } from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
 import { useCommunityChannels } from "@/hooks/useCommunityChannels";
-import ChannelList, { SidebarConversationItem } from "@/components/community/ChannelList";
+import ChannelList from "@/components/community/ChannelList";
 import ChannelChatView from "@/components/community/ChannelChatView";
 import ConversationChatView from "@/components/community/ConversationChatView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Menu, X, Users } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useConversations } from "@/hooks/useConversations";
 import { ensureDirectConversation } from "@/services/conversationService";
+import CreateGroupModal from "@/components/community/CreateGroupModal";
 
 const Community: React.FC = () => {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ const Community: React.FC = () => {
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const { dms, groups, loading: convLoading } = useConversations();
@@ -50,15 +53,55 @@ const Community: React.FC = () => {
     }
   }, [channels, searchParams, activeChannelId]);
 
-  // Close sidebar on mobile when channel is selected
-  const handleChannelSelect = (channelId: string) => {
-    setActiveChannelId(channelId);
-    if (isMobile) {
-      setSidebarOpen(false);
+  // Deep link to DM: ?dm=userId
+  useEffect(() => {
+    const dmUserId = searchParams.get('dm');
+    if (dmUserId && user) {
+      (async () => {
+        const convId = await ensureDirectConversation(user.id, dmUserId);
+        if (convId) {
+          setActiveChannelId(null);
+          setActiveConversationId(convId);
+          if (isMobile) setSidebarOpen(false);
+          const params = new URLSearchParams(searchParams);
+          params.delete('dm');
+          navigate({ search: params.toString() }, { replace: true });
+        }
+      })();
     }
+  }, [searchParams, user, isMobile, navigate]);
+
+// Close sidebar on mobile when channel is selected
+  const handleChannelSelect = (channelId: string) => {
+    setActiveConversationId(null);
+    setActiveChannelId(channelId);
+    if (isMobile) setSidebarOpen(false);
   };
 
   const activeChannel = channels.find(ch => ch.id === activeChannelId) || null;
+
+  const mappedDms = useMemo(() => dms.map(dm => ({
+    id: dm.id,
+    title: (dm.other_participant?.first_name || dm.other_participant?.last_name)
+      ? `${dm.other_participant?.first_name ?? ''} ${dm.other_participant?.last_name ?? ''}`.trim()
+      : (dm.other_participant?.username || 'Direct Message'),
+    avatarUrl: dm.other_participant?.avatar_url || null,
+    unread: dm.unread_count,
+  })), [dms]);
+
+  const mappedGroups = useMemo(() => groups.map(g => ({
+    id: g.id,
+    title: g.name || 'Group',
+    avatarUrl: g.image_url || null,
+    unread: g.unread_count,
+  })), [groups]);
+
+  const handleConversationSelect = (conversationId: string) => {
+    setActiveChannelId(null);
+    setActiveConversationId(conversationId);
+    if (isMobile) setSidebarOpen(false);
+  };
+
   const activeConversation = [...dms, ...groups].find(c => c.id === activeConversationId) || null;
   return (
     <Layout>
@@ -107,12 +150,21 @@ const Community: React.FC = () => {
                 <p className="text-sm text-white/70">Musicians United in Striving for Excellence</p>
               </header>
             )}
-            
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-white/80">Browse</div>
+              <Button size="sm" variant="ghost" onClick={() => setCreateGroupOpen(true)} className="h-8 px-2 text-xs">
+                <Users className="w-4 h-4 mr-1" /> New Group
+              </Button>
+            </div>
             <ChannelList
               channels={channels}
               activeChannelId={activeChannelId}
               onChannelSelect={handleChannelSelect}
               loading={channelsLoading}
+              dms={mappedDms}
+              groups={mappedGroups}
+              activeConversationId={activeConversationId}
+              onConversationSelect={handleConversationSelect}
             />
           </div>
         </div>
@@ -121,11 +173,23 @@ const Community: React.FC = () => {
         <div className={`flex-1 flex flex-col ${isMobile ? 'mt-32' : ''}`}>
           {/* Chat Container */}
           <div className="flex-1 border border-white/10 bg-card/50 overflow-hidden">
-            <ChannelChatView 
-              channel={activeChannel} 
-              targetMessageId={targetMessageId}
-              onMessageFound={() => setTargetMessageId(null)}
-            />
+            {activeConversationId ? (
+              <ConversationChatView
+                conversationId={activeConversationId}
+                title={activeConversation?.is_group
+                  ? (activeConversation?.name || 'Group')
+                  : ((`${activeConversation?.other_participant?.first_name || ''} ${activeConversation?.other_participant?.last_name || ''}`).trim() || activeConversation?.other_participant?.username || 'Direct Message')}
+                imageUrl={activeConversation?.is_group
+                  ? (activeConversation?.image_url || null)
+                  : (activeConversation?.other_participant?.avatar_url || null)}
+              />
+            ) : (
+              <ChannelChatView 
+                channel={activeChannel} 
+                targetMessageId={targetMessageId}
+                onMessageFound={() => setTargetMessageId(null)}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -142,6 +206,15 @@ const Community: React.FC = () => {
           </ul>
         </div>
       </div>
+
+      <CreateGroupModal
+        open={createGroupOpen}
+        onOpenChange={setCreateGroupOpen}
+        onCreated={(id) => {
+          setActiveChannelId(null);
+          setActiveConversationId(id);
+        }}
+      />
     </Layout>
   );
 };
