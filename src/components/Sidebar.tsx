@@ -39,6 +39,7 @@ const Sidebar: React.FC = () => {
   const teamLinks = [
     { name: "Team Dashboard", path: "/team", icon: <FileEdit className="h-5 w-5" />, permission: "contribute_content" },
     { name: "Manage Courses", path: "/courses/manage", icon: <BookOpen className="h-5 w-5" />, permission: "manage_courses" },
+    { name: "Manage Wellness", path: "/wellness/manage", icon: <Heart className="h-5 w-5" />, permission: "manage_courses" },
   ];
   
   const settingsLink = { name: "Settings", path: "/settings", icon: <Settings className="h-5 w-5" />, permission: "access_dashboard" };
@@ -135,7 +136,8 @@ const Sidebar: React.FC = () => {
                 to={link.path}
                 className={`sidebar-link ${
                   location.pathname === link.path ||
-                  (link.path === "/courses/manage" && location.pathname.startsWith("/courses/manage"))
+                  (link.path === "/courses/manage" && location.pathname.startsWith("/courses/manage")) ||
+                  (link.path === "/wellness/manage" && location.pathname.startsWith("/wellness/manage"))
                     ? "active"
                     : ""
                 }`}

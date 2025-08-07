@@ -20,6 +20,7 @@ import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import LessonViewer from "./pages/LessonViewer";
 import CourseManagement from "./pages/CourseManagement";
+import WellnessManagement from "./pages/WellnessManagement";
 import Community from "./pages/Community";
 import Wellness from "./pages/Wellness";
 import Calendar from "./pages/Calendar";
@@ -139,6 +140,16 @@ const App = () => (
             <ProtectedRoute>
               <PermissionRoute permission="manage_courses">
                 <CourseManagement />
+              </PermissionRoute>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/wellness/manage" 
+          element={
+            <ProtectedRoute>
+              <PermissionRoute permission="manage_courses">
+                <WellnessManagement />
               </PermissionRoute>
             </ProtectedRoute>
           } 
