@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ClickableUserProfile from "@/components/ClickableUserProfile";
 
 interface ChatMessageProps {
-  message: ChatMessageType;
+  message: ChatMessageType & { pending?: boolean; error?: boolean };
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
@@ -82,6 +82,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             <span className="text-xs text-white/50">{formattedTime}</span>
           </div>
           <p className="text-sm text-white/90 break-words">{message.content}</p>
+          {message.pending && (
+            <div className="text-xs text-white/50 mt-1">Sending…</div>
+          )}
+          {message.error && (
+            <div className="text-xs text-destructive mt-1">Failed to send</div>
+          )}
         </div>
       </div>
     </div>

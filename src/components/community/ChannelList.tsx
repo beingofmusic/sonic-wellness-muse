@@ -20,6 +20,8 @@ interface ChannelListProps {
   groups?: SidebarConversationItem[];
   activeConversationId?: string | null;
   onConversationSelect?: (conversationId: string) => void;
+  onNewDM?: () => void;
+  onNewGroup?: () => void;
 }
 
 const SectionHeader: React.FC<{ label: string }> = ({ label }) => (
@@ -35,6 +37,8 @@ const ChannelList: React.FC<ChannelListProps> = ({
   groups = [],
   activeConversationId = null,
   onConversationSelect,
+  onNewDM,
+  onNewGroup,
 }) => {
   if (loading) {
     return (
@@ -68,10 +72,19 @@ const ChannelList: React.FC<ChannelListProps> = ({
         ))}
       </div>
 
-      {dms.length > 0 && (
-        <div>
-          <SectionHeader label="Direct Messages" />
-          {dms.map((dm) => (
+      <div>
+        <SectionHeader label="Direct Messages" />
+        {dms.length === 0 ? (
+          <div className="px-2">
+            <div className="flex items-center justify-between h-8 text-sm text-white/60">
+              <span>No direct messages yet</span>
+              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onNewDM}>
+                <MessageCircle className="w-4 h-4 mr-1" /> New DM
+              </Button>
+            </div>
+          </div>
+        ) : (
+          dms.map((dm) => (
             <Button
               key={dm.id}
               variant="ghost"
@@ -89,14 +102,23 @@ const ChannelList: React.FC<ChannelListProps> = ({
                 <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-music-primary text-background">{dm.unread}</span>
               )}
             </Button>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
-      {groups.length > 0 && (
-        <div>
-          <SectionHeader label="Groups" />
-          {groups.map((g) => (
+      <div>
+        <SectionHeader label="Groups" />
+        {groups.length === 0 ? (
+          <div className="px-2">
+            <div className="flex items-center justify-between h-8 text-sm text-white/60">
+              <span>No groups yet</span>
+              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onNewGroup}>
+                <Users className="w-4 h-4 mr-1" /> New Group
+              </Button>
+            </div>
+          </div>
+        ) : (
+          groups.map((g) => (
             <Button
               key={g.id}
               variant="ghost"
@@ -114,9 +136,9 @@ const ChannelList: React.FC<ChannelListProps> = ({
                 <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-music-primary text-background">{g.unread}</span>
               )}
             </Button>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

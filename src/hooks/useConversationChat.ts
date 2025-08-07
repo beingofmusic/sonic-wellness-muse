@@ -11,6 +11,8 @@ export interface ConversationMessage {
   first_name?: string | null;
   last_name?: string | null;
   avatar_url?: string | null;
+  pending?: boolean;
+  error?: boolean;
 }
 
 export const useConversationChat = (conversationId: string | null) => {
@@ -25,6 +27,14 @@ export const useConversationChat = (conversationId: string | null) => {
   useEffect(() => {
     if (!conversationId) return;
     let isMounted = true;
+
+    const lastRealtimeTs = { current: Date.now() } as { current: number };
+    const isNearBottom = () => {
+      const el = scrollRef.current;
+      if (!el) return true;
+      const threshold = 120;
+      return el.scrollHeight - (el.scrollTop + el.clientHeight) < threshold;
+    };
 
     const fetchMessages = async () => {
       setLoading(true);
@@ -75,45 +85,12 @@ export const useConversationChat = (conversationId: string | null) => {
       }
     };
 
-    fetchMessages();
-
-    const channel = supabase
-      .channel(`conversation-${conversationId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, async (payload) => {
-        const m = payload.new as any;
-        // fetch profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('username, first_name, last_name, avatar_url')
-          .eq('id', m.user_id)
-          .single();
-        const newMsg: ConversationMessage = {
-          id: m.id,
-          user_id: m.user_id,
-          content: m.content,
-          created_at: m.created_at,
-          username: profileData?.username || null,
-          first_name: profileData?.first_name || null,
-          last_name: profileData?.last_name || null,
-          avatar_url: profileData?.avatar_url || null,
-        };
-        setMessages(prev => [...prev, newMsg]);
-        // update last_read
-        if (user) {
-          await supabase
-            .from('conversation_participants')
-            .update({ last_read_at: new Date().toISOString() })
-            .eq('conversation_id', conversationId)
-            .eq('user_id', user.id);
-        }
-        // scroll
-        setTimeout(() => {
-          if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }, 100);
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversation_typing', filter: `conversation_id=eq.${conversationId}` }, () => refreshTyping())
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversation_typing', filter: `conversation_id=eq.${conversationId}` }, () => refreshTyping())
-      .subscribe();
+    fetchMessages().then(() => {
+      // Scroll to bottom on initial load
+      setTimeout(() => {
+        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }, 50);
+    });
 
     const refreshTyping = async () => {
       if (!conversationId) return;
@@ -127,18 +104,109 @@ export const useConversationChat = (conversationId: string | null) => {
       setTypingUsers(others);
     };
 
+    const channel = supabase
+      .channel(`conversation-${conversationId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, async (payload) => {
+        lastRealtimeTs.current = Date.now();
+        const m = payload.new as any;
+        // fetch profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, first_name, last_name, avatar_url')
+          .eq('id', m.user_id)
+          .single();
+        const incoming: ConversationMessage = {
+          id: m.id,
+          user_id: m.user_id,
+          content: m.content,
+          created_at: m.created_at,
+          username: profileData?.username || null,
+          first_name: profileData?.first_name || null,
+          last_name: profileData?.last_name || null,
+          avatar_url: profileData?.avatar_url || null,
+        };
+        const shouldScroll = isNearBottom();
+        setMessages(prev => {
+          // If we already have this id, skip
+          if (prev.some(x => x.id === incoming.id)) return prev;
+          // Replace matching temp by same user and content
+          const idx = prev.findIndex(x => x.pending && x.user_id === incoming.user_id && x.content === incoming.content);
+          if (idx !== -1) {
+            const copy = prev.slice();
+            copy[idx] = { ...incoming };
+            return copy;
+          }
+          return [...prev, incoming];
+        });
+        // update last_read
+        if (user) {
+          await supabase
+            .from('conversation_participants')
+            .update({ last_read_at: new Date().toISOString() })
+            .eq('conversation_id', conversationId)
+            .eq('user_id', user.id);
+        }
+        if (shouldScroll) {
+          setTimeout(() => {
+            if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+          }, 50);
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, async (payload) => {
+        lastRealtimeTs.current = Date.now();
+        const m = payload.new as any;
+        setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at } : msg));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+        lastRealtimeTs.current = Date.now();
+        const m = payload.old as any;
+        setMessages(prev => prev.filter(msg => msg.id !== m.id));
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversation_typing', filter: `conversation_id=eq.${conversationId}` }, () => { lastRealtimeTs.current = Date.now(); refreshTyping(); })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversation_typing', filter: `conversation_id=eq.${conversationId}` }, () => { lastRealtimeTs.current = Date.now(); refreshTyping(); })
+      .subscribe();
+
+    const poller = window.setInterval(() => {
+      if (Date.now() - lastRealtimeTs.current > 15000) {
+        fetchMessages();
+      }
+    }, 10000);
+
+    const onOnline = () => fetchMessages();
+    window.addEventListener('online', onOnline);
+
     refreshTyping();
 
-    return () => { supabase.removeChannel(channel); isMounted = false; };
+    return () => {
+      supabase.removeChannel(channel);
+      window.clearInterval(poller);
+      window.removeEventListener('online', onOnline);
+      isMounted = false;
+    };
   }, [conversationId, user]);
 
   const sendMessage = async () => {
     if (!user || !conversationId || !newMessage.trim()) return;
     const content = newMessage.trim();
     setNewMessage("");
-    await supabase.from('conversation_messages').insert({ conversation_id: conversationId, user_id: user.id, content });
-  };
 
+    // Optimistic add
+    const tempId = `temp-${Date.now()}`;
+    const nowIso = new Date().toISOString();
+    setMessages(prev => [...prev, { id: tempId, user_id: user.id, content, created_at: nowIso, pending: true }]);
+    try {
+      const { data: inserted, error } = await supabase
+        .from('conversation_messages')
+        .insert({ conversation_id: conversationId, user_id: user.id, content })
+        .select('id, created_at')
+        .single();
+      if (error || !inserted) throw error;
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: inserted.id, created_at: inserted.created_at, pending: false } : m));
+    } catch (e) {
+      console.error('Failed to send message', e);
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, pending: false, error: true } : m));
+    }
+  };
   const setTyping = async () => {
     if (!user || !conversationId) return;
     // avoid too frequent upserts
