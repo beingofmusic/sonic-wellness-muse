@@ -360,6 +360,7 @@ export type Database = {
           is_group: boolean
           is_public: boolean
           name: string | null
+          participant_ids: string[]
           updated_at: string
         }
         Insert: {
@@ -370,6 +371,7 @@ export type Database = {
           is_group?: boolean
           is_public?: boolean
           name?: string | null
+          participant_ids?: string[]
           updated_at?: string
         }
         Update: {
@@ -380,6 +382,7 @@ export type Database = {
           is_group?: boolean
           is_public?: boolean
           name?: string | null
+          participant_ids?: string[]
           updated_at?: string
         }
         Relationships: []

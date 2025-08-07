@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,7 +31,7 @@ const displayName = (p: ProfileItem) =>
 const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange, onCreated }) => {
   const { user } = useAuth();
   const [name, setName] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+  
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<ProfileItem[]>([]);
@@ -39,7 +39,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange,
 
   useEffect(() => {
     if (!open) {
-      setName(""); setIsPublic(false); setQuery(""); setResults([]); setSelected([]);
+      setName(""); setQuery(""); setResults([]); setSelected([]);
     }
   }, [open]);
 
@@ -73,7 +73,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange,
     try {
       const { data: conv, error } = await supabase
         .from("conversations")
-        .insert({ is_group: true, is_public: isPublic, name, created_by: user.id })
+        .insert({ is_group: true, is_public: false, name, created_by: user.id })
         .select("id")
         .maybeSingle();
       if (error || !conv) throw error;
@@ -101,7 +101,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange,
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Create Group</DialogTitle>
-          <DialogDescription>Start a private or public group chat.</DialogDescription>
+          <DialogDescription>Start a private group chat.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -110,13 +110,6 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange,
             <Input id="group-name" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Jazz Trio" />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label htmlFor="public-switch">Public group</Label>
-              <p className="text-xs text-white/60">Public groups are visible to everyone (read-only unless invited).</p>
-            </div>
-            <Switch id="public-switch" checked={isPublic} onCheckedChange={setIsPublic} />
-          </div>
 
           <div>
             <Label>Add members</Label>
