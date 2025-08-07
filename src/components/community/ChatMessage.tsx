@@ -77,6 +77,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               lastName={message.last_name}
               avatarUrl={message.avatar_url}
               className="font-medium text-white mr-2 truncate"
+              openDmOnClick
             />
             <span className="text-xs text-white/50">{formattedTime}</span>
           </div>

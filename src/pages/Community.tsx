@@ -3,12 +3,15 @@ import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
 import { useCommunityChannels } from "@/hooks/useCommunityChannels";
-import ChannelList from "@/components/community/ChannelList";
+import ChannelList, { SidebarConversationItem } from "@/components/community/ChannelList";
 import ChannelChatView from "@/components/community/ChannelChatView";
+import ConversationChatView from "@/components/community/ConversationChatView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { useConversations } from "@/hooks/useConversations";
+import { ensureDirectConversation } from "@/services/conversationService";
 
 const Community: React.FC = () => {
   const { user } = useAuth();
@@ -18,6 +21,8 @@ const Community: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [searchParams] = useSearchParams();
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const { dms, groups, loading: convLoading } = useConversations();
 
   // Handle URL parameters for deep-linking
   useEffect(() => {
@@ -54,6 +59,7 @@ const Community: React.FC = () => {
   };
 
   const activeChannel = channels.find(ch => ch.id === activeChannelId) || null;
+  const activeConversation = [...dms, ...groups].find(c => c.id === activeConversationId) || null;
   return (
     <Layout>
       <div className="flex h-[calc(100vh-80px)] max-w-7xl mx-auto">
@@ -63,9 +69,11 @@ const Community: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-xl font-bold">M.U.S.E. Community</h1>
-                {activeChannel && (
-                  <p className="text-sm text-white/70">#{activeChannel.name}</p>
-                )}
+                <p className="text-sm text-white/70">
+                  {activeConversationId
+                    ? (activeConversation?.name || `${activeConversation?.other_participant?.first_name || ''} ${activeConversation?.other_participant?.last_name || ''}`.trim() || activeConversation?.other_participant?.username || 'Direct Message')
+                    : (activeChannel ? `#${activeChannel.name}` : 'Select a chat')}
+                </p>
               </div>
               <Button
                 variant="ghost"

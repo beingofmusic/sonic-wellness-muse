@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 
 interface ClickableUserProfileProps {
   userId: string;
@@ -11,6 +12,7 @@ interface ClickableUserProfileProps {
   showAvatar?: boolean;
   className?: string;
   children?: React.ReactNode;
+  openDmOnClick?: boolean; // if true, navigate to DM instead of profile
 }
 
 const ClickableUserProfile: React.FC<ClickableUserProfileProps> = ({
@@ -21,9 +23,11 @@ const ClickableUserProfile: React.FC<ClickableUserProfileProps> = ({
   avatarUrl,
   showAvatar = false,
   className = "",
-  children
+  children,
+  openDmOnClick = false
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const getDisplayName = () => {
     if (firstName) {
@@ -47,7 +51,11 @@ const ClickableUserProfile: React.FC<ClickableUserProfileProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(`/profile/${userId}`);
+    if (openDmOnClick && userId !== user?.id) {
+      navigate(`/community?dm=${userId}`);
+    } else {
+      navigate(`/profile/${userId}`);
+    }
   };
 
   if (children) {
