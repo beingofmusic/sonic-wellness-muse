@@ -12,6 +12,7 @@ import PracticeLeaderboard from "@/components/practice/leaderboard/PracticeLeade
 import { useUserRoutines } from "@/hooks/useUserRoutines";
 import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 import LiveCommunityFeed from "@/components/dashboard/LiveCommunityFeed";
+import QuickStartWidget from "@/components/dashboard/QuickStartWidget";
 
 const Dashboard: React.FC = () => {
   const {
@@ -70,6 +71,11 @@ const Dashboard: React.FC = () => {
       <div className="mb-8 md:mb-10">
         <PracticeStats />
       </div>
+
+      {/* Quick Start */}
+      <section className="mb-8">
+        <QuickStartWidget />
+      </section>
       
       {/* Practice Routines */}
       <section className="mb-8">
