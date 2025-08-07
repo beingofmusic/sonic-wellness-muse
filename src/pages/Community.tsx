@@ -8,7 +8,7 @@ import ChannelChatView from "@/components/community/ChannelChatView";
 import ConversationChatView from "@/components/community/ConversationChatView";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Users } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useConversations } from "@/hooks/useConversations";
 import { ensureDirectConversation } from "@/services/conversationService";
@@ -150,12 +150,6 @@ const Community: React.FC = () => {
                 <p className="text-sm text-white/70">Musicians United in Striving for Excellence</p>
               </header>
             )}
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-sm font-medium text-white/80">Browse</div>
-              <Button size="sm" variant="ghost" onClick={() => setCreateGroupOpen(true)} className="h-8 px-2 text-xs">
-                <Users className="w-4 h-4 mr-1" /> New Group
-              </Button>
-            </div>
             <ChannelList
               channels={channels}
               activeChannelId={activeChannelId}
@@ -165,6 +159,7 @@ const Community: React.FC = () => {
               groups={mappedGroups}
               activeConversationId={activeConversationId}
               onConversationSelect={handleConversationSelect}
+              onNewGroup={() => setCreateGroupOpen(true)}
             />
           </div>
         </div>

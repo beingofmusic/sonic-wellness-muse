@@ -107,16 +107,16 @@ const ChannelList: React.FC<ChannelListProps> = ({
       </div>
 
       <div>
-        <SectionHeader label="Groups" />
+        <div className="flex items-center justify-between px-2 mb-2">
+          <div className="text-xs font-semibold text-white/70 uppercase tracking-wider">Groups</div>
+          {onNewGroup && (
+            <Button size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={onNewGroup}>
+              <Users className="w-4 h-4 mr-1" /> New Group
+            </Button>
+          )}
+        </div>
         {groups.length === 0 ? (
-          <div className="px-2">
-            <div className="flex items-center justify-between h-8 text-sm text-white/60">
-              <span>No groups yet</span>
-              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onNewGroup}>
-                <Users className="w-4 h-4 mr-1" /> New Group
-              </Button>
-            </div>
-          </div>
+          <div className="px-2 text-sm text-white/60 h-8 flex items-center">No groups yet</div>
         ) : (
           groups.map((g) => (
             <Button
