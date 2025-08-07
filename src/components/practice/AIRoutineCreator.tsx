@@ -6,7 +6,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { Brain, Loader2, Sparkles, Globe, Lock } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Brain, Loader2, Sparkles, Globe, Lock, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +20,17 @@ interface AIRoutineFormData {
   goals: string;
   instrument: string;
   visibility: "public" | "private";
+  // New optional personalization fields
+  skillLevel?: string;
+  genres?: string[];
+  mood?: string;
+  challenges?: string;
+  preferences?: {
+    metronome?: boolean;
+    drone?: boolean;
+    recording?: boolean;
+  };
+  equipment?: string[];
 }
 
 interface GeneratedRoutine {
@@ -31,23 +44,33 @@ interface GeneratedRoutine {
     instructions: string;
   }>;
   rationale: string;
+  tips?: string[];
 }
 
 const AIRoutineCreator: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generated, setGenerated] = useState<GeneratedRoutine | null>(null);
   const [formData, setFormData] = useState<AIRoutineFormData>({
     timeAvailable: 30,
     focusArea: '',
     goals: '',
     instrument: '',
     visibility: 'public',
+    skillLevel: 'intermediate',
+    genres: [],
+    mood: undefined,
+    challenges: '',
+    preferences: { metronome: true, drone: false, recording: false },
+    equipment: [],
   });
+
+  const availableGenres = ["classical","jazz","pop","rock","blues","folk","latin","hip-hop"];
 
   const handleGenerate = async () => {
     if (!user || !formData.focusArea || !formData.goals.trim() || !formData.instrument) {
-      toast.error("Please fill in all fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -56,22 +79,44 @@ const AIRoutineCreator: React.FC = () => {
     try {
       const { data, error } = await supabase.functions.invoke('ai-routine-generator', {
         body: {
-          ...formData,
+          timeAvailable: formData.timeAvailable,
+          focusArea: formData.focusArea,
+          goals: formData.goals,
+          instrument: formData.instrument,
           userId: user.id,
+          skillLevel: formData.skillLevel,
+          genres: formData.genres,
+          mood: formData.mood,
+          challenges: formData.challenges,
+          preferences: formData.preferences,
+          equipment: formData.equipment,
         },
       });
 
       if (error) throw error;
 
-      const generatedRoutine: GeneratedRoutine = data;
-      
-      // Create the routine in the database
+      setGenerated(data as GeneratedRoutine);
+      toast.success("Preview generated! Review below.");
+
+    } catch (error) {
+      console.error('Error generating routine:', error);
+      toast.error("Failed to generate routine. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user || !generated) return;
+    setIsGenerating(true);
+
+    try {
       const { data: routine, error: routineError } = await supabase
         .from('routines')
         .insert({
-          title: generatedRoutine.title,
-          description: generatedRoutine.description,
-          duration: generatedRoutine.estimatedDuration,
+          title: generated.title,
+          description: generated.description,
+          duration: generated.estimatedDuration,
           created_by: user.id,
           is_template: false,
           ai_generated: true,
@@ -80,9 +125,15 @@ const AIRoutineCreator: React.FC = () => {
             goals: formData.goals,
             instrument: formData.instrument,
             timeAvailable: formData.timeAvailable,
+            skillLevel: formData.skillLevel,
+            genres: formData.genres,
+            mood: formData.mood,
+            challenges: formData.challenges,
+            preferences: formData.preferences,
+            equipment: formData.equipment,
             generatedAt: new Date().toISOString()
           },
-          tags: [formData.focusArea, formData.instrument, 'ai-generated'],
+          tags: [formData.focusArea, formData.instrument, ...(formData.genres || []), 'ai-generated'],
           visibility: formData.visibility,
         })
         .select()
@@ -90,8 +141,7 @@ const AIRoutineCreator: React.FC = () => {
 
       if (routineError) throw routineError;
 
-      // Create the blocks
-      const blocksToInsert = generatedRoutine.blocks.map((block, index) => ({
+      const blocksToInsert = generated.blocks.map((block, index) => ({
         routine_id: routine.id,
         type: block.type,
         content: block.content,
@@ -106,12 +156,12 @@ const AIRoutineCreator: React.FC = () => {
 
       if (blocksError) throw blocksError;
 
-      toast.success("AI routine generated successfully!");
+      toast.success("Routine saved! Opening in builder…");
       navigate(`/practice/builder/${routine.id}`);
 
     } catch (error) {
-      console.error('Error generating routine:', error);
-      toast.error("Failed to generate routine. Please try again.");
+      console.error('Error saving routine:', error);
+      toast.error("Failed to save routine. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -197,6 +247,83 @@ const AIRoutineCreator: React.FC = () => {
           </Select>
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="skillLevel">What is your current skill level?</Label>
+          <Select value={formData.skillLevel} onValueChange={(value) => setFormData(prev => ({ ...prev, skillLevel: value }))}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select your level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="beginner">Beginner</SelectItem>
+              <SelectItem value="intermediate">Intermediate</SelectItem>
+              <SelectItem value="advanced">Advanced</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Preferred genres</Label>
+          <div className="flex flex-wrap gap-2">
+            {availableGenres.map((g) => {
+              const checked = formData.genres?.includes(g);
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => {
+                      const set = new Set(prev.genres || []);
+                      if (set.has(g)) set.delete(g); else set.add(g);
+                      return { ...prev, genres: Array.from(set) };
+                    });
+                  }}
+                  className={`px-3 py-1 rounded-full border ${checked ? 'bg-primary text-primary-foreground border-primary' : 'bg-transparent'}`}
+                >
+                  {g}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="challenges">Any current challenges to consider? (optional)</Label>
+          <Textarea
+            id="challenges"
+            placeholder="E.g. lip fatigue, recovering from injury, timing issues, breath control..."
+            value={formData.challenges}
+            onChange={(e) => setFormData(prev => ({ ...prev, challenges: e.target.value }))}
+            className="min-h-[80px] resize-none"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Practice preferences</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={!!formData.preferences?.metronome}
+                onCheckedChange={(val) => setFormData(prev => ({ ...prev, preferences: { ...(prev.preferences || {}), metronome: Boolean(val) } }))}
+              />
+              <span className="text-sm">Use metronome</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={!!formData.preferences?.drone}
+                onCheckedChange={(val) => setFormData(prev => ({ ...prev, preferences: { ...(prev.preferences || {}), drone: Boolean(val) } }))}
+              />
+              <span className="text-sm">Use drone</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={!!formData.preferences?.recording}
+                onCheckedChange={(val) => setFormData(prev => ({ ...prev, preferences: { ...(prev.preferences || {}), recording: Boolean(val) } }))}
+              />
+              <span className="text-sm">Record session</span>
+            </label>
+          </div>
+        </div>
+
         <div className="space-y-3">
           <Label>Visibility</Label>
           <RadioGroup
@@ -245,6 +372,50 @@ const AIRoutineCreator: React.FC = () => {
             </>
           )}
         </Button>
+
+        {generated && (
+          <div className="mt-6 space-y-4 border rounded-lg p-4 border-white/10">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-semibold">{generated.title}</h3>
+                <p className="text-sm text-white/70">{generated.description}</p>
+              </div>
+              <Badge variant="secondary">{generated.estimatedDuration} min</Badge>
+            </div>
+
+            <div className="space-y-3">
+              {generated.blocks.map((b, i) => (
+                <div key={i} className="rounded-md border border-white/10 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">{i + 1}. {b.type}</div>
+                    <span className="text-xs text-white/70">{b.duration} min</span>
+                  </div>
+                  <div className="text-sm mt-1">{b.content}</div>
+                  <div className="text-xs text-white/70 mt-1">{b.instructions}</div>
+                </div>
+              ))}
+            </div>
+
+            {generated.tips && generated.tips.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">Personalized tips</h4>
+                <ul className="list-disc pl-5 text-sm text-white/80">
+                  {generated.tips.map((t, i) => <li key={i}>{t}</li>)}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button onClick={handleSave} className="flex-1" size="lg">
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Use This Routine
+              </Button>
+              <Button variant="outline" onClick={() => setGenerated(null)} className="flex-1" size="lg">
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
 
         <p className="text-sm text-white/60 text-center">
           Your routine will be tailored based on your responses, practice history, and current goals.

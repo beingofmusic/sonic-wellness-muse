@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import AIRoutineCreator from "@/components/practice/AIRoutineCreator";
 
 const AIRoutinePage: React.FC = () => {
+  useEffect(() => {
+    document.title = "AI Practice Routine Generator | Being of Music";
+    const desc = "Generate creative, personalized music practice routines with AI.";
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', desc);
+  }, []);
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
