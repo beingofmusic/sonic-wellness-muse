@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,11 +75,18 @@ const TemplatesList: React.FC = () => {
     <Layout>
       <div className="container mx-auto px-6 py-8 space-y-8">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Community Templates</h1>
-          <p className="text-muted-foreground">
-            Discover practice routines shared by the community and explore templates created by other musicians.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Community Templates</h1>
+            <p className="text-muted-foreground">
+              Discover practice routines shared by the community and explore templates created by other musicians.
+            </p>
+          </div>
+          <Link to="/practice/routines">
+            <Button variant="outline" className="border-white/10 bg-white/5 hover:bg-white/10">
+              My Saved Routines
+            </Button>
+          </Link>
         </div>
 
         {/* Search and Filters */}

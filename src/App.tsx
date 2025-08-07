@@ -36,6 +36,7 @@ import JournalingPage from "./pages/wellness/JournalingPage";
 
 import TemplatesList from "./pages/TemplatesList";
 import AIRoutinePage from "./pages/AIRoutinePage";
+import MyRoutinesPage from "./pages/MyRoutinesPage";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +108,14 @@ const App = () => (
           element={
             <ProtectedRoute>
               <TemplatesList />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/practice/routines" 
+          element={
+            <ProtectedRoute>
+              <MyRoutinesPage />
             </ProtectedRoute>
           } 
         />
