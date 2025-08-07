@@ -9,18 +9,43 @@ export type ChannelMessage = {
   channel_id: string;
   content: string;
   created_at: string;
-  username?: string;
-  first_name?: string;
-  last_name?: string;
-  avatar_url?: string;
+  username?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
+  pending?: boolean;
+  error?: boolean;
 };
 
 export const useChannelChat = (channelId: string | null) => {
   const [messages, setMessages] = useState<ChannelMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newMessage, setNewMessage] = useState('');
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [newMessages, setNewMessages] = useState(0);
+
+  const isNearBottom = () => {
+    const el = scrollRef.current;
+    if (!el) return true;
+    const threshold = 120;
+    return el.scrollHeight - (el.scrollTop + el.clientHeight) < threshold;
+  };
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  };
+
+  const handleScroll = () => {
+    if (isNearBottom()) setNewMessages(0);
+  };
+
+  const clearNewMessages = () => {
+    setNewMessages(0);
+    scrollToBottom();
+  };
 
   // Fetch messages when channel changes
   useEffect(() => {
@@ -76,6 +101,7 @@ export const useChannelChat = (channelId: string | null) => {
 
         console.log('Formatted channel messages:', formattedMessages);
         setMessages(formattedMessages);
+        setTimeout(() => scrollToBottom(), 50);
       } catch (error) {
         console.error('Error fetching channel messages:', error);
         toast.error('Failed to load messages');
@@ -99,15 +125,14 @@ export const useChannelChat = (channelId: string | null) => {
         },
         async (payload) => {
           console.log('New channel message received:', payload);
-          
           try {
-            const { data: profileData, error: profileError } = await supabase
+            const { data: profileData } = await supabase
               .from('profiles')
               .select('username, first_name, last_name, avatar_url')
               .eq('id', payload.new.user_id)
               .single();
 
-            const newMsg: ChannelMessage = {
+            const incoming: ChannelMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
               channel_id: payload.new.channel_id,
@@ -118,29 +143,55 @@ export const useChannelChat = (channelId: string | null) => {
               last_name: profileData?.last_name || null,
               avatar_url: profileData?.avatar_url || null,
             };
-            
-            setMessages((prev) => [...prev, newMsg]);
-            
-            // Scroll to bottom on new message
-            setTimeout(() => {
-              scrollToBottom();
-            }, 100);
+
+            const shouldScroll = isNearBottom();
+            setMessages((prev) => {
+              if (prev.some((x) => x.id === incoming.id)) return prev;
+              const idx = prev.findIndex(
+                (x) => x.pending && x.user_id === incoming.user_id && x.content === incoming.content
+              );
+              if (idx !== -1) {
+                const copy = prev.slice();
+                copy[idx] = { ...incoming };
+                return copy;
+              }
+              return [...prev, incoming];
+            });
+
+            if (shouldScroll) {
+              setTimeout(() => scrollToBottom(), 50);
+            } else {
+              setNewMessages((c) => c + 1);
+            }
           } catch (error) {
-            console.error('Error fetching profile for new message:', error);
-            // Still add the message even if we can't fetch the profile
-            const newMsg: ChannelMessage = {
+            console.error('Error handling incoming message', error);
+            const incoming: ChannelMessage = {
               id: payload.new.id,
               user_id: payload.new.user_id,
               channel_id: payload.new.channel_id,
               content: payload.new.content,
-              created_at: payload.new.created_at
+              created_at: payload.new.created_at,
             };
-            setMessages((prev) => [...prev, newMsg]);
-            
-            setTimeout(() => {
-              scrollToBottom();
-            }, 100);
+            const shouldScroll = isNearBottom();
+            setMessages((prev) => [...prev, incoming]);
+            if (shouldScroll) setTimeout(() => scrollToBottom(), 50); else setNewMessages((c) => c + 1);
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'community_messages', filter: `channel_id=eq.${channelId}` },
+        (payload) => {
+          const m = payload.new as any;
+          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at } : msg));
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'community_messages', filter: `channel_id=eq.${channelId}` },
+        (payload) => {
+          const m = payload.old as any;
+          setMessages(prev => prev.filter(msg => msg.id !== m.id));
         }
       )
       .subscribe();
@@ -154,33 +205,55 @@ export const useChannelChat = (channelId: string | null) => {
   const sendMessage = async () => {
     if (!user || !newMessage.trim() || !channelId) return;
 
-    try {
-      const { error } = await supabase.from('community_messages').insert({
+    const content = newMessage.trim();
+    setNewMessage('');
+
+    // Optimistic add
+    const tempId = `temp-${Date.now()}`;
+    const nowIso = new Date().toISOString();
+    setMessages(prev => [
+      ...prev,
+      {
+        id: tempId,
         user_id: user.id,
         channel_id: channelId,
-        content: newMessage.trim(),
-      });
+        content,
+        created_at: nowIso,
+        pending: true,
+        username: profile?.username || null,
+        first_name: profile?.first_name || null,
+        last_name: profile?.last_name || null,
+        avatar_url: profile?.avatar_url || null,
+      },
+    ]);
+    setTimeout(() => scrollToBottom(), 0);
 
-      if (error) throw error;
-      
-      // Clear input after sending
-      setNewMessage('');
+    try {
+      const { data: inserted, error } = await supabase
+        .from('community_messages')
+        .insert({
+          user_id: user.id,
+          channel_id: channelId,
+          content,
+        })
+        .select('id, created_at')
+        .single();
+
+      if (error || !inserted) throw error;
+
+      // Update temp message with real id and timestamp; realtime handler will de-dup
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: inserted.id, created_at: inserted.created_at, pending: false } : m));
     } catch (error) {
       console.error('Error sending message:', error);
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, pending: false, error: true } : m));
       toast.error('Failed to send message');
     }
   };
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  };
 
-  // Auto-scroll when messages change
+  // Intentionally removed automatic scroll on every message change to respect user position
   useEffect(() => {
-    scrollToBottom();
+    // no-op
   }, [messages]);
 
   return {
@@ -190,5 +263,9 @@ export const useChannelChat = (channelId: string | null) => {
     setNewMessage,
     sendMessage,
     scrollRef,
+    newMessages,
+    clearNewMessages,
+    handleScroll,
+    scrollToBottom,
   };
 };

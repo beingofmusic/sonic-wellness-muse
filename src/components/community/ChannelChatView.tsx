@@ -25,7 +25,10 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
     newMessage,
     setNewMessage,
     sendMessage,
-    scrollRef
+    scrollRef,
+    newMessages,
+    clearNewMessages,
+    handleScroll
   } = useChannelChat(channel?.id || null);
 
   const handleSend = () => {
@@ -88,7 +91,7 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
       </div>
       
       {/* Messages Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-pulse text-white/50">Loading messages...</div>
@@ -116,6 +119,13 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
               <ChatMessage message={message} />
             </div>
           ))
+        )}
+        {newMessages > 0 && (
+          <div className="sticky bottom-2 flex justify-center">
+            <button onClick={clearNewMessages} className="px-3 py-1 rounded-full bg-music-primary/20 text-music-primary border border-music-primary/40 text-xs">
+              {newMessages} new message{newMessages > 1 ? 's' : ''} — Jump to latest
+            </button>
+          </div>
         )}
       </div>
       

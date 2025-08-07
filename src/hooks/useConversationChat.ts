@@ -16,13 +16,33 @@ export interface ConversationMessage {
 }
 
 export const useConversationChat = (conversationId: string | null) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [newMessage, setNewMessage] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingTimer = useRef<number | null>(null);
+  const [newMessages, setNewMessages] = useState(0);
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  };
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const threshold = 120;
+    const nearBottom = el.scrollHeight - (el.scrollTop + el.clientHeight) < threshold;
+    if (nearBottom) setNewMessages(0);
+  };
+
+  const clearNewMessages = () => {
+    setNewMessages(0);
+    scrollToBottom();
+  };
 
   useEffect(() => {
     if (!conversationId) return;
@@ -150,6 +170,8 @@ export const useConversationChat = (conversationId: string | null) => {
           setTimeout(() => {
             if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
           }, 50);
+        } else {
+          setNewMessages((c) => c + 1);
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, async (payload) => {
@@ -193,7 +215,9 @@ export const useConversationChat = (conversationId: string | null) => {
     // Optimistic add
     const tempId = `temp-${Date.now()}`;
     const nowIso = new Date().toISOString();
-    setMessages(prev => [...prev, { id: tempId, user_id: user.id, content, created_at: nowIso, pending: true }]);
+    setMessages(prev => [...prev, { id: tempId, user_id: user.id, content, created_at: nowIso, pending: true, username: profile?.username || null, first_name: profile?.first_name || null, last_name: profile?.last_name || null, avatar_url: profile?.avatar_url || null }]);
+    // Ensure we stay at bottom when sending our own message
+    setTimeout(() => scrollToBottom(), 0);
     try {
       const { data: inserted, error } = await supabase
         .from('conversation_messages')
@@ -217,5 +241,5 @@ export const useConversationChat = (conversationId: string | null) => {
     }, 3000);
   };
 
-  return { messages, loading, newMessage, setNewMessage, sendMessage, scrollRef, typingUsers, setTyping };
+  return { messages, loading, newMessage, setNewMessage, sendMessage, scrollRef, typingUsers, setTyping, newMessages, clearNewMessages, handleScroll, scrollToBottom };
 };
