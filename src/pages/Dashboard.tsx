@@ -12,6 +12,8 @@ import PracticeLeaderboard from "@/components/practice/leaderboard/PracticeLeade
 import { useUserRoutines } from "@/hooks/useUserRoutines";
 import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 import LiveCommunityFeed from "@/components/dashboard/LiveCommunityFeed";
+import { CreateRoutineButton } from "@/components/practice/CreateRoutineModal";
+import QuickStartWidget from "@/components/dashboard/QuickStartWidget";
 
 const Dashboard: React.FC = () => {
   const {
@@ -65,7 +67,10 @@ const Dashboard: React.FC = () => {
             </Link>}
         </div>
       </header>
-      
+      {/* Quick Start Suggestions */}
+      <section className="mb-8">
+        <QuickStartWidget />
+      </section>
       {/* Practice Stats */}
       <div className="mb-8 md:mb-10">
         <PracticeStats />
@@ -75,12 +80,7 @@ const Dashboard: React.FC = () => {
       <section className="mb-8">
         <div className="flex flex-wrap justify-between items-center mb-4">
           <h2 className="text-xl font-medium">Your Practice Routines</h2>
-          <Link to="/practice/builder">
-            <Button variant="outline" size="sm" className="text-sm bg-transparent border border-music-primary/30 text-music-primary hover:bg-music-primary/10">
-              <Plus className="h-4 w-4 mr-1" />
-              Create Routine
-            </Button>
-          </Link>
+          <CreateRoutineButton variant="outline" size="sm" className="text-sm bg-transparent border border-music-primary/30 text-music-primary hover:bg-music-primary/10" />
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
@@ -106,15 +106,10 @@ const Dashboard: React.FC = () => {
             <div className="col-span-2 p-6 rounded-lg bg-white/5 flex flex-col items-center justify-center h-36">
               <Music className="h-10 w-10 text-white/30 mb-2" />
               <p className="text-center text-white/70 mb-3">No routines yet. Create your first one to begin your musical journey.</p>
-              <Link to="/practice/builder">
-                <Button 
-                  variant="outline" 
-                  className="text-sm bg-transparent border border-music-primary/30 text-music-primary hover:bg-music-primary/10"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Create New Routine
-                </Button>
-              </Link>
+              <CreateRoutineButton 
+                variant="outline" 
+                className="text-sm bg-transparent border border-music-primary/30 text-music-primary hover:bg-music-primary/10"
+              />
             </div>
           )}
         </div>
