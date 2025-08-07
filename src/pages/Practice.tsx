@@ -3,8 +3,9 @@ import { Layout } from "@/components/Layout";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Clock, Play, Zap, Settings, Star } from "lucide-react";
+import { Clock, Play, Settings, Star } from "lucide-react";
 import PracticeGoals from "@/components/practice/goals/PracticeGoals";
+import { CreateRoutineButton } from "@/components/practice/CreateRoutineModal";
 const Practice: React.FC = () => {
   useEffect(() => {
     document.title = "Practice Studio | Being of Music";
@@ -66,10 +67,10 @@ const Practice: React.FC = () => {
                 <div className="bg-secondary/20 rounded-full p-3 w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Star className="h-6 w-6 text-secondary" />
                 </div>
-                <h3 className="font-semibold mb-2">Browse Guided Routines</h3>
+                <h3 className="font-semibold mb-2">Explore Routines</h3>
                 <p className="text-sm text-white/60 mb-4">Follow structured routines and templates</p>
                 <Link to="/practice/templates">
-                  <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-secondary text-white">Explore Library</Button>
+                  <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-secondary text-white">Explore Routines</Button>
                 </Link>
               </div>
             </div>
@@ -84,17 +85,7 @@ const Practice: React.FC = () => {
                 <h3 className="font-semibold mb-2">Create Custom Routine</h3>
                 <p className="text-sm text-white/60 mb-4">Build your own practice routine manually or with AI</p>
                 <div className="flex gap-2">
-                  <Link to="/practice/routine-builder" className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full border-accent/30 hover:bg-accent/10">
-                      Manual
-                    </Button>
-                  </Link>
-                  <Link to="/practice/ai-routine" className="flex-1">
-                    <Button size="sm" className="w-full bg-accent/80 hover:bg-accent text-white">
-                      <Zap className="h-3 w-3 mr-1" />
-                      AI
-                    </Button>
-                  </Link>
+                  <CreateRoutineButton size="sm" className="w-full" />
                 </div>
               </div>
             </div>
