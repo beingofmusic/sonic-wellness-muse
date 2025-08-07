@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Link } from "react-router-dom";
@@ -6,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Clock, Play, Zap, Settings, Star } from "lucide-react";
 import PracticeGoals from "@/components/practice/goals/PracticeGoals";
-
 const Practice: React.FC = () => {
   useEffect(() => {
     document.title = "Practice Studio | Being of Music";
@@ -19,8 +17,7 @@ const Practice: React.FC = () => {
     }
     meta.setAttribute('content', desc);
   }, []);
-  return (
-    <Layout>
+  return <Layout>
       <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
@@ -72,9 +69,7 @@ const Practice: React.FC = () => {
                 <h3 className="font-semibold mb-2">Browse Guided Routines</h3>
                 <p className="text-sm text-white/60 mb-4">Follow structured routines and templates</p>
                 <Link to="/practice/templates">
-                  <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-secondary text-white">
-                    Browse
-                  </Button>
+                  <Button variant="secondary" className="w-full bg-secondary/80 hover:bg-secondary text-white">Explore Library</Button>
                 </Link>
               </div>
             </div>
@@ -111,8 +106,6 @@ const Practice: React.FC = () => {
           <PracticeGoals />
         </section>
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default Practice;
