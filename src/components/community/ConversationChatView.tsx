@@ -5,6 +5,7 @@ import { ChatMessage as PublicChatMessage } from '@/hooks/useCommunityChat';
 import ChatMessage from '@/components/community/ChatMessage';
 import ChatInput from '@/components/community/ChatInput';
 import { useAuth } from '@/context/AuthContext';
+import { useReactions } from '@/hooks/useReactions';
 
 interface ConversationHeaderProps {
   title: string;
@@ -29,6 +30,7 @@ interface ConversationChatViewProps {
 const ConversationChatView: React.FC<ConversationChatViewProps> = ({ conversationId, title, imageUrl }) => {
   const { user } = useAuth();
   const { messages, loading, newMessage, setNewMessage, sendMessage, scrollRef, typingUsers, setTyping, newMessages, clearNewMessages, handleScroll } = useConversationChat(conversationId);
+  const { getForMessage, toggle } = useReactions('conversation', conversationId, user?.id);
 
   const mapped: PublicChatMessage[] = messages.map(m => ({
     id: m.id,
@@ -57,7 +59,7 @@ const ConversationChatView: React.FC<ConversationChatViewProps> = ({ conversatio
         ) : (
           mapped.map(message => (
             <div key={message.id} id={`message-${message.id}`} className="transition-all duration-500 rounded-lg">
-              <ChatMessage message={message} />
+              <ChatMessage message={message} reactions={getForMessage(message.id)} onToggleReaction={(e) => toggle(message.id, e)} />
             </div>
           ))
         )}

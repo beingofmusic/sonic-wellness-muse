@@ -192,6 +192,55 @@ export type Database = {
         }
         Relationships: []
       }
+      community_message_reactions: {
+        Row: {
+          channel_id: string
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_message_reactions_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "community_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "community_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_messages: {
         Row: {
           channel_id: string
@@ -224,6 +273,55 @@ export type Database = {
           },
           {
             foreignKeyName: "community_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_message_reactions: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_message_reactions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_message_reactions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1272,6 +1370,18 @@ export type Database = {
       }
     }
     Functions: {
+      add_or_toggle_community_reaction: {
+        Args: { p_message_id: string; p_channel_id: string; p_emoji: string }
+        Returns: undefined
+      }
+      add_or_toggle_conversation_reaction: {
+        Args: {
+          p_message_id: string
+          p_conversation_id: string
+          p_emoji: string
+        }
+        Returns: undefined
+      }
       check_and_award_badges: {
         Args: { user_uuid: string }
         Returns: undefined
@@ -1364,6 +1474,32 @@ export type Database = {
           current_streak: number
           total_journal_entries: number
           weekly_minutes_goal: number
+        }[]
+      }
+      list_community_reactions: {
+        Args: { p_channel_id: string }
+        Returns: {
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at: string
+          username: string
+          first_name: string
+          last_name: string
+          avatar_url: string
+        }[]
+      }
+      list_conversation_reactions: {
+        Args: { p_conversation_id: string }
+        Returns: {
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at: string
+          username: string
+          first_name: string
+          last_name: string
+          avatar_url: string
         }[]
       }
     }

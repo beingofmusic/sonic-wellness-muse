@@ -6,6 +6,7 @@ import ChatMessage from '@/components/community/ChatMessage';
 import ChatInput from '@/components/community/ChatInput';
 import { toast } from 'sonner';
 import { Hash, Users } from 'lucide-react';
+import { useReactions } from '@/hooks/useReactions';
 
 interface ChannelChatViewProps {
   channel: CommunityChannel | null;
@@ -30,6 +31,8 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
     clearNewMessages,
     handleScroll
   } = useChannelChat(channel?.id || null);
+
+  const { getForMessage, toggle } = useReactions('community', channel?.id || null, user?.id);
 
   const handleSend = () => {
     if (!user) {
@@ -116,7 +119,7 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
               id={`message-${message.id}`}
               className="transition-all duration-500 rounded-lg"
             >
-              <ChatMessage message={message} />
+              <ChatMessage message={message} reactions={getForMessage(message.id)} onToggleReaction={(e) => toggle(message.id, e)} />
             </div>
           ))
         )}
