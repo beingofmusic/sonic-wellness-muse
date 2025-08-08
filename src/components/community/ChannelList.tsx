@@ -73,16 +73,16 @@ const ChannelList: React.FC<ChannelListProps> = ({
       </div>
 
       <div>
-        <SectionHeader label="Direct Messages" />
+        <div className="flex items-center justify-between px-2 mb-2">
+          <div className="text-xs font-semibold text-white/70 uppercase tracking-wider">Direct Messages</div>
+          {onNewDM && (
+            <Button size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={onNewDM}>
+              <MessageCircle className="w-4 h-4 mr-1" /> New Chat
+            </Button>
+          )}
+        </div>
         {dms.length === 0 ? (
-          <div className="px-2">
-            <div className="flex items-center justify-between h-8 text-sm text-white/60">
-              <span>No direct messages yet</span>
-              <Button size="sm" variant="ghost" className="h-7 px-2" onClick={onNewDM}>
-                <MessageCircle className="w-4 h-4 mr-1" /> New DM
-              </Button>
-            </div>
-          </div>
+          <div className="px-2 text-sm text-white/60 h-8 flex items-center">No direct messages yet</div>
         ) : (
           dms.map((dm) => (
             <Button

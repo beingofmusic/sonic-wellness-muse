@@ -13,7 +13,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useConversations } from "@/hooks/useConversations";
 import { ensureDirectConversation } from "@/services/conversationService";
 import CreateGroupModal from "@/components/community/CreateGroupModal";
-
+import CreateDirectMessageModal from "@/components/community/CreateDirectMessageModal";
 const Community: React.FC = () => {
   const { user } = useAuth();
   const { channels, loading: channelsLoading } = useCommunityChannels();
@@ -23,6 +23,7 @@ const Community: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [createDmOpen, setCreateDmOpen] = useState(false);
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const { dms, groups, loading: convLoading } = useConversations();
@@ -159,6 +160,7 @@ const Community: React.FC = () => {
               groups={mappedGroups}
               activeConversationId={activeConversationId}
               onConversationSelect={handleConversationSelect}
+              onNewDM={() => setCreateDmOpen(true)}
               onNewGroup={() => setCreateGroupOpen(true)}
             />
           </div>
@@ -208,6 +210,16 @@ const Community: React.FC = () => {
         onCreated={(id) => {
           setActiveChannelId(null);
           setActiveConversationId(id);
+        }}
+      />
+
+      <CreateDirectMessageModal
+        open={createDmOpen}
+        onOpenChange={setCreateDmOpen}
+        onCreated={(id) => {
+          setActiveChannelId(null);
+          setActiveConversationId(id);
+          if (isMobile) setSidebarOpen(false);
         }}
       />
     </Layout>
