@@ -59,9 +59,9 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
           });
           
           // Highlight the message briefly
-          messageElement.classList.add('bg-music-primary/20', 'border-music-primary/50');
+          messageElement.classList.add('ring-2', 'ring-primary/60', 'rounded-md', 'bg-muted/30');
           setTimeout(() => {
-            messageElement.classList.remove('bg-music-primary/20', 'border-music-primary/50');
+            messageElement.classList.remove('ring-2', 'ring-primary/60', 'rounded-md', 'bg-muted/30');
           }, 2000);
           
           // Call the callback to clear the target
@@ -70,6 +70,38 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
       }
     }
   }, [targetMessageId, messages, onMessageFound]);
+
+  // Local helper to scroll/highlight a message (used by "View full message")
+  const handleViewOriginal = (id: string) => {
+    const el = document.getElementById(`message-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('ring-2', 'ring-primary/60', 'rounded-md', 'bg-muted/30');
+    setTimeout(() => {
+      el.classList.remove('ring-2', 'ring-primary/60', 'rounded-md', 'bg-muted/30');
+    }, 2000);
+  };
+
+  const messageById = useMemo(() => {
+    const map = new Map<string, ChannelMessage>();
+    for (const m of messages) map.set(m.id, m);
+    return map;
+  }, [messages]);
+
+  const messagesSorted = useMemo(() => {
+    return [...messages].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  }, [messages]);
+
+  const makeReplyPreview = (m: ChannelMessage) => {
+    const originalId = (m as any).reply_to_id as string | null | undefined;
+    if (!originalId) return undefined;
+    const original = messageById.get(originalId);
+    if (!original) return undefined;
+    const authorName = getAuthorName(original);
+    const firstLine = original.content.split('\n')[0] || '';
+    const preview = firstLine.length > 140 ? firstLine.slice(0, 139) + '…' : firstLine;
+    return { id: original.id, authorName, preview };
+  };
 
   if (!channel) {
     return (
@@ -116,23 +148,33 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
             )}
           </div>
         ) : (
-          <ThreadedMessages 
-            messages={messages} 
-            getReactions={getForMessage}
-            onToggleReaction={toggle}
-            onEdit={async (id, newContent) => {
-              const { error } = await (supabase as any).from('community_messages').update({ content: newContent }).eq('id', id);
-              if (error) toast.error('Failed to edit message');
-            }}
-            onDelete={async (id) => {
-              const { error } = await (supabase as any)
-                .from('community_messages')
-                .update({ deleted_at: new Date().toISOString(), deleted_by: user?.id })
-                .eq('id', id);
-              if (error) toast.error('Failed to delete message');
-            }}
-            onReply={(m) => setReplyTo(m)}
-          />
+          <>
+            {messagesSorted.map((m) => (
+              <ChatMessage
+                key={m.id}
+                message={m as any}
+                reactions={getForMessage(m.id)}
+                onToggleReaction={(e) => toggle(m.id, e)}
+                onEdit={async (newContent) => {
+                  const { error } = await (supabase as any)
+                    .from('community_messages')
+                    .update({ content: newContent })
+                    .eq('id', m.id);
+                  if (error) toast.error('Failed to edit message');
+                }}
+                onDelete={async () => {
+                  const { error } = await (supabase as any)
+                    .from('community_messages')
+                    .update({ deleted_at: new Date().toISOString(), deleted_by: user?.id })
+                    .eq('id', m.id);
+                  if (error) toast.error('Failed to delete message');
+                }}
+                onReply={() => setReplyTo(m)}
+                replyPreview={makeReplyPreview(m)}
+                onViewOriginal={handleViewOriginal}
+              />
+            ))}
+          </>
         )}
         {newMessages > 0 && (
           <div className="sticky bottom-2 flex justify-center">

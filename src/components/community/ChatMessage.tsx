@@ -20,6 +20,10 @@ interface ChatMessageProps {
   onEdit?: (newContent: string) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onReply?: () => void;
+  // Quoted reply snippet shown above this message when it's a reply
+  replyPreview?: { id: string; authorName: string; preview: string };
+  // Scroll to the original message when clicking "View full message"
+  onViewOriginal?: (originalId: string) => void;
 }
 
 const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
@@ -43,7 +47,7 @@ const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
   );
 };
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction, onEdit, onDelete, onReply }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction, onEdit, onDelete, onReply, replyPreview, onViewOriginal }) => {
   const [hover, setHover] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const longPressTimer = useRef<number | null>(null);
@@ -95,6 +99,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
 
   return (
     <div
+      id={`message-${message.id}`}
       className="p-3 hover:bg-white/5 transition-colors relative"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -157,6 +162,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
               </DropdownMenu>
             )}
           </div>
+          {replyPreview && (
+            <div className="mb-2 text-xs border border-border bg-muted/40 rounded-md p-2">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-foreground/80 truncate">{replyPreview.authorName}</span>
+                <button
+                  type="button"
+                  onClick={() => onViewOriginal?.(replyPreview.id)}
+                  className="text-primary hover:underline text-[11px]"
+                >
+                  View full message
+                </button>
+              </div>
+              <div className="text-muted-foreground truncate">{replyPreview.preview}</div>
+            </div>
+          )}
           {/* Message content */}
           {(message as any).deleted_at ? (
             <p className="text-sm italic text-white/50">Message deleted</p>
