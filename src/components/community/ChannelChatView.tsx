@@ -7,6 +7,7 @@ import ChatInput from '@/components/community/ChatInput';
 import { toast } from 'sonner';
 import { Hash, Users } from 'lucide-react';
 import { useReactions } from '@/hooks/useReactions';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChannelChatViewProps {
   channel: CommunityChannel | null;
@@ -119,7 +120,22 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
               id={`message-${message.id}`}
               className="transition-all duration-500 rounded-lg"
             >
-              <ChatMessage message={message} reactions={getForMessage(message.id)} onToggleReaction={(e) => toggle(message.id, e)} />
+              <ChatMessage 
+                message={message} 
+                reactions={getForMessage(message.id)} 
+                onToggleReaction={(e) => toggle(message.id, e)}
+                onEdit={async (newContent) => {
+                  const { error } = await (supabase as any).from('community_messages').update({ content: newContent }).eq('id', message.id);
+                  if (error) toast.error('Failed to edit message');
+                }}
+                onDelete={async () => {
+                  const { error } = await (supabase as any)
+                    .from('community_messages')
+                    .update({ deleted_at: new Date().toISOString(), deleted_by: user?.id })
+                    .eq('id', message.id);
+                  if (error) toast.error('Failed to delete message');
+                }}
+              />
             </div>
           ))
         )}

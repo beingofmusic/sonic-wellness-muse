@@ -6,6 +6,8 @@ import ChatMessage from '@/components/community/ChatMessage';
 import ChatInput from '@/components/community/ChatInput';
 import { useAuth } from '@/context/AuthContext';
 import { useReactions } from '@/hooks/useReactions';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ConversationHeaderProps {
   title: string;
@@ -41,6 +43,9 @@ const ConversationChatView: React.FC<ConversationChatViewProps> = ({ conversatio
     first_name: m.first_name,
     last_name: m.last_name,
     avatar_url: m.avatar_url,
+    edited_at: (m as any).edited_at,
+    deleted_at: (m as any).deleted_at,
+    deleted_by: (m as any).deleted_by,
   }));
 
   return (
@@ -59,7 +64,25 @@ const ConversationChatView: React.FC<ConversationChatViewProps> = ({ conversatio
         ) : (
           mapped.map(message => (
             <div key={message.id} id={`message-${message.id}`} className="transition-all duration-500 rounded-lg">
-              <ChatMessage message={message} reactions={getForMessage(message.id)} onToggleReaction={(e) => toggle(message.id, e)} />
+              <ChatMessage 
+                message={message} 
+                reactions={getForMessage(message.id)} 
+                onToggleReaction={(e) => toggle(message.id, e)}
+                onEdit={async (newContent) => {
+                  const { error } = await (supabase as any)
+                    .from('conversation_messages')
+                    .update({ content: newContent })
+                    .eq('id', message.id);
+                  if (error) toast.error('Failed to edit message');
+                }}
+                onDelete={async () => {
+                  const { error } = await (supabase as any)
+                    .from('conversation_messages')
+                    .update({ deleted_at: new Date().toISOString(), deleted_by: user?.id })
+                    .eq('id', message.id);
+                  if (error) toast.error('Failed to delete message');
+                }}
+              />
             </div>
           ))
         )}

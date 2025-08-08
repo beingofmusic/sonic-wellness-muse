@@ -8,11 +8,17 @@ import ReactionPicker from "./ReactionPicker";
 import type { MessageReactions } from "@/hooks/useReactions";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useAuth } from "@/context/AuthContext";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { MoreHorizontal, Pencil, Trash2, Check, X } from "lucide-react";
 
 interface ChatMessageProps {
   message: (ChatMessageType & { pending?: boolean; error?: boolean; attachments?: { id: string; path: string; mime_type?: string | null; size?: number | null; message_id?: string }[] });
   reactions?: MessageReactions;
   onToggleReaction?: (emoji: string) => void;
+  onEdit?: (newContent: string) => void | Promise<void>;
+  onDelete?: () => void | Promise<void>;
 }
 
 const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
@@ -36,12 +42,19 @@ const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
   );
 };
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction, onEdit, onDelete }) => {
   const [hover, setHover] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const longPressTimer = useRef<number | null>(null);
+  const { user, isAdmin, isTeamMember } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(message.content);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const formattedTime = formatDistanceToNow(new Date(message.created_at), { addSuffix: true });
+  const isOwn = user?.id === message.user_id;
+  const canManage = !!(isOwn || isAdmin || isTeamMember);
+  
   
   const getFullName = () => {
     if (message.first_name) {
@@ -102,7 +115,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
           )}
         </Avatar>
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline mb-1">
+          <div className="flex items-baseline mb-1 gap-2">
             <ClickableUserProfile
               userId={message.user_id}
               username={message.username}
@@ -112,11 +125,62 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
               className="font-medium text-white mr-2 truncate"
               openDmOnClick
             />
-            <span className="text-xs text-white/50">{formattedTime}</span>
+            <span className="text-xs text-white/50">
+              {formattedTime}
+              {(message as any).edited_at ? " • (edited)" : ""}
+            </span>
+            {canManage && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="ml-auto p-1 rounded hover:bg-white/10" aria-label="Message actions">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => { setIsEditing(true); setEditValue(message.content); }}>
+                    <Pencil className="w-4 h-4 mr-2" /> Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setConfirmOpen(true)}>
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
-          <p className="text-sm text-white/90 break-words">{message.content}</p>
+          {/* Message content */}
+          {(message as any).deleted_at ? (
+            <p className="text-sm italic text-white/50">Message deleted</p>
+          ) : isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                className="w-full rounded-md bg-background/60 border border-white/10 p-2 text-sm"
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                rows={Math.min(6, Math.max(2, Math.ceil(editValue.length / 48)))}
+                autoFocus
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-music-primary/20 text-music-primary border border-music-primary/40 text-xs"
+                  onClick={async () => { await onEdit?.(editValue.trim()); setIsEditing(false); }}
+                >
+                  <Check className="w-4 h-4" /> Save
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-white/10 text-xs hover:bg-white/5"
+                  onClick={() => { setIsEditing(false); setEditValue(message.content); }}
+                >
+                  <X className="w-4 h-4" /> Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-white/90 break-words whitespace-pre-wrap">{message.content}</p>
+          )}
           {/* Attachments */}
-          {Array.isArray((message as any).attachments) && (message as any).attachments.length > 0 && (
+          {!(message as any).deleted_at && Array.isArray((message as any).attachments) && (message as any).attachments.length > 0 && (
             <div className="mt-2 flex flex-col gap-2">
               {(message as any).attachments.map((att: any) => {
                 const url = supabase.storage.from('chat_attachments').getPublicUrl(att.path).data.publicUrl;
@@ -175,6 +239,22 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
           <ReactionPicker onPick={(e) => { setPickerOpen(false); onToggleReaction?.(e); }} />
         </div>
       )}
+
+      {/* Delete confirm */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete message?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The message will be replaced with "Message deleted" for all participants.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => { setConfirmOpen(false); await onDelete?.(); }}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -19,6 +19,9 @@ export type ChannelMessage = {
   channel_id: string;
   content: string;
   created_at: string;
+  edited_at?: string | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
   username?: string | null;
   first_name?: string | null;
   last_name?: string | null;
@@ -93,6 +96,9 @@ export const useChannelChat = (channelId: string | null) => {
             id,
             content,
             created_at,
+            edited_at,
+            deleted_at,
+            deleted_by,
             user_id,
             channel_id,
             profiles(
@@ -116,6 +122,9 @@ export const useChannelChat = (channelId: string | null) => {
             channel_id: msg.channel_id,
             content: msg.content,
             created_at: msg.created_at,
+            edited_at: msg.edited_at || null,
+            deleted_at: msg.deleted_at || null,
+            deleted_by: msg.deleted_by || null,
             username: profileData?.username || null,
             first_name: profileData?.first_name || null,
             last_name: profileData?.last_name || null,
@@ -166,6 +175,9 @@ export const useChannelChat = (channelId: string | null) => {
               channel_id: payload.new.channel_id,
               content: payload.new.content,
               created_at: payload.new.created_at,
+              edited_at: (payload.new as any).edited_at || null,
+              deleted_at: (payload.new as any).deleted_at || null,
+              deleted_by: (payload.new as any).deleted_by || null,
               username: profileData?.username || null,
               first_name: profileData?.first_name || null,
               last_name: profileData?.last_name || null,
@@ -212,7 +224,7 @@ export const useChannelChat = (channelId: string | null) => {
         { event: 'UPDATE', schema: 'public', table: 'community_messages', filter: `channel_id=eq.${channelId}` },
         (payload) => {
           const m = payload.new as any;
-          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at } : msg));
+          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at, edited_at: m.edited_at || null, deleted_at: m.deleted_at || null, deleted_by: m.deleted_by || null } : msg));
         }
       )
       .on(

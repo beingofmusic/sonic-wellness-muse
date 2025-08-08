@@ -16,6 +16,9 @@ export interface ConversationMessage {
   user_id: string;
   content: string;
   created_at: string;
+  edited_at?: string | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
   username?: string | null;
   first_name?: string | null;
   last_name?: string | null;
@@ -89,7 +92,7 @@ export const useConversationChat = (conversationId: string | null) => {
       try {
         const { data, error } = await supabase
           .from("conversation_messages")
-          .select(`id, content, created_at, user_id`)
+          .select(`id, content, created_at, edited_at, deleted_at, deleted_by, user_id`)
           .eq("conversation_id", conversationId)
           .order("created_at", { ascending: true })
           .limit(500);
@@ -109,6 +112,9 @@ export const useConversationChat = (conversationId: string | null) => {
           user_id: m.user_id,
           content: m.content,
           created_at: m.created_at,
+          edited_at: (m as any).edited_at || null,
+          deleted_at: (m as any).deleted_at || null,
+          deleted_by: (m as any).deleted_by || null,
           username: profMap[m.user_id]?.username || null,
           first_name: profMap[m.user_id]?.first_name || null,
           last_name: profMap[m.user_id]?.last_name || null,
@@ -174,6 +180,9 @@ export const useConversationChat = (conversationId: string | null) => {
           user_id: m.user_id,
           content: m.content,
           created_at: m.created_at,
+          edited_at: (m as any).edited_at || null,
+          deleted_at: (m as any).deleted_at || null,
+          deleted_by: (m as any).deleted_by || null,
           username: profileData?.username || null,
           first_name: profileData?.first_name || null,
           last_name: profileData?.last_name || null,
@@ -210,7 +219,7 @@ export const useConversationChat = (conversationId: string | null) => {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, async (payload) => {
         lastRealtimeTs.current = Date.now();
         const m = payload.new as any;
-        setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at } : msg));
+        setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at, edited_at: (m as any).edited_at || null, deleted_at: (m as any).deleted_at || null, deleted_by: (m as any).deleted_by || null } : msg));
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'conversation_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
         lastRealtimeTs.current = Date.now();
