@@ -26,7 +26,6 @@ const MobileNavbar: React.FC = () => {
   const moreItems = [
     { label: "Courses", path: "/courses" },
     { label: "Merch", path: "/shop" },
-    { label: "Settings", path: "/settings" },
   ];
   
   const isActive = (path: string) => {
