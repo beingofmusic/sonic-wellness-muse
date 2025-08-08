@@ -44,7 +44,7 @@ export const useRecentCommunityActivity = () => {
             created_at,
             user_id,
             channel_id,
-            profiles(
+            profiles!community_messages_user_id_fkey(
               username,
               first_name,
               last_name,
@@ -92,7 +92,7 @@ export const useRecentCommunityActivity = () => {
           .select(`
             user_id,
             created_at,
-            profiles(
+            profiles!community_messages_user_id_fkey(
               username,
               first_name,
               last_name,

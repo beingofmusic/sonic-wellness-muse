@@ -34,7 +34,7 @@ export const useCommunityChat = () => {
             content,
             created_at,
             user_id,
-            profiles(
+            profiles!community_messages_user_id_fkey(
               username,
               first_name,
               last_name,

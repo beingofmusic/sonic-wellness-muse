@@ -101,7 +101,7 @@ export const useChannelChat = (channelId: string | null) => {
             deleted_by,
             user_id,
             channel_id,
-            profiles(
+            profiles!community_messages_user_id_fkey(
               username,
               first_name,
               last_name,
