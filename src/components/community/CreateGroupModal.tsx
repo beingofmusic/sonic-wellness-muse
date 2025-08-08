@@ -44,24 +44,41 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange,
   }, [open]);
 
   useEffect(() => {
+    if (!open) return;
     const run = async () => {
-      if (!query.trim()) { setResults([]); return; }
       setSearching(true);
-      const q = `%${query.trim()}%`;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id,username,first_name,last_name,avatar_url")
-        .or(`username.ilike.${q},first_name.ilike.${q},last_name.ilike.${q}`)
-        .limit(20);
-      if (error) {
-        console.error(error); toast.error("Search failed");
+      try {
+        if (!query.trim()) {
+          // Default: list all users (excluding current user), limited for performance
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("id,username,first_name,last_name,avatar_url")
+            .neq("id", user?.id ?? "")
+            .order("first_name", { ascending: true })
+            .limit(50);
+          if (error) throw error;
+          setResults(((data as any[]) as ProfileItem[]) || []);
+        } else {
+          const q = `%${query.trim()}%`;
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("id,username,first_name,last_name,avatar_url")
+            .or(`username.ilike.${q},first_name.ilike.${q},last_name.ilike.${q}`)
+            .neq("id", user?.id ?? "")
+            .limit(50);
+          if (error) throw error;
+          setResults(((data as any[]) as ProfileItem[]) || []);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Search failed");
+      } finally {
+        setSearching(false);
       }
-      setResults((data as any[]) as ProfileItem[] || []);
-      setSearching(false);
     };
-    const t = setTimeout(run, 300);
+    const t = setTimeout(run, 250);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, open, user?.id]);
 
   const toggleSelect = (p: ProfileItem) => {
     setSelected(prev => prev.find(x => x.id === p.id) ? prev.filter(x => x.id !== p.id) : [...prev, p]);
@@ -142,7 +159,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ open, onOpenChange,
               <div className="divide-y divide-white/5">
                 {searching ? (
                   <div className="p-3 text-sm text-white/60">Searching…</div>
-                ) : results.length === 0 ? (
+                ) : results.length === 0 && query.trim() ? (
                   <div className="p-3 text-sm text-white/60">No results</div>
                 ) : (
                   results.map(p => (
