@@ -38,6 +38,7 @@ export const useChannelChat = (channelId: string | null) => {
   const { user, profile } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [newMessages, setNewMessages] = useState(0);
+  const lastRealtimeTs = useRef<number>(Date.now());
 
   const isNearBottom = () => {
     const el = scrollRef.current;
@@ -162,6 +163,7 @@ export const useChannelChat = (channelId: string | null) => {
           filter: `channel_id=eq.${channelId}`
         },
         async (payload) => {
+          lastRealtimeTs.current = Date.now();
           try {
             const { data: profileData } = await supabase
               .from('profiles')
@@ -223,6 +225,7 @@ export const useChannelChat = (channelId: string | null) => {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'community_messages', filter: `channel_id=eq.${channelId}` },
         (payload) => {
+          lastRealtimeTs.current = Date.now();
           const m = payload.new as any;
           setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, content: m.content, created_at: m.created_at, edited_at: m.edited_at || null, deleted_at: m.deleted_at || null, deleted_by: m.deleted_by || null } : msg));
         }
@@ -231,6 +234,7 @@ export const useChannelChat = (channelId: string | null) => {
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'community_messages', filter: `channel_id=eq.${channelId}` },
         (payload) => {
+          lastRealtimeTs.current = Date.now();
           const m = payload.old as any;
           setMessages(prev => prev.filter(msg => msg.id !== m.id));
         }
@@ -240,14 +244,27 @@ export const useChannelChat = (channelId: string | null) => {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'community_message_attachments' },
         (payload) => {
+          lastRealtimeTs.current = Date.now();
           const att = payload.new as any as MessageAttachment;
           setMessages(prev => prev.map(m => m.id === att.message_id ? { ...m, attachments: [...(m.attachments || []), att] } : m));
         }
       )
       .subscribe();
 
+    const onOnline = () => fetchMessages();
+    window.addEventListener('online', onOnline);
+
+    // Fallback poller in case realtime disconnects silently
+    const poller = window.setInterval(() => {
+      if (Date.now() - lastRealtimeTs.current > 15000) {
+        fetchMessages();
+      }
+    }, 10000);
+
     return () => {
       supabase.removeChannel(channel);
+      window.clearInterval(poller);
+      window.removeEventListener('online', onOnline);
     };
   }, [channelId]);
 
