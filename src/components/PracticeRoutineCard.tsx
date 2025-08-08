@@ -1,8 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, Star } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useRatingSummary } from "@/hooks/useRoutineFeedback";
 
 interface PracticeRoutineCardProps {
   title: string;
@@ -21,6 +22,8 @@ const PracticeRoutineCard: React.FC<PracticeRoutineCardProps> = ({
   onContinue,
   onSchedule,
 }) => {
+  const { data: ratingSummary } = useRatingSummary(routineId);
+  const avg = ratingSummary ? Math.round(ratingSummary.average * 10) / 10 : null;
   return (
     <div className="p-4 rounded-xl border border-white/10 bg-card/80 backdrop-blur-sm">
       <div className="flex justify-between items-center mb-2">
@@ -30,6 +33,14 @@ const PracticeRoutineCard: React.FC<PracticeRoutineCardProps> = ({
           <span>{duration}</span>
         </div>
       </div>
+      {avg !== null && ratingSummary && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+          <span>
+            {avg.toFixed(1)} ({ratingSummary.count} ratings)
+          </span>
+        </div>
+      )}
       <div className="mb-3">
         <div className="progress-bar">
           <div

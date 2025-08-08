@@ -1258,6 +1258,105 @@ export type Database = {
           },
         ]
       }
+      routine_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_routine_comment_likes_comment"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "routine_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routine_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          routine_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          routine_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          routine_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_routine_comments_routine"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routine_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          routine_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          routine_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          routine_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_routine_feedback_routine"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       routines: {
         Row: {
           ai_generated: boolean | null
@@ -1542,6 +1641,22 @@ export type Database = {
           usage_count: number
         }[]
       }
+      get_most_commented_routines: {
+        Args: { limit_count?: number }
+        Returns: {
+          routine_id: string
+          comments_count: number
+        }[]
+      }
+      get_routine_feedback_stats: {
+        Args: { routine_uuid: string }
+        Returns: {
+          average_rating: number
+          ratings_count: number
+          completion_users: number
+          percent_with_rating: number
+        }[]
+      }
       get_streak_leaderboard: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1567,6 +1682,14 @@ export type Database = {
           completed_lessons: number
           completion_percentage: number
           last_interaction: string
+        }[]
+      }
+      get_user_feedback_timeseries: {
+        Args: { user_uuid: string }
+        Returns: {
+          day: string
+          ratings_count: number
+          comments_count: number
         }[]
       }
       get_weekly_practice_leaderboard: {

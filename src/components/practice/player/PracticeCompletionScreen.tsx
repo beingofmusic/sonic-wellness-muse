@@ -7,6 +7,8 @@ import { logPracticeSession } from "@/services/practiceStatsService";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useBadgeNotificationContext } from "@/context/BadgeNotificationContext";
+import FeedbackPrompt from "@/components/feedback/FeedbackPrompt";
+import CommentsList from "@/components/feedback/CommentsList";
 
 interface PracticeCompletionScreenProps {
   routine: PracticeRoutine;
@@ -99,6 +101,9 @@ const PracticeCompletionScreen: React.FC<PracticeCompletionScreenProps> = ({
             <span className="font-semibold">{blocks.length}</span>
           </div>
         </div>
+        {routine.id !== 'open-practice' && (
+          <FeedbackPrompt routineId={routine.id} />
+        )}
         
         <div className="flex flex-col lg:flex-row gap-4 w-full max-w-2xl">
           <Button
