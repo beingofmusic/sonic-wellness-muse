@@ -1,16 +1,21 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, Star, Heart } from "lucide-react";
 import { PracticeTemplate } from "@/types/practice";
 import { Link } from "react-router-dom";
 import ClickableUserProfile from "@/components/ClickableUserProfile";
+import { useRatingSummary, useComments } from "@/hooks/useRoutineFeedback";
 
 interface PracticeTemplateCardProps {
   template: PracticeTemplate;
 }
 
 const PracticeTemplateCard: React.FC<PracticeTemplateCardProps> = ({ template }) => {
+  const { data: ratingSummary } = useRatingSummary(template.id);
+  const { data: comments } = useComments(template.id, 1);
+  const avg = ratingSummary ? Math.round(ratingSummary.average * 10) / 10 : null;
+  const topComment = comments && comments.length > 0 ? comments[0] : null;
   return (
     <div className="p-5 rounded-xl border border-white/10 bg-card/80 backdrop-blur-sm hover:bg-card/90 transition-all duration-200">
       <div className="flex items-center mb-2">
@@ -47,8 +52,25 @@ const PracticeTemplateCard: React.FC<PracticeTemplateCardProps> = ({ template })
           </ul>
         </div>
       )}
-      
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
+      {avg !== null && ratingSummary && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
+          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+          <span>{avg.toFixed(1)} ({ratingSummary.count} ratings)</span>
+        </div>
+      )}
+
+      {topComment && (
+        <div className="text-xs text-white/70 mb-3 italic line-clamp-2">
+          “{topComment.comment}”
+          {typeof topComment.likes === 'number' && topComment.likes > 0 && (
+            <span className="ml-2 not-italic inline-flex items-center gap-1 text-white/60">
+              <Heart className="h-3 w-3" /> {topComment.likes}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
         <div className="flex items-center gap-1 text-xs text-white/50">
           <span>{template.usageCount} uses</span>
           <span>•</span>
