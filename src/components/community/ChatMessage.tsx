@@ -15,6 +15,27 @@ interface ChatMessageProps {
   onToggleReaction?: (emoji: string) => void;
 }
 
+const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="block overflow-hidden rounded-md border border-white/10 bg-white/5 hover:bg-white/10"
+        aria-label={`Open image ${alt}`}
+      >
+        <img src={url} alt={alt} loading="lazy" className="max-h-40 object-cover" />
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="p-0 border-0 bg-transparent max-w-[90vw]">
+          <img src={url} alt={alt} className="w-full h-auto rounded-md" />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction }) => {
   const [hover, setHover] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
