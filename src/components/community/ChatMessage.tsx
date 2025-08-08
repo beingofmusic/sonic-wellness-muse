@@ -6,9 +6,11 @@ import ClickableUserProfile from "@/components/ClickableUserProfile";
 import { ReactionChips } from "./ReactionChips";
 import ReactionPicker from "./ReactionPicker";
 import type { MessageReactions } from "@/hooks/useReactions";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ChatMessageProps {
-  message: (ChatMessageType & { pending?: boolean; error?: boolean });
+  message: (ChatMessageType & { pending?: boolean; error?: boolean; attachments?: { id: string; path: string; mime_type?: string | null; size?: number | null; message_id?: string }[] });
   reactions?: MessageReactions;
   onToggleReaction?: (emoji: string) => void;
 }
@@ -92,6 +94,30 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
             <span className="text-xs text-white/50">{formattedTime}</span>
           </div>
           <p className="text-sm text-white/90 break-words">{message.content}</p>
+          {/* Attachments */}
+          {Array.isArray((message as any).attachments) && (message as any).attachments.length > 0 && (
+            <div className="mt-2 flex flex-col gap-2">
+              {(message as any).attachments.map((att: any) => {
+                const url = supabase.storage.from('chat_attachments').getPublicUrl(att.path).data.publicUrl;
+                const isImage = (att.mime_type || '').startsWith('image/');
+                const isPdf = (att.mime_type || '') === 'application/pdf';
+                return (
+                  <div key={att.id} className="max-w-[320px]">
+                    {isImage ? (
+                      <ImagePreview url={url} alt={att.path.split('/').pop() || 'image attachment'} />
+                    ) : isPdf ? (
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="block border border-white/10 rounded-md p-3 bg-white/5 hover:bg-white/10">
+                        <div className="text-sm font-medium truncate">{att.path.split('/').pop()}</div>
+                        <div className="text-xs text-white/60">PDF • {Math.round((att.size || 0)/1024)} KB</div>
+                      </a>
+                    ) : (
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm underline">{att.path.split('/').pop()}</a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {message.pending && (
             <div className="text-xs text-white/50 mt-1">Sending…</div>
           )}

@@ -3,6 +3,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
+export type MessageAttachment = {
+  id: string;
+  message_id: string;
+  path: string;
+  mime_type: string | null;
+  size: number | null;
+  created_at: string;
+  bucket_id?: string | null;
+};
+
 export type ChannelMessage = {
   id: string;
   user_id: string;
@@ -15,6 +25,7 @@ export type ChannelMessage = {
   avatar_url?: string | null;
   pending?: boolean;
   error?: boolean;
+  attachments?: MessageAttachment[];
 };
 
 export const useChannelChat = (channelId: string | null) => {
@@ -47,6 +58,24 @@ export const useChannelChat = (channelId: string | null) => {
     scrollToBottom();
   };
 
+  const attachForMessages = async (messageIds: string[]) => {
+    if (messageIds.length === 0) return {} as Record<string, MessageAttachment[]>;
+    const { data, error } = await (supabase as any)
+      .from('community_message_attachments')
+      .select('id, message_id, path, mime_type, size, created_at, bucket_id')
+      .in('message_id', messageIds);
+    if (error) {
+      console.error('Failed loading attachments', error);
+      return {} as Record<string, MessageAttachment[]>;
+    }
+    const map: Record<string, MessageAttachment[]> = {};
+    for (const att of (data || []) as any[]) {
+      if (!map[att.message_id]) map[att.message_id] = [];
+      map[att.message_id].push(att as MessageAttachment);
+    }
+    return map;
+  };
+
   // Fetch messages when channel changes
   useEffect(() => {
     if (!channelId) {
@@ -58,7 +87,6 @@ export const useChannelChat = (channelId: string | null) => {
     const fetchMessages = async () => {
       setLoading(true);
       try {
-        console.log('Fetching messages for channel:', channelId);
         const { data, error } = await supabase
           .from('community_messages')
           .select(`
@@ -79,13 +107,9 @@ export const useChannelChat = (channelId: string | null) => {
           .limit(100);
 
         if (error) throw error;
-        
-        console.log('Raw channel messages:', data);
 
-        // Transform data to include profile info directly in each message
-        const formattedMessages = data.map((msg: any) => {
+        const formattedMessages = (data || []).map((msg: any) => {
           const profileData = msg.profiles || null;
-          
           return {
             id: msg.id,
             user_id: msg.user_id,
@@ -96,11 +120,16 @@ export const useChannelChat = (channelId: string | null) => {
             first_name: profileData?.first_name || null,
             last_name: profileData?.last_name || null,
             avatar_url: profileData?.avatar_url || null,
-          };
+            attachments: [],
+          } as ChannelMessage;
         });
 
-        console.log('Formatted channel messages:', formattedMessages);
-        setMessages(formattedMessages);
+        // Load attachments for these messages
+        const ids = formattedMessages.map(m => m.id);
+        const attMap = await attachForMessages(ids);
+        const withAtts = formattedMessages.map(m => ({ ...m, attachments: attMap[m.id] || [] }));
+
+        setMessages(withAtts);
         setTimeout(() => scrollToBottom(), 50);
       } catch (error) {
         console.error('Error fetching channel messages:', error);
@@ -124,7 +153,6 @@ export const useChannelChat = (channelId: string | null) => {
           filter: `channel_id=eq.${channelId}`
         },
         async (payload) => {
-          console.log('New channel message received:', payload);
           try {
             const { data: profileData } = await supabase
               .from('profiles')
@@ -142,6 +170,7 @@ export const useChannelChat = (channelId: string | null) => {
               first_name: profileData?.first_name || null,
               last_name: profileData?.last_name || null,
               avatar_url: profileData?.avatar_url || null,
+              attachments: [],
             };
 
             const shouldScroll = isNearBottom();
@@ -194,6 +223,15 @@ export const useChannelChat = (channelId: string | null) => {
           setMessages(prev => prev.filter(msg => msg.id !== m.id));
         }
       )
+      // Listen for new attachments and merge into messages we already have
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'community_message_attachments' },
+        (payload) => {
+          const att = payload.new as any as MessageAttachment;
+          setMessages(prev => prev.map(m => m.id === att.message_id ? { ...m, attachments: [...(m.attachments || []), att] } : m));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -201,11 +239,33 @@ export const useChannelChat = (channelId: string | null) => {
     };
   }, [channelId]);
 
-  // Function to send a new message
-  const sendMessage = async () => {
-    if (!user || !newMessage.trim() || !channelId) return;
+  const uploadAttachments = async (messageId: string, files?: File[]) => {
+    if (!user || !files || files.length === 0) return;
+    for (const file of files) {
+      const path = `${user.id}/${messageId}/${Date.now()}-${file.name}`;
+      const { error: uploadErr } = await supabase.storage
+        .from('chat_attachments')
+        .upload(path, file);
+      if (uploadErr) {
+        console.error('Upload failed', uploadErr);
+        toast.error(`Failed to upload ${file.name}`);
+        continue;
+      }
+      const { error: insertErr } = await (supabase as any)
+        .from('community_message_attachments')
+        .insert({ message_id: messageId, path, mime_type: file.type, size: file.size, uploaded_by: user.id });
+      if (insertErr) {
+        console.error('Insert attachment failed', insertErr);
+      }
+    }
+  };
 
+  // Function to send a new message (supports attachments)
+  const sendMessage = async (files?: File[]) => {
+    if (!user || !channelId) return;
     const content = newMessage.trim();
+    if (!content && (!files || files.length === 0)) return;
+
     setNewMessage('');
 
     // Optimistic add
@@ -217,13 +277,14 @@ export const useChannelChat = (channelId: string | null) => {
         id: tempId,
         user_id: user.id,
         channel_id: channelId,
-        content,
+        content: content,
         created_at: nowIso,
         pending: true,
         username: profile?.username || null,
         first_name: profile?.first_name || null,
         last_name: profile?.last_name || null,
         avatar_url: profile?.avatar_url || null,
+        attachments: [],
       },
     ]);
     setTimeout(() => scrollToBottom(), 0);
@@ -241,6 +302,9 @@ export const useChannelChat = (channelId: string | null) => {
 
       if (error || !inserted) throw error;
 
+      // Upload attachments after message is created
+      await uploadAttachments(inserted.id, files);
+
       // Update temp message with real id and timestamp; realtime handler will de-dup
       setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: inserted.id, created_at: inserted.created_at, pending: false } : m));
     } catch (error) {
@@ -249,7 +313,6 @@ export const useChannelChat = (channelId: string | null) => {
       toast.error('Failed to send message');
     }
   };
-
 
   // Intentionally removed automatic scroll on every message change to respect user position
   useEffect(() => {

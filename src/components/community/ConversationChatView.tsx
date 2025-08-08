@@ -77,7 +77,7 @@ const ConversationChatView: React.FC<ConversationChatViewProps> = ({ conversatio
       <ChatInput 
         value={newMessage}
         onChange={(v) => { setNewMessage(v); setTyping(); }}
-        onSubmit={sendMessage}
+        onSubmit={(opts) => sendMessage(opts?.files)}
         disabled={!user}
       />
     </div>

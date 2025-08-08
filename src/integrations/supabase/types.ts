@@ -192,6 +192,47 @@ export type Database = {
         }
         Relationships: []
       }
+      community_message_attachments: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          id: string
+          message_id: string
+          mime_type: string | null
+          path: string
+          size: number | null
+          uploaded_by: string
+        }
+        Insert: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          message_id: string
+          mime_type?: string | null
+          path: string
+          size?: number | null
+          uploaded_by: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          mime_type?: string | null
+          path?: string
+          size?: number | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "community_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_message_reactions: {
         Row: {
           channel_id: string
@@ -276,6 +317,47 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_message_attachments: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          id: string
+          message_id: string
+          mime_type: string | null
+          path: string
+          size: number | null
+          uploaded_by: string
+        }
+        Insert: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          message_id: string
+          mime_type?: string | null
+          path: string
+          size?: number | null
+          uploaded_by: string
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          mime_type?: string | null
+          path?: string
+          size?: number | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_messages"
             referencedColumns: ["id"]
           },
         ]

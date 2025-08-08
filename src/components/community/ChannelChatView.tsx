@@ -34,12 +34,12 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
 
   const { getForMessage, toggle } = useReactions('community', channel?.id || null, user?.id);
 
-  const handleSend = () => {
+  const handleSend = async (opts?: { files?: File[] }) => {
     if (!user) {
       toast.error("Please sign in to join the conversation");
       return;
     }
-    sendMessage();
+    await sendMessage(opts?.files);
   };
 
   // Scroll to target message when it's found
