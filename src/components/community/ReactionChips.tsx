@@ -37,7 +37,7 @@ export const ReactionChips: React.FC<ReactionChipsProps> = ({ reactions, onToggl
             <PopoverContent className="w-56 p-2 bg-card border-white/10">
               <div className="text-xs text-white/70 mb-2">{emoji} by</div>
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {meta.users.map((u) => (
+                {meta.users.filter((u): u is ReactionUser => !!u).map((u) => (
                   <div key={u.id} className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       {u.avatar_url ? (

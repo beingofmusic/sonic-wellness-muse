@@ -78,7 +78,14 @@ export function useReactions(scope: Scope, threadId: string | null, currentUserI
             .from("profiles")
             .select("id, username, first_name, last_name, avatar_url")
             .eq("id", r.user_id)
-            .single();
+            .maybeSingle();
+          const reactor: ReactionUser = prof ?? {
+            id: r.user_id,
+            username: null,
+            first_name: null,
+            last_name: null,
+            avatar_url: null,
+          };
           setReactionsByMessage((prev) => {
             const copy = { ...prev } as ReactionsByMessage;
             const msgId = r.message_id as string;
@@ -86,7 +93,10 @@ export function useReactions(scope: Scope, threadId: string | null, currentUserI
             if (!copy[msgId]) copy[msgId] = {};
             if (!copy[msgId][emoji]) copy[msgId][emoji] = { count: 0, reactedByMe: false, users: [] };
             copy[msgId][emoji].count += 1;
-            copy[msgId][emoji].users = [...copy[msgId][emoji].users, prof as ReactionUser];
+            // Avoid inserting duplicates if already present
+            if (!copy[msgId][emoji].users.find((u) => u && u.id === reactor.id)) {
+              copy[msgId][emoji].users = [...copy[msgId][emoji].users, reactor];
+            }
             if (currentUserId && r.user_id === currentUserId) copy[msgId][emoji].reactedByMe = true;
             return copy;
           });
@@ -106,7 +116,7 @@ export function useReactions(scope: Scope, threadId: string | null, currentUserI
             // decrement old
             if (oldR && copy[msgId][oldR.emoji]) {
               copy[msgId][oldR.emoji].count = Math.max(0, copy[msgId][oldR.emoji].count - 1);
-              copy[msgId][oldR.emoji].users = copy[msgId][oldR.emoji].users.filter((u) => u.id !== newR.user_id);
+              copy[msgId][oldR.emoji].users = copy[msgId][oldR.emoji].users.filter((u) => u && u.id !== newR.user_id);
               if (currentUserId && newR.user_id === currentUserId && copy[msgId][oldR.emoji].count === 0) {
                 copy[msgId][oldR.emoji].reactedByMe = false;
               }
@@ -136,7 +146,7 @@ export function useReactions(scope: Scope, threadId: string | null, currentUserI
             if (!copy[msgId]) return prev;
             if (!copy[msgId][r.emoji]) return prev;
             copy[msgId][r.emoji].count = Math.max(0, copy[msgId][r.emoji].count - 1);
-            copy[msgId][r.emoji].users = copy[msgId][r.emoji].users.filter((u) => u.id !== r.user_id);
+            copy[msgId][r.emoji].users = copy[msgId][r.emoji].users.filter((u) => u && u.id !== r.user_id);
             if (currentUserId && r.user_id === currentUserId && copy[msgId][r.emoji].count === 0) {
               copy[msgId][r.emoji].reactedByMe = false;
             }
