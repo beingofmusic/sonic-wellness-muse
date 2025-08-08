@@ -107,6 +107,7 @@ const Dashboard: React.FC = () => {
                 title={routine.title}
                 duration={`${routine.duration} min`}
                 progress={routine.progress || 0}
+                routineId={routine.id}
                 onContinue={() => window.location.href = `/practice/routine/${routine.id}`}
                 onSchedule={() => window.location.href = `/calendar?routine=${routine.id}`}
               />

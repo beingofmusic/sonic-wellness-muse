@@ -54,16 +54,30 @@ export const getUserRating = async (routineId: string): Promise<number | null> =
 export const getRatingSummary = async (
   routineId: string
 ): Promise<RatingSummary> => {
-  // Use RPC for accurate aggregation
-  const { data, error } = await supabase.rpc("get_routine_feedback_stats", {
-    routine_uuid: routineId,
-  });
-  if (error) throw error;
-  const row = Array.isArray(data) ? data[0] : data;
-  return {
-    average: Number(row?.average_rating ?? 0),
-    count: Number(row?.ratings_count ?? 0),
-  };
+  try {
+    const { data, error } = await supabase.rpc("get_routine_feedback_stats", {
+      routine_uuid: routineId,
+    });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      average: Number(row?.average_rating ?? 0),
+      count: Number(row?.ratings_count ?? 0),
+    };
+  } catch (e) {
+    // Fallback to direct aggregation if RPC is unavailable
+    const { data, error } = await supabase
+      .from("routine_feedback")
+      .select("rating")
+      .eq("routine_id", routineId);
+    if (error) throw error;
+    const ratings = (data as { rating: number }[]) || [];
+    const count = ratings.length;
+    const average = count
+      ? ratings.reduce((sum, r) => sum + (r?.rating ?? 0), 0) / count
+      : 0;
+    return { average, count };
+  }
 };
 
 export const addComment = async (routineId: string, comment: string) => {
