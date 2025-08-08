@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useChannelChat } from '@/hooks/useChannelChat';
+import { useChannelChat, ChannelMessage } from '@/hooks/useChannelChat';
 import { CommunityChannel } from '@/hooks/useCommunityChannels';
 import ChatMessage from '@/components/community/ChatMessage';
 import ChatInput from '@/components/community/ChatInput';
@@ -34,13 +34,15 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
   } = useChannelChat(channel?.id || null);
 
   const { getForMessage, toggle } = useReactions('community', channel?.id || null, user?.id);
+  const [replyTo, setReplyTo] = useState<ChannelMessage | null>(null);
 
   const handleSend = async (opts?: { files?: File[] }) => {
     if (!user) {
       toast.error("Please sign in to join the conversation");
       return;
     }
-    await sendMessage(opts?.files);
+    await sendMessage({ files: opts?.files, replyToId: replyTo?.id || null });
+    setReplyTo(null);
   };
 
   // Scroll to target message when it's found
@@ -114,30 +116,23 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
             )}
           </div>
         ) : (
-          messages.map(message => (
-            <div 
-              key={message.id} 
-              id={`message-${message.id}`}
-              className="transition-all duration-500 rounded-lg"
-            >
-              <ChatMessage 
-                message={message} 
-                reactions={getForMessage(message.id)} 
-                onToggleReaction={(e) => toggle(message.id, e)}
-                onEdit={async (newContent) => {
-                  const { error } = await (supabase as any).from('community_messages').update({ content: newContent }).eq('id', message.id);
-                  if (error) toast.error('Failed to edit message');
-                }}
-                onDelete={async () => {
-                  const { error } = await (supabase as any)
-                    .from('community_messages')
-                    .update({ deleted_at: new Date().toISOString(), deleted_by: user?.id })
-                    .eq('id', message.id);
-                  if (error) toast.error('Failed to delete message');
-                }}
-              />
-            </div>
-          ))
+          <ThreadedMessages 
+            messages={messages} 
+            getReactions={getForMessage}
+            onToggleReaction={toggle}
+            onEdit={async (id, newContent) => {
+              const { error } = await (supabase as any).from('community_messages').update({ content: newContent }).eq('id', id);
+              if (error) toast.error('Failed to edit message');
+            }}
+            onDelete={async (id) => {
+              const { error } = await (supabase as any)
+                .from('community_messages')
+                .update({ deleted_at: new Date().toISOString(), deleted_by: user?.id })
+                .eq('id', id);
+              if (error) toast.error('Failed to delete message');
+            }}
+            onReply={(m) => setReplyTo(m)}
+          />
         )}
         {newMessages > 0 && (
           <div className="sticky bottom-2 flex justify-center">
@@ -154,9 +149,68 @@ const ChannelChatView: React.FC<ChannelChatViewProps> = ({
         onChange={setNewMessage} 
         onSubmit={handleSend} 
         disabled={!user}
+        replyingTo={replyTo ? { id: replyTo.id, authorName: getAuthorName(replyTo), preview: replyTo.content } : undefined}
+        onCancelReply={() => setReplyTo(null)}
       />
     </div>
   );
 };
 
 export default ChannelChatView;
+
+// Helper to format author name consistently with ChatMessage
+function getAuthorName(message: ChannelMessage): string {
+  if (message.first_name) {
+    return `${message.first_name}${message.last_name ? ` ${message.last_name}` : ''}`;
+  }
+  if (message.username) return message.username;
+  return 'User';
+}
+
+// Threaded renderer component to keep ChannelChatView tidy
+const ThreadedMessages: React.FC<{
+  messages: ChannelMessage[];
+  getReactions: (messageId: string) => any;
+  onToggleReaction: (messageId: string, emoji: string) => void;
+  onEdit: (id: string, content: string) => Promise<void> | void;
+  onDelete: (id: string) => Promise<void> | void;
+  onReply: (m: ChannelMessage) => void;
+}> = ({ messages, getReactions, onToggleReaction, onEdit, onDelete, onReply }) => {
+  const tree = useMemo(() => {
+    const map = new Map<string | null, ChannelMessage[]>();
+    for (const m of messages) {
+      const key = (m as any).reply_to_id || null;
+      const arr = map.get(key) || [];
+      arr.push(m);
+      map.set(key, arr);
+    }
+    // sort each level by created_at
+    for (const arr of map.values()) {
+      arr.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    }
+    return map;
+  }, [messages]);
+
+  const renderLevel = (parentId: string | null, depth = 0) => {
+    const items = tree.get(parentId) || [];
+    return items.map((m) => (
+      <div key={m.id} id={`message-${m.id}`} className="transition-all duration-500 rounded-lg">
+        <ChatMessage
+          message={m as any}
+          reactions={getReactions(m.id)}
+          onToggleReaction={(e) => onToggleReaction(m.id, e)}
+          onEdit={(newContent) => onEdit(m.id, newContent)}
+          onDelete={() => onDelete(m.id)}
+          onReply={() => onReply(m)}
+        />
+        {tree.get(m.id) && tree.get(m.id)!.length > 0 && (
+          <div className="ml-8 pl-3 border-l border-white/10">
+            {renderLevel(m.id, depth + 1)}
+          </div>
+        )}
+      </div>
+    ));
+  };
+
+  return <>{renderLevel(null)}</>;
+};

@@ -291,6 +291,7 @@ export type Database = {
           deleted_by: string | null
           edited_at: string | null
           id: string
+          reply_to_id: string | null
           user_id: string
         }
         Insert: {
@@ -301,6 +302,7 @@ export type Database = {
           deleted_by?: string | null
           edited_at?: string | null
           id?: string
+          reply_to_id?: string | null
           user_id: string
         }
         Update: {
@@ -311,6 +313,7 @@ export type Database = {
           deleted_by?: string | null
           edited_at?: string | null
           id?: string
+          reply_to_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -326,6 +329,13 @@ export type Database = {
             columns: ["deleted_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_messages_reply_to_fk"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "community_messages"
             referencedColumns: ["id"]
           },
           {

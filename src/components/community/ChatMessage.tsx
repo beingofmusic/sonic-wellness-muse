@@ -19,6 +19,7 @@ interface ChatMessageProps {
   onToggleReaction?: (emoji: string) => void;
   onEdit?: (newContent: string) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
+  onReply?: () => void;
 }
 
 const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
@@ -42,7 +43,7 @@ const ImagePreview: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
   );
 };
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction, onEdit, onDelete }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleReaction, onEdit, onDelete, onReply }) => {
   const [hover, setHover] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const longPressTimer = useRef<number | null>(null);
@@ -129,6 +130,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, reactions, onToggleR
               {formattedTime}
               {(message as any).edited_at ? " • (edited)" : ""}
             </span>
+            {onReply && !(message as any).deleted_at && (
+              <button
+                type="button"
+                onClick={() => onReply?.()}
+                className="text-xs text-music-primary hover:text-music-light transition-colors"
+              >
+                Reply
+              </button>
+            )}
             {canManage && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

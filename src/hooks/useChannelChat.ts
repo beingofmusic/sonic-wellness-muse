@@ -22,6 +22,7 @@ export type ChannelMessage = {
   edited_at?: string | null;
   deleted_at?: string | null;
   deleted_by?: string | null;
+  reply_to_id?: string | null;
   username?: string | null;
   first_name?: string | null;
   last_name?: string | null;
@@ -100,6 +101,7 @@ export const useChannelChat = (channelId: string | null) => {
             edited_at,
             deleted_at,
             deleted_by,
+            reply_to_id,
             user_id,
             channel_id,
             profiles!community_messages_user_id_fkey(
@@ -126,6 +128,7 @@ export const useChannelChat = (channelId: string | null) => {
             edited_at: msg.edited_at || null,
             deleted_at: msg.deleted_at || null,
             deleted_by: msg.deleted_by || null,
+            reply_to_id: msg.reply_to_id || null,
             username: profileData?.username || null,
             first_name: profileData?.first_name || null,
             last_name: profileData?.last_name || null,
@@ -180,6 +183,7 @@ export const useChannelChat = (channelId: string | null) => {
               edited_at: (payload.new as any).edited_at || null,
               deleted_at: (payload.new as any).deleted_at || null,
               deleted_by: (payload.new as any).deleted_by || null,
+              reply_to_id: (payload.new as any).reply_to_id || null,
               username: profileData?.username || null,
               first_name: profileData?.first_name || null,
               last_name: profileData?.last_name || null,
@@ -289,10 +293,12 @@ export const useChannelChat = (channelId: string | null) => {
     }
   };
 
-  // Function to send a new message (supports attachments)
-  const sendMessage = async (files?: File[]) => {
+  // Function to send a new message (supports attachments and replies)
+  const sendMessage = async (opts?: { files?: File[]; replyToId?: string | null }) => {
     if (!user || !channelId) return;
     const content = newMessage.trim();
+    const files = opts?.files;
+    const replyToId = opts?.replyToId || null;
     if (!content && (!files || files.length === 0)) return;
 
     setNewMessage('');
@@ -314,6 +320,7 @@ export const useChannelChat = (channelId: string | null) => {
         last_name: profile?.last_name || null,
         avatar_url: profile?.avatar_url || null,
         attachments: [],
+        reply_to_id: replyToId,
       },
     ]);
     setTimeout(() => scrollToBottom(), 0);
@@ -325,6 +332,7 @@ export const useChannelChat = (channelId: string | null) => {
           user_id: user.id,
           channel_id: channelId,
           content,
+          reply_to_id: replyToId,
         })
         .select('id, created_at')
         .single();

@@ -7,8 +7,10 @@ import { Paperclip, Send, X } from "lucide-react";
 interface ChatInputProps {
   value: string;
   onChange: (value: string) => void;
-  onSubmit: (opts?: { files?: File[] }) => Promise<void> | void;
+  onSubmit: (opts?: { files?: File[]; replyToId?: string | null }) => Promise<void> | void;
   disabled?: boolean;
+  replyingTo?: { id: string; authorName: string; preview: string };
+  onCancelReply?: () => void;
 }
 
 const ACCEPTED_TYPES = [
@@ -24,7 +26,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
   value, 
   onChange, 
   onSubmit, 
-  disabled = false 
+  disabled = false,
+  replyingTo,
+  onCancelReply,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -64,7 +68,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if ((disabled || sending) || (!value.trim() && files.length === 0)) return;
     try {
       setSending(true);
-      await onSubmit({ files });
+      await onSubmit({ files, replyToId: replyingTo?.id || null });
       setFiles([]);
     } finally {
       setSending(false);
@@ -100,6 +104,23 @@ const ChatInput: React.FC<ChatInputProps> = ({
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {replyingTo && (
+        <div className="px-3 pt-2 pb-1 text-xs text-white/80 flex items-start gap-2">
+          <div className="flex-1 overflow-hidden">
+            <div className="text-white/60">Replying to {replyingTo.authorName}</div>
+            <div className="truncate text-white/80">“{replyingTo.preview}”</div>
+          </div>
+          <button
+            type="button"
+            onClick={onCancelReply}
+            className="text-white/60 hover:text-white/90"
+            aria-label="Cancel reply"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 
