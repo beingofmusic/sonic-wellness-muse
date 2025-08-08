@@ -287,6 +287,9 @@ export type Database = {
           channel_id: string
           content: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          edited_at: string | null
           id: string
           user_id: string
         }
@@ -294,6 +297,9 @@ export type Database = {
           channel_id: string
           content: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
           id?: string
           user_id: string
         }
@@ -301,6 +307,9 @@ export type Database = {
           channel_id?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
           id?: string
           user_id?: string
         }
@@ -310,6 +319,13 @@ export type Database = {
             columns: ["channel_id"]
             isOneToOne: false
             referencedRelation: "community_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_messages_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -416,6 +432,9 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          edited_at: string | null
           id: string
           updated_at: string
           user_id: string
@@ -424,6 +443,9 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
           id?: string
           updated_at?: string
           user_id: string
@@ -432,6 +454,9 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          edited_at?: string | null
           id?: string
           updated_at?: string
           user_id?: string
@@ -442,6 +467,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_messages_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
