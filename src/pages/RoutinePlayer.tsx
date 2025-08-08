@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { useRoutinePlayer } from "@/hooks/useRoutinePlayer";
@@ -7,6 +7,7 @@ import PracticeSession from "@/components/practice/player/PracticeSession";
 import LoadingState from "@/components/practice/player/LoadingState";
 import PracticeCompletionScreen from "@/components/practice/player/PracticeCompletionScreen";
 import RecordingChoiceDialog from "@/components/practice/player/RecordingChoiceDialog";
+import { logContentIssue } from "@/services/loggingService";
 
 const RoutinePlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +40,30 @@ const RoutinePlayer: React.FC = () => {
     elapsedTimeSeconds
   } = useRoutinePlayer(id);
 
+  // Log content issues if routine or blocks are missing
+  useEffect(() => {
+    if (!isLoading && id) {
+      const hasRoutine = !!routine;
+      const blocksCount = Array.isArray(blocks) ? blocks.length : null;
+
+      if (!hasRoutine) {
+        logContentIssue({
+          routine_id: id,
+          page: "RoutinePlayer",
+          issue_type: "ROUTINE_NOT_FOUND",
+          details: { reason: "Routine not found or inaccessible", hasRoutine, blocksCount },
+        });
+      } else if (blocksCount === 0) {
+        logContentIssue({
+          routine_id: id,
+          page: "RoutinePlayer",
+          issue_type: "NO_BLOCKS",
+          details: { reason: "Routine has zero blocks", hasRoutine, blocksCount },
+        });
+      }
+    }
+  }, [isLoading, id, routine, blocks]);
+
   // Display loading state while fetching routine data
   if (isLoading) {
     return (
@@ -53,7 +78,10 @@ const RoutinePlayer: React.FC = () => {
     return (
       <Layout>
         <div className="flex flex-col items-center justify-center h-full p-6">
-          <h1 className="text-2xl font-semibold mb-4">Routine not found</h1>
+          <h1 className="text-2xl font-semibold mb-2">Routine not found</h1>
+          <p className="text-muted-foreground mb-4 text-center">
+            This routine is unavailable right now. Our team has been notified.
+          </p>
           <Link to="/practice" className="text-music-primary hover:underline">
             Return to Practice Studio
           </Link>

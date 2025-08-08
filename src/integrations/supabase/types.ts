@@ -337,6 +337,36 @@ export type Database = {
           },
         ]
       }
+      content_issue_logs: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          issue_type: string
+          page: string | null
+          routine_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          issue_type: string
+          page?: string | null
+          routine_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          issue_type?: string
+          page?: string | null
+          routine_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       conversation_message_attachments: {
         Row: {
           bucket_id: string
@@ -1603,6 +1633,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: undefined
       }
+      ensure_placeholder_blocks_for_orphans: {
+        Args: { p_default_duration?: number }
+        Returns: number
+      }
       get_alltime_practice_leaderboard: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1646,6 +1680,17 @@ export type Database = {
         Returns: {
           routine_id: string
           comments_count: number
+        }[]
+      }
+      get_orphan_templates: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          routine_id: string
+          title: string
+          created_by: string
+          visibility: string
+          is_template: boolean
+          updated_at: string
         }[]
       }
       get_routine_feedback_stats: {

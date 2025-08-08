@@ -1,7 +1,17 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PracticeRoutine, PracticeTemplate, RoutineBlock } from "@/types/practice";
 import { formatDistanceToNow } from "date-fns";
+
+// Helper: get orphan template ids (templates/public routines with zero blocks)
+export const getOrphanTemplateIds = async (): Promise<Set<string>> => {
+  const { data, error } = await supabase.rpc("get_orphan_templates");
+  if (error) {
+    console.error("Error fetching orphan templates:", error);
+    return new Set();
+  }
+  const ids = (Array.isArray(data) ? data : []).map((row: any) => String(row.routine_id));
+  return new Set(ids);
+};
 
 export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => {
   const { data, error } = await supabase
@@ -22,33 +32,39 @@ export const fetchTemplates = async (limit = 3): Promise<PracticeTemplate[]> => 
     .or("is_template.eq.true,visibility.eq.public")
     .neq("visibility", "private")
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(limit * 2); // fetch a bit extra to account for filtering
 
   if (error) {
     console.error("Error fetching templates:", error);
     throw error;
   }
 
+  // Filter out orphans (no blocks)
+  const orphanIds = await getOrphanTemplateIds();
+  const valid = (data || []).filter((t: any) => !orphanIds.has(String(t.id))).slice(0, limit);
+
   // Transform the data to match our frontend type
-  return data.map(template => {
-    const profile = template.profiles as { first_name: string | null, last_name: string | null };
-    const creatorName = profile ? 
-      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Team member' : 
-      'Team member';
-    
-    // Just placeholder data for now until we implement the blocks
+  return valid.map((template: any) => {
+    const profile = template.profiles as { first_name: string | null; last_name: string | null };
+    const creatorName = profile
+      ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Team member"
+      : "Team member";
+
     const includes = ["Warm-up exercise", "Technical drill", "Mindfulness practice"];
-    
+
     return {
       ...template,
       creator: creatorName,
-      usageCount: Math.floor(Math.random() * 500), // Placeholder until we track this
-      includes
+      usageCount: Math.floor(Math.random() * 500),
+      includes,
     } as PracticeTemplate;
   });
 };
 
-export const fetchAllTemplates = async (page = 1, pageSize = 12): Promise<{ templates: PracticeTemplate[]; totalCount: number }> => {
+export const fetchAllTemplates = async (
+  page = 1,
+  pageSize = 12
+): Promise<{ templates: PracticeTemplate[]; totalCount: number }> => {
   // Get total count first
   const { count, error: countError } = await supabase
     .from("routines")
@@ -90,27 +106,33 @@ export const fetchAllTemplates = async (page = 1, pageSize = 12): Promise<{ temp
     throw error;
   }
 
+  // Filter out orphans (no blocks)
+  const orphanIds = await getOrphanTemplateIds();
+  const filtered = (data || []).filter((t: any) => !orphanIds.has(String(t.id)));
+
   // Transform the data to match our frontend type
-  const templates = data.map(template => {
-    const profile = template.profiles as { first_name: string | null, last_name: string | null };
-    const creatorName = profile ? 
-      `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Team member' : 
-      'Team member';
-    
-    // Just placeholder data for now until we implement the blocks
+  const templates = filtered.map((template: any) => {
+    const profile = template.profiles as { first_name: string | null; last_name: string | null };
+    const creatorName = profile
+      ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "Team member"
+      : "Team member";
+
     const includes = ["Warm-up exercise", "Technical drill", "Mindfulness practice"];
-    
+
     return {
       ...template,
       creator: creatorName,
-      usageCount: Math.floor(Math.random() * 500), // Placeholder until we track this
-      includes
+      usageCount: Math.floor(Math.random() * 500),
+      includes,
     } as PracticeTemplate;
   });
 
+  // Adjust total count by excluding all known orphans (approximate but consistent)
+  const adjustedTotal = Math.max(0, (count || 0) - orphanIds.size);
+
   return {
     templates,
-    totalCount: count || 0
+    totalCount: adjustedTotal,
   };
 };
 
