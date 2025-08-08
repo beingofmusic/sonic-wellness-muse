@@ -14,6 +14,8 @@ import UpcomingEvents from "@/components/dashboard/UpcomingEvents";
 import LiveCommunityFeed from "@/components/dashboard/LiveCommunityFeed";
 import QuickStartWidget from "@/components/dashboard/QuickStartWidget";
 
+const SHOW_QUICK_START = false;
+
 const Dashboard: React.FC = () => {
   const {
     profile,
@@ -72,10 +74,12 @@ const Dashboard: React.FC = () => {
         <PracticeStats />
       </div>
 
-      {/* Quick Start */}
-      <section className="mb-8">
-        <QuickStartWidget />
-      </section>
+      {/* Quick Start (temporarily disabled) */}
+      {SHOW_QUICK_START && (
+        <section className="mb-8">
+          <QuickStartWidget />
+        </section>
+      )}
       
       {/* Practice Routines */}
       <section className="mb-8">
