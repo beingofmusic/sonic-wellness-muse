@@ -4,7 +4,6 @@ import Sidebar from "@/components/Sidebar";
 import MobileNavbar from "@/components/MobileNavbar";
 import MobileTopBar from "@/components/MobileTopBar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 interface LayoutProps {
   children: ReactNode;
@@ -24,7 +23,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       </main>
       
       {isMobile === true && <MobileNavbar />}
-      <OnboardingWizard />
     </div>
   );
 };
