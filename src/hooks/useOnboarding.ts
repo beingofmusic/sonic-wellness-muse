@@ -43,6 +43,7 @@ export const useOnboarding = () => {
     let isMounted = true;
     const fetchStatus = async () => {
       setLoading(true);
+      console.log("[onboarding] fetching status for user", user.id);
       try {
         const { data, error } = await (supabase as any)
           .from("onboarding_status" as any)
@@ -65,11 +66,13 @@ export const useOnboarding = () => {
             .insert(init as any);
           if (insertError) throw insertError;
           if (isMounted) setStatus(init);
+          console.log("[onboarding] initialized status row", init);
         } else {
           if (isMounted) setStatus(data as OnboardingStatus);
+          console.log("[onboarding] loaded status", data);
         }
       } catch (err) {
-        console.error("Failed to fetch onboarding status", err);
+        console.error("[onboarding] Failed to fetch onboarding status", err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -88,12 +91,13 @@ export const useOnboarding = () => {
       data: newData,
       current_step: typeof nextStep === "number" ? nextStep : status.current_step,
     };
+    console.log("[onboarding] saveStepData", update);
     const { error } = await (supabase as any)
       .from("onboarding_status" as any)
       .update(update as any)
       .eq("user_id", user.id);
     if (error) {
-      console.error("Failed to save onboarding data", error);
+      console.error("[onboarding] Failed to save onboarding data", error);
       toast({ title: "Save failed", description: "Please try again.", variant: "destructive" });
       return;
     }
@@ -140,34 +144,40 @@ export const useOnboarding = () => {
   const completeOnboarding = async () => {
     if (!user) return;
     setLoading(true);
+    const prevStatus = status;
+    console.log("[onboarding] completing via RPC");
+    // Optimistic hide
+    setStatus((prev) => (prev ? { ...prev, completed: true, current_step: 999 } : prev));
     try {
-      // Mark as complete via RPC (also awards badge)
       const { error } = await supabase.rpc("complete_onboarding");
       if (error) throw error;
 
-      // Refresh status
-      const { data } = await (supabase as any)
+      // Refresh status from DB
+      const { data, error: selErr } = await (supabase as any)
         .from("onboarding_status" as any)
         .select("user_id, current_step, completed, data, created_at, updated_at")
         .eq("user_id", user.id)
         .single();
+      if (selErr) throw selErr;
       setStatus(data as OnboardingStatus);
+      console.log("[onboarding] completed + reloaded status", data);
 
       toast({
         title: "Welcome to Being of Music!",
         description: "Onboarding complete. Your Welcome Badge has been awarded.",
       });
 
-      // Gentle nudge to start a practice or join community
+      // Gentle nudge
       setTimeout(() => {
         toast({
           title: "Daily Practice",
           description: "Kick off your first streak day with a short practice session.",
         });
       }, 600);
-
     } catch (err) {
-      console.error("Failed to complete onboarding", err);
+      console.error("[onboarding] Failed to complete onboarding", err);
+      // Revert optimistic update
+      if (prevStatus) setStatus(prevStatus);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
