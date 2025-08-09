@@ -926,68 +926,6 @@ export type Database = {
           },
         ]
       }
-      onboarding_progress: {
-        Row: {
-          created_at: string
-          current_step: number
-          data: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          current_step?: number
-          data?: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          current_step?: number
-          data?: Json
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "onboarding_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      onboarding_status: {
-        Row: {
-          completed: boolean
-          created_at: string
-          current_step: string | null
-          data: Json
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed?: boolean
-          created_at?: string
-          current_step?: string | null
-          data?: Json
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed?: boolean
-          created_at?: string
-          current_step?: string | null
-          data?: Json
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       order_items: {
         Row: {
           created_at: string | null
@@ -1255,7 +1193,6 @@ export type Database = {
           location: string | null
           looking_for: string[] | null
           musical_interests: string[] | null
-          onboarding_status: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments: string[] | null
           role: Database["public"]["Enums"]["user_role"]
           secondary_instruments: string[] | null
@@ -1273,7 +1210,6 @@ export type Database = {
           location?: string | null
           looking_for?: string[] | null
           musical_interests?: string[] | null
-          onboarding_status?: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments?: string[] | null
           role?: Database["public"]["Enums"]["user_role"]
           secondary_instruments?: string[] | null
@@ -1291,7 +1227,6 @@ export type Database = {
           location?: string | null
           looking_for?: string[] | null
           musical_interests?: string[] | null
-          onboarding_status?: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments?: string[] | null
           role?: Database["public"]["Enums"]["user_role"]
           secondary_instruments?: string[] | null
@@ -1556,7 +1491,6 @@ export type Database = {
           typical_practice_duration: number | null
           updated_at: string
           user_id: string
-          weekly_practice_minutes_goal: number | null
         }
         Insert: {
           created_at?: string
@@ -1569,7 +1503,6 @@ export type Database = {
           typical_practice_duration?: number | null
           updated_at?: string
           user_id: string
-          weekly_practice_minutes_goal?: number | null
         }
         Update: {
           created_at?: string
@@ -1582,7 +1515,6 @@ export type Database = {
           typical_practice_duration?: number | null
           updated_at?: string
           user_id?: string
-          weekly_practice_minutes_goal?: number | null
         }
         Relationships: []
       }
@@ -1703,20 +1635,12 @@ export type Database = {
         }
         Returns: undefined
       }
-      award_welcome_badge_for_current_user: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       check_and_award_badges: {
         Args: { user_uuid: string }
         Returns: undefined
       }
       check_and_award_wellness_badges: {
         Args: { user_uuid: string }
-        Returns: undefined
-      }
-      complete_onboarding: {
-        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       ensure_placeholder_blocks_for_orphans: {
@@ -1870,16 +1794,6 @@ export type Database = {
           avatar_url: string
         }[]
       }
-      save_onboarding_progress: {
-        Args: { p_data: Json; p_current_step?: number }
-        Returns: undefined
-      }
-      set_onboarding_status: {
-        Args: {
-          p_status: Database["public"]["Enums"]["user_onboarding_status"]
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       journal_prompt_type:
@@ -1888,11 +1802,6 @@ export type Database = {
         | "resistance"
         | "learning"
       journal_section_type: "past" | "present" | "future"
-      user_onboarding_status:
-        | "not_started"
-        | "in_progress"
-        | "completed"
-        | "dismissed"
       user_role: "admin" | "team" | "user"
       wellness_practice_type: "meditation" | "breathwork" | "yoga_fitness"
     }
@@ -2029,12 +1938,6 @@ export const Constants = {
         "learning",
       ],
       journal_section_type: ["past", "present", "future"],
-      user_onboarding_status: [
-        "not_started",
-        "in_progress",
-        "completed",
-        "dismissed",
-      ],
       user_role: ["admin", "team", "user"],
       wellness_practice_type: ["meditation", "breathwork", "yoga_fitness"],
     },

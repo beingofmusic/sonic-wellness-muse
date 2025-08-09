@@ -37,8 +37,6 @@ import JournalingPage from "./pages/wellness/JournalingPage";
 import TemplatesList from "./pages/TemplatesList";
 import AIRoutinePage from "./pages/AIRoutinePage";
 import MyRoutinesPage from "./pages/MyRoutinesPage";
-import Onboarding from "./pages/Onboarding";
-import OnboardingGate from "./components/onboarding/OnboardingGate";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +45,6 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <OnboardingGate />
       <Routes>
         <Route path="/" element={<RootRoute />} />
         <Route 
@@ -282,14 +279,6 @@ const App = () => (
               </PermissionRoute>
             </ProtectedRoute>
           } 
-        />
-        <Route 
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <Onboarding />
-            </ProtectedRoute>
-          }
         />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
