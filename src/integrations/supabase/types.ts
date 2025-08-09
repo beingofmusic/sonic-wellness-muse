@@ -926,6 +926,36 @@ export type Database = {
           },
         ]
       }
+      onboarding_status: {
+        Row: {
+          completed: boolean
+          created_at: string
+          current_step: string | null
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          current_step?: string | null
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          current_step?: string | null
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -1491,6 +1521,7 @@ export type Database = {
           typical_practice_duration: number | null
           updated_at: string
           user_id: string
+          weekly_practice_minutes_goal: number | null
         }
         Insert: {
           created_at?: string
@@ -1503,6 +1534,7 @@ export type Database = {
           typical_practice_duration?: number | null
           updated_at?: string
           user_id: string
+          weekly_practice_minutes_goal?: number | null
         }
         Update: {
           created_at?: string
@@ -1515,6 +1547,7 @@ export type Database = {
           typical_practice_duration?: number | null
           updated_at?: string
           user_id?: string
+          weekly_practice_minutes_goal?: number | null
         }
         Relationships: []
       }
@@ -1635,12 +1668,20 @@ export type Database = {
         }
         Returns: undefined
       }
+      award_welcome_badge_for_current_user: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       check_and_award_badges: {
         Args: { user_uuid: string }
         Returns: undefined
       }
       check_and_award_wellness_badges: {
         Args: { user_uuid: string }
+        Returns: undefined
+      }
+      complete_onboarding: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       ensure_placeholder_blocks_for_orphans: {
