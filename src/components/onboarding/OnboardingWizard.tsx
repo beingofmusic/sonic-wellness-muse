@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 
 const STEPS = [
   "welcome",
@@ -102,7 +103,7 @@ export const OnboardingWizard: React.FC = () => {
   };
 
   const handleOpenCommunity = async () => {
-    await saveStepData({}, stepIndex);
+    await completeOnboarding();
     navigate("/community");
   };
 
@@ -127,7 +128,7 @@ export const OnboardingWizard: React.FC = () => {
       </div>
       <div className="flex gap-3">
         <Button onClick={handleNext}>Begin</Button>
-        <Button variant="outline" onClick={() => navigate("/dashboard")}>Skip for now</Button>
+        <Button variant="outline" onClick={async () => { await completeOnboarding(); navigate("/dashboard"); }}>Skip for now</Button>
       </div>
     </div>
   );
@@ -221,7 +222,7 @@ export const OnboardingWizard: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">We’ll craft a beginner-friendly plan tailored to your profile.</p>
-            <Button onClick={() => { saveStepData({}, stepIndex); navigate("/ai-routine"); }}>Generate with AI</Button>
+            <Button onClick={async () => { await completeOnboarding(); navigate("/ai-routine"); }}>Generate with AI</Button>
           </CardContent>
         </Card>
 
@@ -231,7 +232,7 @@ export const OnboardingWizard: React.FC = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">Explore curated templates from warm-ups to mindfulness.</p>
-            <Button variant="outline" onClick={() => { saveStepData({}, stepIndex); navigate("/templates"); }}>Explore Templates</Button>
+            <Button variant="outline" onClick={async () => { await completeOnboarding(); navigate("/templates"); }}>Explore Templates</Button>
           </CardContent>
         </Card>
       </div>
@@ -312,7 +313,7 @@ export const OnboardingWizard: React.FC = () => {
       <p className="text-muted-foreground">Onboarding complete. Your Welcome Badge awaits—let’s begin your first streak day.</p>
       <div className="flex gap-3 justify-center">
         <Button onClick={handleStartPractice}>Start a Practice</Button>
-        <Button variant="outline" onClick={() => navigate("/dashboard")}>Go to Dashboard</Button>
+        <Button variant="outline" onClick={async () => { await completeOnboarding(); navigate("/dashboard"); }}>Go to Dashboard</Button>
       </div>
     </div>
   );
@@ -344,7 +345,16 @@ export const OnboardingWizard: React.FC = () => {
     <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70 animate-fade-in">
       <div className="mx-auto max-w-2xl md:max-w-3xl px-4 py-6 md:py-10">
         <StepIndicator index={Math.min(stepIndex, totalSteps - 1)} total={totalSteps} />
-        <div className="rounded-xl border bg-card/80 backdrop-blur p-5 md:p-8 shadow-xl">
+        <div className="relative rounded-xl border bg-card/80 backdrop-blur p-5 md:p-8 shadow-xl">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Close onboarding"
+            className="absolute right-2 top-2"
+            onClick={async () => { await completeOnboarding(); }}
+          >
+            <X className="h-5 w-5" />
+          </Button>
           {renderStep(key)}
         </div>
       </div>

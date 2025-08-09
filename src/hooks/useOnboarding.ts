@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +26,7 @@ export interface OnboardingStatus {
 
 export const useOnboarding = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  
   const { toast } = useToast();
 
   const [status, setStatus] = useState<OnboardingStatus | null>(null);
@@ -166,8 +166,6 @@ export const useOnboarding = () => {
         });
       }, 600);
 
-      // Navigate to dashboard if not already there
-      navigate("/dashboard");
     } catch (err) {
       console.error("Failed to complete onboarding", err);
       toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
