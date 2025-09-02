@@ -3,10 +3,13 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-// Define the UserRole type
-export type UserRole = 'admin' | 'team' | 'user';
+// Define the UserRole type - extended to include supporting_member
+export type UserRole = 'admin' | 'team' | 'user' | 'supporting_member';
 
-// Define the Profile type including role
+// Define membership tiers
+export type MembershipTier = 'free' | 'supporting_member';
+
+// Define the Profile type including role and membership
 export interface Profile {
   id: string;
   username: string | null;
@@ -14,6 +17,10 @@ export interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   role: UserRole;
+  membership_tier: MembershipTier;
+  membership_start_date?: string | null;
+  membership_end_date?: string | null;
+  is_supporting_member?: boolean;
   // Musical identity fields
   primary_instruments?: string[] | null;
   secondary_instruments?: string[] | null;
@@ -45,6 +52,7 @@ interface AuthContextProps {
   hasPermission: (permission: string) => boolean;
   isAdmin: boolean;
   isTeamMember: boolean;
+  isSupportingMember: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -89,6 +97,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           avatar_url: profileData.avatar_url,
           // If role is undefined, default to 'user'
           role: (profileData as any).role || 'user',
+          // Membership fields
+          membership_tier: (profileData as any).membership_tier || 'free',
+          membership_start_date: (profileData as any).membership_start_date || null,
+          membership_end_date: (profileData as any).membership_end_date || null,
+          is_supporting_member: (profileData as any).is_supporting_member || false,
           // Musical identity fields
           primary_instruments: (profileData as any).primary_instruments || null,
           secondary_instruments: (profileData as any).secondary_instruments || null,
@@ -205,6 +218,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Helper properties for role checks
   const isAdmin = profile?.role === 'admin';
   const isTeamMember = profile?.role === 'team';
+  const isSupportingMember = profile?.membership_tier === 'supporting_member' || profile?.is_supporting_member === true;
 
   const value = {
     user,
@@ -218,6 +232,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     hasPermission,
     isAdmin,
     isTeamMember,
+    isSupportingMember,
   };
 
   return (

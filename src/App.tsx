@@ -8,6 +8,7 @@ import PermissionRoute from "@/components/PermissionRoute";
 import RootRoute from "@/components/RootRoute";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
+import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -282,6 +283,7 @@ const App = () => (
         />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/pricing" element={<Pricing />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

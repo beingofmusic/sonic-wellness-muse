@@ -1,25 +1,26 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import MusicLogo from "./MusicLogo";
-import { useAuth } from "@/context/AuthContext";
-import { Shield, User, Users } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { Shield, Users, Heart, Star, User } from "lucide-react";
+import MusicLogo from "@/components/MusicLogo";
+import SupportingMemberBadge from "@/components/SupportingMemberBadge";
+import { useAuth } from "@/context/AuthContext";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
 }
 
 const Navbar: React.FC<NavbarProps> = () => {
-  const { user, profile, signOut, isAdmin, isTeamMember } = useAuth();
+  const { user, profile, signOut, isAdmin, isTeamMember, isSupportingMember } = useAuth();
   const navigate = useNavigate();
   
   const handleSignOut = async () => {
@@ -91,17 +92,22 @@ const Navbar: React.FC<NavbarProps> = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-md border-white/10 text-white">
-                  <DropdownMenuLabel className="flex items-center justify-between">
-                    <span>My Account</span>
-                    <Badge 
-                      variant="outline" 
-                      className="ml-2 bg-white/5"
-                    >
-                      <span className="flex items-center">
-                        {getRoleIcon()}
-                        {profile?.role || 'user'}
-                      </span>
-                    </Badge>
+                  <DropdownMenuLabel className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span>My Account</span>
+                      <Badge 
+                        variant="outline" 
+                        className="ml-2 bg-white/5"
+                      >
+                        <span className="flex items-center">
+                          {getRoleIcon()}
+                          {profile?.role || 'user'}
+                        </span>
+                      </Badge>
+                    </div>
+                    {isSupportingMember && (
+                      <SupportingMemberBadge size="sm" />
+                    )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
 
@@ -114,6 +120,17 @@ const Navbar: React.FC<NavbarProps> = () => {
                   <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/dashboard')}>
                     Dashboard
                   </DropdownMenuItem>
+
+                  {/* Upgrade to Supporting Member - only show for free users */}
+                  {!isSupportingMember && (
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/pricing')}>
+                      <div className="flex items-center gap-2">
+                        <Heart className="h-4 w-4 text-music-primary" />
+                        <span className="text-music-primary">Become Supporting Member</span>
+                        <Star className="h-3 w-3 text-music-primary" />
+                      </div>
+                    </DropdownMenuItem>
+                  )}
 
                   {/* Admin-specific links */}
                   {isAdmin && (

@@ -1251,9 +1251,13 @@ export type Database = {
           created_at: string
           first_name: string | null
           id: string
+          is_supporting_member: boolean | null
           last_name: string | null
           location: string | null
           looking_for: string[] | null
+          membership_end_date: string | null
+          membership_start_date: string | null
+          membership_tier: string | null
           musical_interests: string[] | null
           onboarding_status: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments: string[] | null
@@ -1269,9 +1273,13 @@ export type Database = {
           created_at?: string
           first_name?: string | null
           id: string
+          is_supporting_member?: boolean | null
           last_name?: string | null
           location?: string | null
           looking_for?: string[] | null
+          membership_end_date?: string | null
+          membership_start_date?: string | null
+          membership_tier?: string | null
           musical_interests?: string[] | null
           onboarding_status?: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments?: string[] | null
@@ -1287,9 +1295,13 @@ export type Database = {
           created_at?: string
           first_name?: string | null
           id?: string
+          is_supporting_member?: boolean | null
           last_name?: string | null
           location?: string | null
           looking_for?: string[] | null
+          membership_end_date?: string | null
+          membership_start_date?: string | null
+          membership_tier?: string | null
           musical_interests?: string[] | null
           onboarding_status?: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments?: string[] | null
@@ -1844,6 +1856,10 @@ export type Database = {
           weekly_minutes_goal: number
         }[]
       }
+      is_supporting_member: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       list_community_reactions: {
         Args: { p_channel_id: string }
         Returns: {
@@ -1893,7 +1909,7 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "dismissed"
-      user_role: "admin" | "team" | "user"
+      user_role: "admin" | "team" | "user" | "supporting_member"
       wellness_practice_type: "meditation" | "breathwork" | "yoga_fitness"
     }
     CompositeTypes: {
@@ -2035,7 +2051,7 @@ export const Constants = {
         "completed",
         "dismissed",
       ],
-      user_role: ["admin", "team", "user"],
+      user_role: ["admin", "team", "user", "supporting_member"],
       wellness_practice_type: ["meditation", "breathwork", "yoga_fitness"],
     },
   },

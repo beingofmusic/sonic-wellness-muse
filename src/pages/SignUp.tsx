@@ -86,8 +86,8 @@ const SignUp: React.FC = () => {
         <div className="w-full max-w-md p-8 rounded-xl bg-card/80 backdrop-blur-sm border border-white/10 shadow-xl">
           <div className="flex flex-col items-center mb-6">
             <MusicLogo size="lg" withText />
-            <h1 className="text-2xl font-semibold mt-4">Start Your Journey</h1>
-            <p className="text-white/70 text-sm">Create an account to begin your 7-day free trial</p>
+            <h1 className="text-2xl font-semibold mt-4">Join Being of Music</h1>
+            <p className="text-white/70 text-sm">Join the community for free and enhance your musical journey</p>
           </div>
           
           {error && (
@@ -173,10 +173,10 @@ const SignUp: React.FC = () => {
               className="w-full music-button py-5"
               disabled={isLoading || !agreedToTerms}
             >
-              {isLoading ? "Creating Account..." : "Create Account & Start Free Trial"}
+              {isLoading ? "Creating Account..." : "Join Free"}
             </Button>
             <p className="text-xs text-center text-white/50">
-              No credit card required for trial. After 7 days, subscription is $9.99/month unless canceled.
+              Free forever. Upgrade to Supporting Member for premium features anytime.
             </p>
           </form>
           

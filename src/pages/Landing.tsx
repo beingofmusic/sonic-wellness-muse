@@ -27,13 +27,13 @@ const Landing: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/signup">
                   <Button className="music-button px-6 py-6 text-lg">
-                    Start Free Trial
+                    Join Free
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link to="/about">
+                <Link to="/pricing">
                   <Button variant="outline" className="music-button-secondary px-6 py-6 text-lg">
-                    Learn More
+                    View Pricing
                   </Button>
                 </Link>
               </div>
@@ -95,11 +95,11 @@ const Landing: React.FC = () => {
                 </h2>
                 <p className="text-white/80 mb-8">
                   Join thousands of students who have improved their skills and wellbeing with Being of Music.
-                  Start your 7-day free trial today.
+                  Start your journey for free today.
                 </p>
                 <Link to="/signup">
                   <Button className="music-button px-8 py-6 text-lg">
-                    Start Your Free Trial
+                    Join the Community
                   </Button>
                 </Link>
               </div>
