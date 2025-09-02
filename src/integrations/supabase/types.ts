@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -926,6 +926,68 @@ export type Database = {
           },
         ]
       }
+      onboarding_progress: {
+        Row: {
+          created_at: string
+          current_step: number
+          data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_step?: number
+          data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_step?: number
+          data?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_status: {
+        Row: {
+          completed: boolean
+          created_at: string
+          current_step: string | null
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          current_step?: string | null
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          current_step?: string | null
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -1193,6 +1255,7 @@ export type Database = {
           location: string | null
           looking_for: string[] | null
           musical_interests: string[] | null
+          onboarding_status: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments: string[] | null
           role: Database["public"]["Enums"]["user_role"]
           secondary_instruments: string[] | null
@@ -1210,6 +1273,7 @@ export type Database = {
           location?: string | null
           looking_for?: string[] | null
           musical_interests?: string[] | null
+          onboarding_status?: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments?: string[] | null
           role?: Database["public"]["Enums"]["user_role"]
           secondary_instruments?: string[] | null
@@ -1227,6 +1291,7 @@ export type Database = {
           location?: string | null
           looking_for?: string[] | null
           musical_interests?: string[] | null
+          onboarding_status?: Database["public"]["Enums"]["user_onboarding_status"]
           primary_instruments?: string[] | null
           role?: Database["public"]["Enums"]["user_role"]
           secondary_instruments?: string[] | null
@@ -1491,6 +1556,7 @@ export type Database = {
           typical_practice_duration: number | null
           updated_at: string
           user_id: string
+          weekly_practice_minutes_goal: number | null
         }
         Insert: {
           created_at?: string
@@ -1503,6 +1569,7 @@ export type Database = {
           typical_practice_duration?: number | null
           updated_at?: string
           user_id: string
+          weekly_practice_minutes_goal?: number | null
         }
         Update: {
           created_at?: string
@@ -1515,6 +1582,7 @@ export type Database = {
           typical_practice_duration?: number | null
           updated_at?: string
           user_id?: string
+          weekly_practice_minutes_goal?: number | null
         }
         Relationships: []
       }
@@ -1624,15 +1692,19 @@ export type Database = {
     }
     Functions: {
       add_or_toggle_community_reaction: {
-        Args: { p_message_id: string; p_channel_id: string; p_emoji: string }
+        Args: { p_channel_id: string; p_emoji: string; p_message_id: string }
         Returns: undefined
       }
       add_or_toggle_conversation_reaction: {
         Args: {
-          p_message_id: string
           p_conversation_id: string
           p_emoji: string
+          p_message_id: string
         }
+        Returns: undefined
+      }
+      award_welcome_badge_for_current_user: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       check_and_award_badges: {
@@ -1643,6 +1715,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: undefined
       }
+      complete_onboarding: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       ensure_placeholder_blocks_for_orphans: {
         Args: { p_default_duration?: number }
         Returns: number
@@ -1650,149 +1726,159 @@ export type Database = {
       get_alltime_practice_leaderboard: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_id: string
-          username: string
+          avatar_url: string
           first_name: string
           last_name: string
-          avatar_url: string
           total_minutes: number
+          user_id: string
+          username: string
         }[]
       }
       get_course_completion: {
         Args: { course_uuid: string; user_uuid: string }
         Returns: {
-          course_id: string
-          total_lessons: number
           completed_lessons: number
           completion_percentage: number
+          course_id: string
+          total_lessons: number
         }[]
       }
       get_featured_templates: {
         Args: { limit_count?: number }
         Returns: {
-          id: string
-          title: string
+          created_at: string
+          created_by: string
+          creator_name: string
           description: string
           duration: number
-          tags: string[]
-          created_by: string
-          is_template: boolean
-          created_at: string
-          updated_at: string
-          visibility: string
-          creator_name: string
+          id: string
           includes: string[]
+          is_template: boolean
+          tags: string[]
+          title: string
+          updated_at: string
           usage_count: number
+          visibility: string
         }[]
       }
       get_most_commented_routines: {
         Args: { limit_count?: number }
         Returns: {
-          routine_id: string
           comments_count: number
+          routine_id: string
         }[]
       }
       get_orphan_templates: {
         Args: Record<PropertyKey, never>
         Returns: {
+          created_by: string
+          is_template: boolean
           routine_id: string
           title: string
-          created_by: string
-          visibility: string
-          is_template: boolean
           updated_at: string
+          visibility: string
         }[]
       }
       get_routine_feedback_stats: {
         Args: { routine_uuid: string }
         Returns: {
           average_rating: number
-          ratings_count: number
           completion_users: number
           percent_with_rating: number
+          ratings_count: number
         }[]
       }
       get_streak_leaderboard: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_id: string
-          username: string
-          first_name: string
-          last_name: string
           avatar_url: string
           current_streak: number
+          first_name: string
+          last_name: string
+          user_id: string
+          username: string
         }[]
       }
       get_user_courses_with_progress: {
         Args: { user_uuid: string }
         Returns: {
-          id: string
-          title: string
-          description: string
-          instructor: string
-          thumbnail_url: string
-          tags: string[]
-          created_at: string
-          total_lessons: number
           completed_lessons: number
           completion_percentage: number
+          created_at: string
+          description: string
+          id: string
+          instructor: string
           last_interaction: string
+          tags: string[]
+          thumbnail_url: string
+          title: string
+          total_lessons: number
         }[]
       }
       get_user_feedback_timeseries: {
         Args: { user_uuid: string }
         Returns: {
+          comments_count: number
           day: string
           ratings_count: number
-          comments_count: number
         }[]
       }
       get_weekly_practice_leaderboard: {
-        Args: { week_start: string; week_end: string }
+        Args: { week_end: string; week_start: string }
         Returns: {
-          user_id: string
-          username: string
+          avatar_url: string
           first_name: string
           last_name: string
-          avatar_url: string
           total_minutes: number
+          user_id: string
+          username: string
         }[]
       }
       get_wellness_stats: {
         Args: { user_uuid: string }
         Returns: {
-          total_sessions: number
-          total_minutes: number
           current_streak: number
           total_journal_entries: number
+          total_minutes: number
+          total_sessions: number
           weekly_minutes_goal: number
         }[]
       }
       list_community_reactions: {
         Args: { p_channel_id: string }
         Returns: {
-          message_id: string
-          user_id: string
-          emoji: string
+          avatar_url: string
           created_at: string
-          username: string
+          emoji: string
           first_name: string
           last_name: string
-          avatar_url: string
+          message_id: string
+          user_id: string
+          username: string
         }[]
       }
       list_conversation_reactions: {
         Args: { p_conversation_id: string }
         Returns: {
-          message_id: string
-          user_id: string
-          emoji: string
+          avatar_url: string
           created_at: string
-          username: string
+          emoji: string
           first_name: string
           last_name: string
-          avatar_url: string
+          message_id: string
+          user_id: string
+          username: string
         }[]
+      }
+      save_onboarding_progress: {
+        Args: { p_current_step?: number; p_data: Json }
+        Returns: undefined
+      }
+      set_onboarding_status: {
+        Args: {
+          p_status: Database["public"]["Enums"]["user_onboarding_status"]
+        }
+        Returns: undefined
       }
     }
     Enums: {
@@ -1802,6 +1888,11 @@ export type Database = {
         | "resistance"
         | "learning"
       journal_section_type: "past" | "present" | "future"
+      user_onboarding_status:
+        | "not_started"
+        | "in_progress"
+        | "completed"
+        | "dismissed"
       user_role: "admin" | "team" | "user"
       wellness_practice_type: "meditation" | "breathwork" | "yoga_fitness"
     }
@@ -1938,6 +2029,12 @@ export const Constants = {
         "learning",
       ],
       journal_section_type: ["past", "present", "future"],
+      user_onboarding_status: [
+        "not_started",
+        "in_progress",
+        "completed",
+        "dismissed",
+      ],
       user_role: ["admin", "team", "user"],
       wellness_practice_type: ["meditation", "breathwork", "yoga_fitness"],
     },
